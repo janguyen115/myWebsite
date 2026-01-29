@@ -35,10 +35,10 @@ body {
   --text-muted: #DE8494;
   --text-accent: #001D00;
 
-  --border-color: #e5e7eb;
+  --border-color: #79291A;
 
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
+  --primary: #79291A;
+  --primary-hover: #DE8494;
 
   --max-width: 1100px;
   --radius: 10px;
