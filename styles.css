@@ -109,6 +109,7 @@ header {
   align-items: center;
   gap: 0.4em;
   flex-wrap: wrap; /* mobile-safe */
+  text-align: center;
 }
 
 .name-lockup {
@@ -134,8 +135,6 @@ header {
   stroke-width: 3;
   transform-origin: center;
   transform: rotate(-5deg);
-  stroke-dasharray: 7 5;
-  stroke-linecap: round;
 }
 
 
