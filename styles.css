@@ -77,6 +77,11 @@ body {
   align-items: center;
 }
 
+.section .container {
+  max-width: 100%;
+  width: 100%;
+}
+
 .icon-img {
   width: auto;
   height: 24px;
