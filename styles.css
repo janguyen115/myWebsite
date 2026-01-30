@@ -59,7 +59,7 @@ body {
 }
 
 .icon-img {
-  width: 24px;
+  width: auto;
   height: 24px;
   margin-right: 8px;
   vertical-align: middle;
