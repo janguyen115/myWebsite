@@ -101,8 +101,15 @@ header {
   color: var(--primary);
 }
 
-.logo-img{
-  max-width: 15%;
+.logo-link {
+  display: inline-block;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* keep image sizing as before */
+.logo-img {
+  max-width: 20%;
   height: auto;
 }
 
