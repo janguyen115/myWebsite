@@ -95,21 +95,15 @@ header {
    ========================= */
 
 .hero {
-  background: linear-gradient(
-    135deg,
-    var(--bg-accent),
-    var(--bg-main)
-  );
-  padding: 5rem 1.5rem;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem 2rem;
 }
 
-.hero-name {
-  display: flex;
-  align-items: center;
-  gap: 0.4em;
-  flex-wrap: wrap; /* mobile-safe */
-  text-align: center;
+.hero-img {
+  max-width: 100%;
+  height: auto;
 }
 
 .name-lockup {
