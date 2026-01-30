@@ -52,6 +52,16 @@ body {
    LAYOUT
    ========================= */
 
+#about {
+  text-align: center;
+  margin-top: 100px;
+}
+
+#about img {
+  display: block;
+  margin: 1rem auto;
+}
+
 .container {
   max-width: var(--max-width);
   margin: 0 auto;
