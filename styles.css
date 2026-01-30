@@ -27,9 +27,9 @@ body {
    ========================= */
 
 :root {
-  --bg-main: #FFF5D9;
+  --bg-main: #fefdf6;
   --bg-card: #f9fafb;
-  --bg-accent: #FFF5D9;
+  --bg-accent: #fefdf6;
 
   --text-main: #79291A;
   --text-muted: #DE8494;
