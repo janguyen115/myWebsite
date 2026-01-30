@@ -18,7 +18,7 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont,
                "Segoe UI", Roboto, sans-serif;
   line-height: 1.6;
-  background-color: #fefdf6;
+  background-color: #faefe9;
   color: #79291A;
 }
 
@@ -27,9 +27,9 @@ body {
    ========================= */
 
 :root {
-  --bg-main: #fefdf6;
-  --bg-card: #fefdf6;
-  --bg-accent: #fefdf6;
+  --bg-main: #faefe9;
+  --bg-card: #faefe9;
+  --bg-accent: #faefe9;
 
   --text-main: #79291A;
   --text-muted: #001902;
