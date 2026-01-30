@@ -112,7 +112,7 @@ iframe {
 }
 
 .section.visible {
-  animation: fadeInUp 1.6s ease-out forwards;
+  animation: fadeInUp 1.2s ease-out forwards;
 }
 
 .icon-img {
