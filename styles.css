@@ -54,7 +54,7 @@ body {
 
 #about {
   text-align: center;
-  margin-top: 100px;
+  margin-top: 200px;
 }
 
 #about img {
@@ -70,6 +70,9 @@ body {
 
 .section {
   margin: 4rem 0;
+  
+  justify-content: center;
+  align-items: center;
 }
 
 .icon-img {
