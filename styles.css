@@ -58,12 +58,22 @@ body {
   margin: 4rem 0;
 }
 
+.icon-img {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
 /* =========================
    HEADER / NAVBAR
    ========================= */
 
 header {
   background: var(--bg-card);
+  position: sticky;
+  top: 0;
+  z-index: 100;
   /* border-bottom: 1px solid var(--border-color);*/
 }
 
