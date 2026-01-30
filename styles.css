@@ -87,6 +87,12 @@ header .container {
   align-items: center;
 }
 
+.nav nav {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
 .nav a {
   text-decoration: none;
   color: var(--text-main);
@@ -113,7 +119,7 @@ header .container {
 
 /* keep image sizing as before */
 .logo-img {
-  max-width: 20%;
+  max-width: 100px;
   height: auto;
 }
 
