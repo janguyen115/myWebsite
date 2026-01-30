@@ -64,7 +64,7 @@ body {
 
 header {
   background: var(--bg-card);
-  border-bottom: 1px solid var(--border-color);
+  /* border-bottom: 1px solid var(--border-color);*/
 }
 
 .nav {
