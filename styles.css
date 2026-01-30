@@ -81,7 +81,8 @@ body {
 
 .section {
   margin: 4rem 0;
-  padding: 2rem 24rem;
+  padding: 2rem 3rem;
+  max-width: 60%;
   text-align: center;
   display: flex;
   flex-direction: column;
