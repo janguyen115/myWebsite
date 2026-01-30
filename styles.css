@@ -87,7 +87,13 @@ header {
 .logo {
   font-size: 1.25rem;
   font-weight: 700;
+  
   color: var(--primary);
+}
+
+.logo-img{
+  max-width: 15%;
+  height: auto;
 }
 
 /* =========================
