@@ -48,6 +48,17 @@ body {
   --radius: 10px;
 }
 
+a {
+  color: #1f3727;        /* dark slate / charcoal */
+  text-decoration: none;
+}
+
+a:hover {
+  color: #4e5e4f;        /* accent blue */
+  text-decoration: underline;
+}
+
+
 /* =========================
    LAYOUT
    ========================= */
@@ -337,4 +348,6 @@ footer {
     margin-left: 0;
   }
 }
+
+
 
