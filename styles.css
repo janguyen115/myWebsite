@@ -80,7 +80,7 @@ body {
 }
 
 .section {
-  margin: 4rem 0;
+  margin: 4rem auto;
   padding: 2rem 3rem;
   max-width: 60%;
   text-align: center;
@@ -89,7 +89,6 @@ body {
   justify-content: center;
   align-items: center;
   opacity: 0;
-  animation: fadeInUp 0.8s ease-out forwards;
 }
 
 .section img {
