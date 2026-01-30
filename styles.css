@@ -163,7 +163,7 @@ header .container {
   position: absolute;
   top: 100%;
   right: 0;
-  background: rgba(255, 244, 236, 0.832);
+  background: rgba(249, 248, 245, 0.822);
   border-radius: 10px;
   box-shadow: 0 12px 30px rgba(43, 18, 18, 0.15);
 
@@ -191,7 +191,7 @@ header .container {
 }
 
 .dropdown a:hover {
-  background: rgba(250, 230, 215, 0.195);
+  background: rgba(220, 218, 213, 0.825);
 }
 
 
