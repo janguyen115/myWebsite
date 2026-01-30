@@ -19,7 +19,7 @@ body {
                "Segoe UI", Roboto, sans-serif;
   line-height: 1.6;
   background-color: #f9fafb;
-  color: #1f2933;
+  color: #79291A;
 }
 
 /* =========================
@@ -27,9 +27,9 @@ body {
    ========================= */
 
 :root {
-  --bg-main: #FFECEE;
-  --bg-card: #FFF5D9;
-  --bg-accent: #B4291A;
+  --bg-main: #f9fafb;
+  --bg-card: #f9fafb;
+  --bg-accent: #f9fafb;
 
   --text-main: #79291A;
   --text-muted: #DE8494;
