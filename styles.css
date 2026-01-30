@@ -81,7 +81,7 @@ body {
 
 .section {
   margin: 4rem 0;
-  padding: 2rem 12rem;
+  padding: 2rem 24rem;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -103,6 +103,7 @@ body {
 .icon-img {
   width: auto;
   height: 24px;
+  max-width: none;  /* override .section img */
   margin-right: 8px;
   vertical-align: middle;
 }
