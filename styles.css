@@ -77,6 +77,10 @@ header {
   /* border-bottom: 1px solid var(--border-color);*/
 }
 
+header .container {
+  padding: 2rem 4rem; /* adjust left/right values (4rem) as needed */
+}
+
 .nav {
   display: flex;
   justify-content: space-between;
