@@ -33,6 +33,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .section h1{
+  font-family: 'Monsieur La Doulaise', cursive;
   font-size: 2rem;
   margin-bottom: 1.5rem
 }
