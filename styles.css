@@ -215,6 +215,12 @@ header .container {
   position: relative;
   font-size: 1.5rem;
   cursor: pointer;
+  transition: 
+    transform 0.25s ease;
+}
+
+.hamburger:hover {
+  transform: scale(1.03);
 }
 
 /* Dropdown */
@@ -276,7 +282,7 @@ header .container {
 }
 
 .logo-img:hover {
-  transform: scale(1.05);
+  transform: scale(1.03);
 }
 
 /* =========================
@@ -294,12 +300,6 @@ header .container {
 .hero-img {
   max-width: 100%;
   height: auto;
-  transition:
-    transform 1.25s ease;
-}
-
-.hero-img:hover {
-  transform: scale(1.05);
 }
 
 .name-lockup {
