@@ -98,10 +98,6 @@ a:hover {
   margin-top: 200px;
 }
 
-#hero img {
-  margin-top: -200px;
-}
-
 #about img {
   display: block;
   margin: 1rem auto;
@@ -299,7 +295,7 @@ header .container {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-top: 8rem;   /* increase this */
+  padding-top: 6rem;   /* increase this */
   padding-bottom: 4rem;
 }
 
