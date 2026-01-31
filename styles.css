@@ -39,12 +39,16 @@ h1, h2, h3, h4, h5, h6 {
 
 .section h2{
   font-size: 1rem;
-    margin-bottom: 1.25rem
+  margin-bottom: 1.25rem
 }
 
 .section h3{
   font-size: 0.8rem;
-    margin-bottom: 1.1rem
+  margin-bottom: 1.1rem
+}
+
+.section p{
+  margin-bottom: 1.1rem
 }
 
 /* =========================
