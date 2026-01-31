@@ -39,6 +39,11 @@ body {
   font-size: 1rem;
 }
 
+.section h3{
+  font-family: 'Libre Baskerville', serif;
+  font-size: 0.8rem;
+}
+
 /* =========================
    CSS VARIABLES (EDIT THESE)
    ========================= */
