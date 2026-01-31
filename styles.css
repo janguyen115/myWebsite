@@ -304,6 +304,10 @@ header .container {
   height: auto;
 }
 
+.hero-img {
+  transform: translateY(-2rem);  /* tweak: -0.5rem to -2rem */
+}
+
 .name-lockup {
   display: inline-block;
   width: 300px; /* tweak this */
