@@ -288,6 +288,8 @@ header .container {
 .hero-img {
   max-width: 100%;
   height: auto;
+  transition:
+    scale 1.25s ease;
 }
 
 .hero-img:hover {
