@@ -271,6 +271,12 @@ header .container {
 .logo-img {
   max-width: 200px;
   height: auto;
+  transition:
+    transform 0.25s ease;
+}
+
+.logo-img:hover {
+  transform: scale(1.05);
 }
 
 /* =========================
@@ -289,7 +295,7 @@ header .container {
   max-width: 100%;
   height: auto;
   transition:
-    scale 1.25s ease;
+    transform 1.25s ease;
 }
 
 .hero-img:hover {
