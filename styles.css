@@ -249,7 +249,7 @@ header .container {
   white-space: nowrap;
 }
 
-.dropdown a:hover {
+.dropdown .hamburger:hover {
   background: rgba(255, 253, 247, 0.688);
 }
 
