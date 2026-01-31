@@ -173,7 +173,9 @@ header .container {
   text-decoration: none;
   color: var(--text-main);
   font-weight: 500;
+  font-size: 1.5rem;
   margin-left: 1.5rem;
+  font-family: "Playfair Display", serif;
 }
 
 .nav a:hover {
