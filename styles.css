@@ -290,6 +290,10 @@ header .container {
   height: auto;
 }
 
+.hero-img:hover {
+  transform: scale(1.05);
+}
+
 .name-lockup {
   display: inline-block;
   width: 300px; /* tweak this */
