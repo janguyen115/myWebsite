@@ -32,16 +32,19 @@ body {
 .section h1{
   font-family: 'Libre Baskerville', serif;
   font-size: 2rem;
+  color: #79291A;
 }
 
 .section h2{
   font-family: 'Libre Baskerville', serif;
   font-size: 1rem;
+  color: #79291A;
 }
 
 .section h3{
   font-family: 'Libre Baskerville', serif;
   font-size: 0.8rem;
+  color: #79291A;
 }
 
 /* =========================
