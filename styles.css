@@ -305,7 +305,7 @@ header .container {
 }
 
 .hero-img {
-  transform: translateY(-2rem);  /* tweak: -0.5rem to -2rem */
+  transform: translateY(-4rem);  
 }
 
 .name-lockup {
