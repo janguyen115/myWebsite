@@ -225,7 +225,7 @@ header .container {
 }
 
 .dropdown a:hover {
-  background: rgb(255, 253, 247);
+  background: rgba(255, 253, 247, 0.688);
 }
 
 
