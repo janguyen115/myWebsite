@@ -153,7 +153,24 @@ header {
   position: sticky;
   top: 0;
   z-index: 100;
-  /* border-bottom: 1px solid var(--border-color);*/
+}
+
+header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background-color: var(--border-color);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+header.scrolled::after {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 header .container {
@@ -188,7 +205,7 @@ header .container {
 /* Hamburger */
 .hamburger {
   position: relative;
-  font-size: 1rem;
+  font-size: 1.5rem;
   cursor: pointer;
 }
 
@@ -243,7 +260,7 @@ header .container {
 
 /* keep image sizing as before */
 .logo-img {
-  max-width: 150px;
+  max-width: 200px;
   height: auto;
 }
 
