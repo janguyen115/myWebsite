@@ -483,13 +483,18 @@ footer {
   max-width: 80%;
 }
 
-.text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  opacity: 0;
+.text { 
+  margin: 4rem auto;
+  padding: 4rem 3rem; 
+  text-align: left; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: left; 
+  align-items: left; 
+  opacity: 0; 
+  max-width: 1100px;
 }
+
 
 
 .text.visible {
