@@ -484,7 +484,7 @@ footer {
 }
 
 .text {
-  margin: 12rem auto;
+  margin: 4rem auto;
   padding: 4rem 3rem;
   text-align: left;
   display: flex;
@@ -492,6 +492,7 @@ footer {
   justify-content: left;
   align-items: left;
   opacity: 0;
+  max-width: 160%;
 }
 
 .text.visible {
