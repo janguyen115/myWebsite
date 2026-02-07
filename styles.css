@@ -489,8 +489,8 @@ footer {
   text-align: left; 
   display: flex; 
   flex-direction: column; 
-  justify-content: left; 
-  align-items: left; 
+  justify-content: center; 
+  align-items: center; 
   opacity: 0; 
   max-width: 1100px;
 }
