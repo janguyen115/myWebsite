@@ -249,6 +249,9 @@ header .visible {
 }
 
 /* Hamburger */
+
+/* add toggle to keep hamburger menu open */
+
 .hamburger {
   position: relative;
   font-size: 1.5rem;
