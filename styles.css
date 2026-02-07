@@ -451,7 +451,11 @@ footer {
   flex-direction: column;
   justify-content: left;
   align-items: left;
-  opacity: 1;
+  opacity: 0;
+}
+
+.chunk.visible {
+  animation: fadeInUp 1.2s ease-out forwards;
 }
 
 .chunk h1{
