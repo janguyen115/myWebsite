@@ -57,6 +57,10 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 80%;
 }
 
+#about p{
+  text-align: justify
+}
+
 /* =========================
    CSS VARIABLES (EDIT THESE)
    ========================= */
@@ -95,7 +99,6 @@ a:hover {
    ========================= */
 
 #about {
-  text-align: justify;
   margin-top: 200px;
 }
 
