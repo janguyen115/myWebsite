@@ -487,3 +487,44 @@ footer {
   margin-bottom: 1.1rem;
   max-width: 80%;
 }
+
+.chunk {
+  margin: 4rem auto;
+  padding: 4rem 3rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: left;
+  align-items: left;
+  opacity: 1;
+}
+
+.text h1{
+  margin: 0 auto 1.5rem;
+  text-align: center;
+  font-size: 3rem;
+  margin-bottom: 1.5rem
+}
+
+.text h2{
+  font-size: 1.75rem;
+  margin-bottom: 1.25rem;
+  text-align: left;
+  justify-content: left;
+  align-items: left
+}
+
+.text h3{
+  font-size: 1.25rem;
+  margin-bottom: 1.1rem
+}
+
+.text h4{
+  font-size: 1rem;
+}
+
+.text p{
+  margin-bottom: 1.1rem;
+  max-width: 80%;
+}
+
