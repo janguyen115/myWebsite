@@ -437,3 +437,9 @@ footer {
   align-items: left;
   opacity: 1;
 }
+
+.chunk h2{
+  text-align: left;
+  justify-content: left;
+  align-items: left;
+}
