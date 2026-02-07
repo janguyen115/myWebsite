@@ -13,28 +13,7 @@
 </head>
 <body>
 
-<header>
-  <div class="container">
-    <div class="nav">
-        <a href="index.html" class="logo-link" aria-label="Home">
-          <img src="images/name_logo.png" alt="header graphic" class="logo-img">
-        </a>
-        <nav class="nav-menu-wrapper">
-            <div class="hamburger">
-                ☰
-                <div class="dropdown">
-                    <a href="#about">About</a>
-                    <a href="#projects">Projects</a>
-                    <a href="instruction.html">Instruction</a>
-                    <a href="cv.html">CV</a>
-                    <a href="collaborators.html">Collaborators</a>
-                    <a href="#contact">Contact</a>
-                </div>
-            </div>
-        </nav>
-    </div>
-  </div>
-</header>
+<header id="site-header"></header>
 
 <section id="instruction" class="section visible">
         <h1>Instruction</h1>
@@ -48,5 +27,12 @@
         </p>
 </chunk>
 
+<script>
+  fetch('header.html')
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById('site-header').innerHTML = data;
+    });
+</script>
 </body>
 </html>
