@@ -427,10 +427,6 @@ footer {
   }
 }
 
-chunk {
-  scroll-margin-top: 80px;
-}
-
 .chunk {
   margin: 4rem auto;
   padding: 2rem 3rem;
