@@ -12,27 +12,7 @@
 </head>
 <body>
 
-<header>
-  <div class="container">
-    <div class="nav">
-        <a href="index.html" class="logo-link" aria-label="Home">
-          <img src="images/name_logo.png" alt="header graphic" class="logo-img">
-        </a>
-        <nav class="nav-menu-wrapper">
-            <div class="hamburger">
-                ☰
-                <div class="dropdown">
-                    <a href="#about">About</a>
-                    <a href="#projects">Projects</a>
-                    <a href="cv.html">CV</a>
-                    <a href="collaborators.html">Collaborators</a>
-                    <a href="#contact">Contact</a>
-                </div>
-            </div>
-        </nav>
-    </div> 
-  </div>
-</header>
+    <header id="site-header"></header>
 
 
 
@@ -52,6 +32,25 @@
         Download PDF
     </a>
 </div>
+
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <p>© 2026 James A. Nguyen; Last updated January 2026</p>
+</footer>
+
+<script src="script.js"></script>
+<!-- ================= END FOOTER ================= -->
+
+<!-- ================= HEADER SCRIPT ================= -->
+<script>
+  fetch('header.html')
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById('site-header').innerHTML = data;
+    });
+</script>
+<!-- ================= END HEADER SCRIPT ================= -->
 
 </body>
 </html>

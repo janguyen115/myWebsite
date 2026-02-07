@@ -14,28 +14,7 @@
 </head>
 <body>
 
-<header>
-  <div class="container">
-    <div class="nav">
-        <a href="index.html" class="logo-link" aria-label="Home">
-          <img src="images/name_logo.png" alt="header graphic" class="logo-img">
-        </a>
-        <nav class="nav-menu-wrapper">
-            <div class="hamburger">
-                ☰
-                <div class="dropdown">
-                    <a href="#about">About</a>
-                    <a href="#projects">Projects</a>
-                    <a href="instruction.html">Instruction</a>
-                    <a href="cv.html">CV</a>
-                    <a href="collaborators.html">Collaborators</a>
-                    <a href="#contact">Contact</a>
-                </div>
-            </div>
-        </nav>
-    </div>
-  </div>
-</header>
+<header id="site-header"></header>
 
 <section id="a student's guide to numerical bayes" class="section visible">
         <h1>A Student's Guide to Numerical Bayes</h1>
@@ -44,6 +23,32 @@
             "A Student's Guide to Numerical Bayes" is a resource that I am currently developing based on <a href="https://web.ma.utexas.edu/users/pmueller/compbayes/" class="contact-link" target="_blank">"Computational Bayesian Statistics -- An Introduction"</a> by M.A. Amaral Turkman, C.D. Paulino, and P. Mueller. It is my attempt to simplify to others (and to myself) the concepts and methods of numerical solutions to Bayesian inference in a more accessible and intuitive way. My goal is to provide timely examples that develop concepts gradually and to reveal step-by-step solutions to examples from the textbook. This guide is a work in progress and likely contains mistakes; please contact me to report any errors or to provide feedback.
         </p>
 </section>
+
+<section id="chapter 1" class="chunk">
+        <h1>A Student's Guide to Numerical Bayes</h1>
+        <h1>(with examples)</h1>
+        <p>
+            "A Student's Guide to Numerical Bayes" is a resource that I am currently developing based on <a href="https://web.ma.utexas.edu/users/pmueller/compbayes/" class="contact-link" target="_blank">"Computational Bayesian Statistics -- An Introduction"</a> by M.A. Amaral Turkman, C.D. Paulino, and P. Mueller. It is my attempt to simplify to others (and to myself) the concepts and methods of numerical solutions to Bayesian inference in a more accessible and intuitive way. My goal is to provide timely examples that develop concepts gradually and to reveal step-by-step solutions to examples from the textbook. This guide is a work in progress and likely contains mistakes; please contact me to report any errors or to provide feedback.
+        </p>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <p>© 2026 James A. Nguyen; Last updated January 2026</p>
+</footer>
+
+<script src="script.js"></script>
+<!-- ================= END FOOTER ================= -->
+
+<!-- ================= HEADER SCRIPT ================= -->
+<script>
+  fetch('header.html')
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById('site-header').innerHTML = data;
+    });
+</script>
+<!-- ================= END HEADER SCRIPT ================= -->
 
 </body>
 </html>
