@@ -427,5 +427,8 @@ footer {
   }
 }
 
-
+#instruction {
+  text-align: left;
+  margin-top: 200px;
+}
 
