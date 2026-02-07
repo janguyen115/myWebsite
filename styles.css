@@ -67,6 +67,12 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 100%;
 }
 
+#instruction p{
+  text-align: justify;
+  margin: 0 auto 1.1rem;
+  margin-bottom: 2rem;
+}
+
 /* =========================
    CSS VARIABLES (EDIT THESE)
    ========================= */
@@ -449,6 +455,8 @@ footer {
 }
 
 .chunk h1{
+  margin: 0 auto 1.5rem;
+  text-align: center;
   font-size: 3rem;
   margin-bottom: 1.5rem
 }
