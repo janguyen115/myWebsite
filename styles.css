@@ -486,13 +486,13 @@ footer {
 .text {
   margin: 4rem auto;
   padding: 4rem 3rem;
-  text-align: left;
+
   display: flex;
   flex-direction: column;
-  justify-content: left;
-  align-items: left;
+  align-items: center;
+
+  max-width: 1100px;   /* or var(--max-width) */
   opacity: 0;
-  max-width: 160%;
 }
 
 .text.visible {
