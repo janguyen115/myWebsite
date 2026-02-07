@@ -427,8 +427,17 @@ footer {
   }
 }
 
-#instruction {
-  text-align: left;
-  margin-top: 200px;
+chunk {
+  scroll-margin-top: 80px;
 }
 
+.chunk {
+  margin: 4rem auto;
+  padding: 2rem 3rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+}
