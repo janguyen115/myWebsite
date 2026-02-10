@@ -45,7 +45,7 @@
             Suppose there exists some unknown true parameter vector (\ \theta^* \) that explains the relationship between some distribution and a random variable \( X \) that follows some distribution \( F \). 
             Let \( x = (x_1, \dots, x_n) \in \<mathscr>X</mathscr> \) denote the observed data generated from \( X \) with sample size \( n \). 
         </p>
-        
+
         <p>
             \[
                 X \sim F(\theta^*), \quad x = (x_1, \dots, x_n) \in \<mathscr>X
@@ -56,6 +56,15 @@
             Frequentist inference quantifies the probability of observing sample data as extreme or more extreme than \( x \) under a hypothesized distribution \( F \). 
             That is, for some hypothesized parameter \( \theta_0 \), we are interested in the <i>frequency</i> of obtaining a sample as extreme as our observed data over many repeated samples. 
             This is the inspiration for the name "Frequentist," and it helps us obtain a confidence interval for \( \theta \) that we believe to contain the true population parameter \( \theta^* \) with some confidence level (e.g., 95%).
+        </p>
+
+        <p>
+            Without diving too deeply into Frequentist inference, we identify some qualities that raise some concerns in application.
+            Firstly, Frequentist ideology suggests the existence of some true parameter \( \theta^* \) that objectively describes the distribution of the data. 
+            Additionally, Frequentist inference relies on the notion of confidence intervals, which lack axiomatic interpretations in probability calculus.
+            Bayesian inference addresses these conccerns by treating the parameter as a random variable that is informed by the observed data and by making claims about the distribution of the parameter itself that can be directly derived from the axioms of probability.
+            This branch of ideology follows the structure of Thomas Bayes' concept of a <b>posterior distribution</b> that is dependent on the <b>liklihood</b> of the observed data and some <b>prior distribution</b> that encodes our beliefs about the parameter before observing the data.
+            The result of Bayesian inference is a credible interval \( C(x) \) such that \( P(\theta \in C(x) | x) = 1 - \alpha \), where \( \alpha \) is the desired level of credibility (e.g., 0.05 for a 95% credible interval).
         </p>
 
         
