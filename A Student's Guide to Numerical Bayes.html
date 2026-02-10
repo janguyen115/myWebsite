@@ -67,8 +67,9 @@
         </p>
 
         <p>
-            \[ \text{Posterior} \propto \text{Likelihood} \times \text{Prior} \]
-            \[ p(\theta | x) = \frac{p(x | \theta) p(\theta)}{p(x)} \]
+            \[ \text{Posterior} = \frac{\text{Likelihood} \times \text{Prior}}{\text{Marginal}} \]
+            \[ p(\theta | x) = \frac{f(x | \theta) p(\theta)}{p(x)} \]
+            The above relationship includes a normalizing constant \( p(x) \) that ensures the posterior distribution integrates to 1, making it a valid probability distribution. We often call this the marginal distribution.
         </p>
 
         <p>
