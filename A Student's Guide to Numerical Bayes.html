@@ -64,10 +64,21 @@
             Additionally, Frequentist inference relies on the notion of confidence intervals, which lack axiomatic interpretations in probability calculus.
             Bayesian inference addresses these conccerns by treating the parameter as a random variable that is informed by the observed data and by making claims about the distribution of the parameter itself that can be directly derived from the axioms of probability.
             This branch of ideology follows the structure of Thomas Bayes' concept of a <b>posterior distribution</b> that is dependent on the <b>liklihood</b> of the observed data and some <b>prior distribution</b> that encodes our beliefs about the parameter before observing the data.
+            The relationship is described by Bayes' theorem, which states that the posterior distribution is proportional to the product of the likelihood and the prior distribution.
+        </p>
+
+        <p>
+            \[
+                \text{Posterior} \propto \text{Likelihood} \times \text{Prior}
+            \]
+            \[
+                p(\theta | x) = \frac{p(x | \theta) p(\theta)}{p(x)}]
+        </p>
+
+        <p>
             The result of Bayesian inference is a credible interval \( C(x) \) such that \( P(\theta \in C(x) | x) = 1 - \alpha \), where \( \alpha \) is the desired level of credibility (e.g., 0.05 for a 95% credible interval).
         </p>
 
-        
         <p>This is inline math: \( E = mc^2 \)</p>
 
         <p>This is display math:</p>
