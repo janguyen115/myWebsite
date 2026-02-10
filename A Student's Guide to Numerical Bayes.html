@@ -58,10 +58,11 @@
 
         <p>
             Without diving too deeply into Frequentist inference, we identify some qualities that raise some concerns in application.
-            Firstly, Frequentist ideology suggests the existence of some true parameter \( \theta^* \) that objectively describes the distribution of the data. 
-            Additionally, Frequentist inference relies on the notion of confidence intervals, which lack axiomatic interpretations in probability calculus.
+            Firstly, Frequentist ideology suggests the existence of some true constant parameter \( \theta^* \) that objectively describes the distribution of the data. 
+            Secondly, Frequentist inference relies on the notion of confidence intervals, which lack axiomatic interpretations in probability calculus.
+            Additionally, the Frequentist approach reduces our analysis to a cross-sectional snapshot of an unknown fixed parameter.
             Bayesian inference addresses these conccerns by treating the parameter as a random variable that is informed by the observed data and by making claims about the distribution of the parameter itself that can be directly derived from the axioms of probability.
-            This branch of ideology follows the structure of Thomas Bayes' concept of a <b>posterior distribution</b> that is dependent on the <b>likelihood</b> of the observed data and some <b>prior distribution</b> that encodes our beliefs about the parameter before observing the data.
+            Furthermore, we will discuss how iterative learning properties can help capture adaptations to our inference that have intuitive extensions to temporal data.            This branch of ideology follows the structure of Thomas Bayes' concept of a <b>posterior distribution</b> that is dependent on the <b>likelihood</b> of the observed data and some <b>prior distribution</b> that encodes our beliefs about the parameter before observing the data.
             The relationship is described by Bayes' theorem, which states that the posterior distribution is proportional to the product of the likelihood and the prior distribution.
         </p>
 
@@ -72,6 +73,9 @@
 
         <p>
             The result of Bayesian inference is a credible interval \( C(x) \) such that \( P(\theta \in C(x) | x) = 1 - \alpha \), where \( \alpha \) is the desired level of credibility (e.g., 0.05 for a 95% credible interval).
+            In addition, Bayesian inference invites iterative learning to the statistical model.
+            By replacing the prior distribution with the most recent posterior distribution, we obtain an adaptive model that reflects our beliefs as new data affirms or contradicts our existing model.
+            A continuously updating model intuitively captures the learning process of the parameter as a random variable that can adapt over time, contrasting the Frequentist interpretation of a cross-sectional snapshot of a fixed parameter.
         </p>
 
         <p>This is inline math: \( E = mc^2 \)</p>
