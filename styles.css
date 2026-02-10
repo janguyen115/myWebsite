@@ -224,6 +224,11 @@ header.visible {
   animation: fadeInDown 1.2s ease-out forwards;
 }
 
+header.scrolled::after.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .nav {
   display: flex;
   justify-content: space-between;
