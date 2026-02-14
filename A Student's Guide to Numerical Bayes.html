@@ -72,6 +72,7 @@
         <p>
             \[  \begin{align}
                 {\color{purple}\text{Posterior}} &= \frac{{\color{blue}\text{Likelihood}} \times {\color{red}\text{Prior}}}{{\color{green}\text{Marginal}}} \nonumber \\
+                &= \frac{{\color{blue}\text{P(data | \theta)}} \times {\color{red}\text{P(\theta)}}}{{\color{green}\text{P(data)}}} \nonumber \\
                 {\color{purple}p(\theta | x)} &= \frac{{\color{blue}L(x | \theta)} {\color{red}p(\theta)}}{{\color{green}p(x)}}, \quad \text{where } L(x | \theta) = \Pi_{i=1}^n f(x_i | \theta) \nonumber \\
                 &= \frac{{\color{blue}L(x | \theta)} {\color{red}p(\theta)}}{{\color{green}\int L(x | \theta) p(\theta) \text d\theta}}, \quad \text{(X, continuous random variable)} \\
                 &= \frac{{\color{blue}L(x | \theta)} {\color{red}p(\theta)}}{{\color{green}\sum L(x | \theta) p(\theta)}}, \quad \text{(X, discrete random variable)} 
