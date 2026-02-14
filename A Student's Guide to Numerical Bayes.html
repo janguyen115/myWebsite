@@ -42,7 +42,7 @@
 
         <p>
             First, we recall the structure of Frequentist inference. 
-            Suppose there exists some unknown true parameter vector \( \theta^* \) that explains the relationship between a random variable \( X \) that follows some distribution \( F \). 
+            Suppose there exists some unknown true parameter vector \( \theta^* \in \Theta \) that explains the relationship between a random variable \( X \) that follows some distribution \( F \). 
             Let \( x = (x_1, \dots, x_n) \in \mathcal{X} \) denote the observed data generated from \( X \) with sample size \( n \). 
         </p>
 
@@ -66,15 +66,16 @@
             Furthermore, we will discuss how iterative learning properties can help capture adaptations to our inference that have intuitive extensions to temporal data.            
             This branch of ideology follows the structure of Thomas Bayes' concept of a <b>posterior distribution</b> that is dependent on the <b>likelihood</b> of the observed data and some <b>prior distribution</b> that encodes our beliefs about the parameter before observing the data.
             A priori information can be sourced from previous studies, expert knowledge, or even subjective beliefs.
-            The relationship is described by Bayes' theorem, which states that the posterior distribution is proportional to the product of the likelihood and the prior distribution.
+            The relationship is described by Bayes' theorem, which states that the posterior distribution is proportional to the product of the likelihood distribution \( L(x | \theta) \) and the prior distribution \( p(\theta) \).
         </p>
 
         <p>
             \[ {\color{purple}\text{Posterior}} = \frac{{\color{blue}\text{Likelihood}} \times {\color{red}\text{Prior}}}{{\color{green}\text{Marginal}}} \]
-            \[  \begin{align*}
-                {\color{purple}p(\theta | x)} &= \frac{{\color{blue}f(x | \theta)} {\color{red}p(\theta)}}{{\color{green}p(x)}} \\
-                &= \frac{{\color{blue}f(x | \theta)} {\color{red}p(\theta)}}{{\color{green}\int f(x | \theta) p(\theta) \text d\theta}}
-                \end{align*}
+            \[  \begin{align}
+                {\color{purple}p(\theta | x)} &= \frac{{\color{blue}L(x | \theta)} {\color{red}p(\theta)}}{{\color{green}p(x)}}, \quad \text{where } L(x | \theta) = \Pi_{i=1}^n f(x_i | \theta) \nonumber \\
+                &= \frac{{\color{blue}L(x | \theta)} {\color{red}p(\theta)}}{{\color{green}\int L(x | \theta) p(\theta) \text d\theta}}, \quad \text{(X, continuous random variable)} \\
+                &= \frac{{\color{blue}L(x | \theta)} {\color{red}p(\theta)}}{{\color{green}\sum L(x | \theta) p(\theta)}}, \quad \text{(X, discrete random variable)} 
+                \end{align}
             \]
             The above relationship includes a normalizing constant \( p(x) \) that ensures the posterior distribution integrates to 1, making it a valid probability distribution. 
             We often call this the marginal (likelihood) distribution.
@@ -88,6 +89,8 @@
             Consequently, we obtain an adaptive model that reflects our beliefs as new data affirms or contradicts our existing model.
             A continuously updating model intuitively captures the learning process of the parameter as a random variable that can adapt over time, contrasting the Frequentist interpretation of a cross-sectional snapshot of a fixed parameter.
         </p>
+
+
 </section>
 
 
