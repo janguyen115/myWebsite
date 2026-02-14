@@ -70,13 +70,14 @@
         </p>
 
         <p>
-            \[  \begin{align}
-                {\color{purple}\text{Posterior}} &= \frac{{\color{blue}\text{Likelihood}} \times {\color{red}\text{Prior}}}{{\color{green}\text{Marginal}}} \nonumber \\
-                {\color{purple}P(\theta | \text{data})} &= \frac{{\color{blue}P(\text{data} | \theta)} \times {\color{red}P(\theta)}}{{\color{green}P(\text{data})}} \nonumber \\
-                {\color{purple}p(\theta | x)} &= \frac{{\color{blue}L(x | \theta)} {\color{red}p(\theta)}}{{\color{green}p(x)}}, \quad \text{where } L(x | \theta) = \prod_{i=1}^n f(x_i | \theta) \nonumber \\
-                &= \frac{{\color{blue}L(x | \theta)} {\color{red}p(\theta)}}{{\color{green}\int L(x \mid \theta)\, p(\theta)\, d\theta}}, \quad \text{(X, continuous random variable)} \\
-                &= \frac{{\color{blue}L(x | \theta)} {\color{red}p(\theta)}}{{\color{green}\sum L(x | \theta) p(\theta)}}, \quad \text{(X, discrete random variable)} 
-                \end{align}
+            \[  \begin{align*}
+                {\color{purple}\text{Posterior}} &= \frac{{\color{blue}\text{Likelihood}} \times {\color{red}\text{Prior}}}{{\color{green}\text{Marginal}}} \\
+                {\color{purple}P(\theta | \text{data})} &= \frac{{\color{blue}P(\text{data} | \theta)} \times {\color{red}P(\theta)}}{{\color{green}P(\text{data})}} \\
+                {\color{purple}p(\theta | x)} &= \frac{{\color{blue}L(x | \theta)} {\color{red}p(\theta)}}{{\color{green}p(x)}}, \quad \text{where } L(x | \theta) = \prod_{i=1}^n f(x_i | \theta) \\
+                &= \begin{cases}
+                        \frac{{\color{blue}L(x | \theta)} {\color{red}p(\theta)}}{{\color{green}\int L(x \mid \theta)\, p(\theta)\, d\theta}} & \text{X is a continuous random variable} \\
+                        \frac{{\color{blue}L(x | \theta)} {\color{red}p(\theta)}}{{\color{green}\sum L(x | \theta) p(\theta)}} & \text{X is a discrete random variable} 
+                \end{align*}
             \]
             The above relationship includes a normalizing constant \( p(x) \) that ensures the posterior distribution integrates to 1, making it a valid probability distribution. 
             We often call this the marginal likelihood or evidence.
