@@ -66,17 +66,17 @@
             Furthermore, we will discuss how iterative learning properties can help capture adaptations to our inference that have intuitive extensions to temporal data.            
             This branch of ideology follows the structure of Thomas Bayes' concept of a <b>posterior distribution</b> that is dependent on the <b>likelihood</b> of the observed data and some <b>prior distribution</b> that encodes our beliefs about the parameter before observing the data.
             A priori information can be sourced from previous studies, expert knowledge, or even subjective beliefs.
-            The relationship is described by Bayes' theorem, which states that the posterior distribution is proportional to the product of the likelihood distribution \( L(x | \theta) \) and the prior distribution \( p(\theta) \).
+            The relationship is described by Bayes' theorem, which states that the posterior distribution is proportional to the product of the likelihood distribution \( L(x | \theta) \) and the prior distribution \( P(\theta) \).
         </p>
 
         <p>
             \[  \begin{align*}
                 {\color{purple}\text{Posterior}} &= \frac{{\color{blue}\text{Likelihood}} \times {\color{red}\text{Prior}}}{{\color{green}\text{Marginal}}} \\
                 {\color{purple}P(\theta | \text{data})} &= \frac{{\color{blue}P(\text{data} | \theta)} \times {\color{red}P(\theta)}}{{\color{green}P(\text{data})}} \\
-                {\color{purple}p(\theta | x)} &= \frac{{\color{blue}L(x | \theta)} {\color{red}p(\theta)}}{{\color{green}p(x)}}, \quad \text{where } L(x | \theta) = \prod_{i=1}^n f(x_i | \theta) \\
+                {\color{purple}P(\theta | x)} &= \frac{{\color{blue}L(x | \theta)} {\color{red}P(\theta)}}{{\color{green}P(x)}}, \quad \text{where } L(x | \theta) = \prod_{i=1}^n f(x_i | \theta) \\
                 &= \begin{cases}
-                        \frac{{\color{blue}L(x | \theta)} {\color{red}p(\theta)}}{{\color{green}\int L(x \mid \theta)\, p(\theta)\, d\theta}} & \text{X is a continuous random variable} \\
-                        \frac{{\color{blue}L(x | \theta)} {\color{red}p(\theta)}}{{\color{green}\sum L(x | \theta) p(\theta)}} & \text{X is a discrete random variable} 
+                        \frac{{\color{blue}L(x | \theta)} {\color{red}p(\theta)}}{{\color{green}\int L(x \mid \theta)\, P(\theta)\, d\theta}} & \text{X is a continuous random variable} \\
+                        \frac{{\color{blue}L(x | \theta)} {\color{red}p(\theta)}}{{\color{green}\sum L(x | \theta) P(\theta)}} & \text{X is a discrete random variable} 
                     \end{cases}
                 \end{align*}
             \]
