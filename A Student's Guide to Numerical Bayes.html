@@ -65,18 +65,24 @@
             Bayesians make claims about the distribution of the parameter itself that can be directly derived from the axioms of probability.
             Furthermore, we will discuss how iterative learning properties can help capture adaptations to our inference that have intuitive extensions to temporal data.            
             This branch of ideology follows the structure of Thomas Bayes' concept of a <b>posterior distribution</b> that is dependent on the <b>likelihood</b> of the observed data and some <b>prior distribution</b> that encodes our beliefs about the parameter before observing the data.
+            A priori information can be sourced from previous studies, expert knowledge, or even subjective beliefs.
             The relationship is described by Bayes' theorem, which states that the posterior distribution is proportional to the product of the likelihood and the prior distribution.
         </p>
 
         <p>
             \[ {\color{purple}\text{Posterior}} = \frac{{\color{blue}\text{Likelihood}} \times {\color{red}\text{Prior}}}{{\color{green}\text{Marginal}}} \]
-            \[ {\color{purple}p(\theta | x)} = \frac{{\color{blue}f(x | \theta)} {\color{red}p(\theta)}}{{\color{green}p(x)}} \]
+            \[  \begin{align*}
+                {\color{purple}p(\theta | x)} &= \frac{{\color{blue}f(x | \theta)} {\color{red}p(\theta)}}{{\color{green}p(x)}} \\
+                &= \frac{{\color{blue}f(x | \theta)} {\color{red}p(\theta)}}{{\color{green}\int f(x | \theta) p(\theta) \text d\theta}}
+                \end{align*}
+            \]
             The above relationship includes a normalizing constant \( p(x) \) that ensures the posterior distribution integrates to 1, making it a valid probability distribution. 
             We often call this the marginal (likelihood) distribution.
         </p>
 
         <p>
-            The goal of Bayesian inference is to obtain a credible interval \( C(x) \) such that \( P(\theta \in C(x) | x) = 1 - \alpha \), where \( \alpha \) is the desired level of credibility (e.g., 0.05 for a 95% credible interval).
+            The goal of Bayesian inference is to obtain a credible interval \( C(x) \) such that \( P(\theta \in C(x) | x) = 1 - \alpha \) under the assumed model, where \( \alpha \) is the desired level of credibility (e.g., 0.05 for a 95% credible interval).
+            Although different choices for the prior distribution can yield different credible intervals, posterior distributions with varying priors converge as sample size increases, which is a desirable property known as <b>asymptotic consistency</b>. <b>NOTE: add some citation here.</b>
             Common methods for obtaining a credible interval, which is often not unique, will be discussed later in the text.
             Bayesian inference invites interative learning to the statistical model by replacing the prior distribution with the most recent posterior distribution.
             Consequently, we obtain an adaptive model that reflects our beliefs as new data affirms or contradicts our existing model.
