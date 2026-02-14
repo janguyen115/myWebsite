@@ -75,12 +75,12 @@
                 {\color{purple}P(\theta | \text{data})} &= \frac{{\color{blue}P(\text{data} | \theta)} \times {\color{red}P(\theta)}}{{\color{green}P(\text{data})}} \\
                 {\color{purple}P(\theta | x)} &= \frac{{\color{blue}L(x | \theta)} {\color{red}P(\theta)}}{{\color{green}P(x)}}, \quad \text{where } L(x | \theta) = \prod_{i=1}^n f(x_i | \theta) \\
                 &= \begin{cases}
-                        \frac{{\color{blue}L(x | \theta)} {\color{red}p(\theta)}}{{\color{green}\int L(x \mid \theta)\, P(\theta)\, d\theta}} & \text{X is a continuous random variable} \\
-                        \frac{{\color{blue}L(x | \theta)} {\color{red}p(\theta)}}{{\color{green}\sum L(x | \theta) P(\theta)}} & \text{X is a discrete random variable} 
+                        \frac{{\color{blue}L(x | \theta)} {\color{red}P(\theta)}}{{\color{green}\int_\theta L(x \mid \theta)\, P(\theta)\, d\theta}} & \text{X is a continuous random variable} \\
+                        \frac{{\color{blue}L(x | \theta)} {\color{red}P(\theta)}}{{\color{green}\sum_\theta L(x | \theta) P(\theta)}} & \text{X is a discrete random variable} 
                     \end{cases}
                 \end{align*}
             \]
-            The above relationship includes a normalizing constant \( p(x) \) that ensures the posterior distribution integrates to 1, making it a valid probability distribution. 
+            The above relationship includes a normalizing constant \( P(x) \) that ensures the posterior distribution integrates to 1, making it a valid probability distribution. 
             We often call this the marginal likelihood or evidence.
         </p>
 
