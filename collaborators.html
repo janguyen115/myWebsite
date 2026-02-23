@@ -36,9 +36,11 @@
 
 <script src="script.js"></script>
 
+<footer id="site-footer"></footer>
+
 <!-- ================= FOOTER SCRIPT ================= -->
 <script>
-  fetch('footer.html')
+  fetch('scripts/footer.html')
     .then(response => response.text())
     .then(data => {
       document.getElementById('site-footer').innerHTML = data;
@@ -48,7 +50,7 @@
 
 <!-- ================= HEADER SCRIPT ================= -->
 <script>
-  fetch('header.html')
+  fetch('scripts/header.html')
     .then(response => response.text())
     .then(data => {
       document.getElementById('site-header').innerHTML = data;
