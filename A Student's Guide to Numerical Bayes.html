@@ -8,9 +8,9 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewpEort" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>A Student's Guide to Numerical Bayes | James A. Nguyen</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
 
@@ -113,13 +113,13 @@
 
 
 
-<script src="script.js"></script>
+<script src="/script.js"></script>
 
 <footer id="site-footer"></footer>
 
 <!-- ================= FOOTER SCRIPT ================= -->
 <script>
-  fetch('scripts/footer.html')
+  fetch('/scripts/footer.html')
     .then(response => response.text())
     .then(data => {
       document.getElementById('site-footer').innerHTML = data;
@@ -129,7 +129,7 @@
 
 <!-- ================= HEADER SCRIPT ================= -->
 <script>
-  fetch('scripts/header.html')
+  fetch('/scripts/header.html')
     .then(response => response.text())
     .then(data => {
       document.getElementById('site-header').innerHTML = data;
