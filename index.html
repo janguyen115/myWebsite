@@ -3,7 +3,7 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
 
-<link rel="icon" href="/images/favicon.ico" type="image/x-icon">
+<link rel="icon" href="images/favicon.ico" type="image/x-icon">
 
 <script>
   window.addEventListener("scroll", () => {
@@ -28,14 +28,14 @@
 
   <!-- ================= HERO ================= -->
 <section class="hero">
-  <img src="/images/hero_center_image_name.png" alt="Hero graphic" class="hero-img">
+  <img src="images/hero_center_image_name.png" alt="Hero graphic" class="hero-img">
 </section>
 
   <!-- ================= ABOUT ================= -->
   <section id="about" class="section">
     <div class="container">
     <h1>About</h1>
-    <img src="/images/about_banner.jpg" alt="about banner" class="img">
+    <img src="images/about_banner.jpg" alt="about banner" class="img">
     <p>
       Hello! I'm James Nguyen, a recent graduate from the University of California, Irvine with a B.S. Applied Mathematics. I am pursuing a Ph.D. in Statistics under the advisement of Dr. __________, with whom I am focused on answering problems related to addressing computational limitations in Bayesian inference. I am especially interested in developing efficient inference methods for variational methods applied to high-dimensional data, with applications in machine learning.
     </p>
@@ -53,21 +53,21 @@
     <div class="container">
     <div class="grid">
       <div class="card">
-        <a href="/projects/spectral_sampling.html">
+        <a href="projects/spectral_sampling.html">
           <h3>Spectrally-Assisted Sampling for Randomized Kaczmarz</h3>
           <p>Aiming to address inefficiencies in the standard random sampling distribution for Randomized Kaczmarz and other related algorithms, we explore alternative approaches to promote faster, more reliable convergence on an ill-conditioned subset of overdetermined systems of linear inequalities.</p>
         </a> 
       </div>
 
       <div class="card">
-        <a href="/projects/hiv_tb.html">
+        <a href="projects/hiv_tb.html">
           <h3>On the Effect of HIV on Tuberculosis Treatment Outcomes in Botswana, Adjusted for Universal Access to Antiretroviral Therapy (ART)</h3>
           <p>An epidemiological study on the impact of public health policy in Gaborone, Botswana in response to the high prevalence of HIV and its effect on Tuberculosis treatment outcomes.</p>
         </a>
       </div>
 
       <div class="card">
-        <a href="/projects/hippocampal_replay.html">
+        <a href="projects/hippocampal_replay.html">
           <h3>Hippocampal Replay of Nonspatial Sequences of Events</h3>
           <p>An exploratory analysis on the neuronal decoding process of odor presentations in the hippocampus; a look into the brain and how understanding it could teach us about treating and/or identifying cognitive diseases related to working memory.</p>
         </a>
@@ -83,34 +83,34 @@
     <h1>Contact</h1>
 
     <p>
-      <img src="/images/gmail_icon.png" alt="gmail icon" class="icon-img">
+      <img src="images/gmail_icon.png" alt="gmail icon" class="icon-img">
       [lastname] dot [firstname] 115 at gmail dot com
     </p>
 
     <p>
       <a href="https://www.linkedin.com/in/jamesanguyen115" class="contact-link" target="_blank">
-        <img src="/images/linkedin_icon.png" alt="linkedin icon" class="icon-img">
+        <img src="images/linkedin_icon.png" alt="linkedin icon" class="icon-img">
         www.linkedin.com/in/jamesanguyen115
       </a>
     </p>
 
     <p>
       <a href="https://www.instagram.com/jamesanguyen/" class="contact-link" target="_blank">
-        <img src="/images/instagram_icon.png" alt="instagram icon" class="icon-img">
+        <img src="images/instagram_icon.png" alt="instagram icon" class="icon-img">
         www.instagram.com/jamesanguyen
       </a>
     </p>
 
     <p>
       <a href="https://github.com/janguyen115" class="contact-link" target="_blank">
-        <img src="/images/github_icon.png" alt="github icon" class="icon-img">
+        <img src="images/github_icon.png" alt="github icon" class="icon-img">
         github.com/janguyen115
       </a>
     </p>
 
     <p>
       <a href="https://arxiv.org/search/math?searchtype=author&query=Nguyen,+J" class="contact-link" target="_blank">
-        <img src="/images/arxiv_icon.png" alt="arxiv icon" class="icon-img">
+        <img src="images/arxiv_icon.png" alt="arxiv icon" class="icon-img">
         arxiv
       </a>
     </p>
@@ -118,13 +118,13 @@
     </div>
   </section>
 
-<script src="/script.js"></script>
+<script src="/myWebsite/script.js"></script>
 
 <footer id="site-footer"></footer>
 
 <!-- ================= FOOTER SCRIPT ================= -->
 <script>
-  fetch('/scripts/footer.html')
+  fetch('/myWebsite/scripts/footer.html')
     .then(response => response.text())
     .then(data => {
       document.getElementById('site-footer').innerHTML = data;
@@ -134,7 +134,7 @@
 
 <!-- ================= LOAD HEADER ================= -->
 <script>
-  fetch('/scripts/header.html')
+  fetch('/myWebsite/scripts/header.html')
     .then(response => response.text())
     .then(data => {
       document.getElementById('site-header').innerHTML = data;
