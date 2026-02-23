@@ -32,13 +32,17 @@
 </div>
 
 
-<!-- ================= FOOTER ================= -->
-<footer>
-  <p>© 2026 James A. Nguyen; Last updated January 2026</p>
-</footer>
-
 <script src="script.js"></script>
-<!-- ================= END FOOTER ================= -->
+
+<!-- ================= FOOTER SCRIPT ================= -->
+<script>
+  fetch('footer.html')
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById('site-footer').innerHTML = data;
+    });
+</script>
+<!-- ================= END FOOTER SCRIPT ================= -->
 
 <!-- ================= HEADER SCRIPT ================= -->
 <script>
