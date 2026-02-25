@@ -340,7 +340,7 @@ header.scrolled::after.visible {
   justify-content: center;
   align-items: center;
   padding-top: 6rem;   /* increase this */
-  padding-bottom: 3rem;
+  padding-bottom: 1rem;
 }
 
 .hero-img {
