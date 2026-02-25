@@ -288,7 +288,7 @@ header.scrolled::after.visible {
 }
 
 /* Reveal on hover */
-.hamburger:hover .dropdown {
+.hamburger.active .dropdown {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;

@@ -21,4 +21,24 @@
   </div>
 </header>
 
-<! add header scroll after!>
+<script>
+(function() {
+
+  function initHamburger() {
+    const hamburger = document.querySelector(".hamburger");
+    if (!hamburger) return;
+
+    hamburger.addEventListener("click", function(e) {
+      e.stopPropagation();
+      hamburger.classList.toggle("active");
+    });
+
+    document.addEventListener("click", function() {
+      hamburger.classList.remove("active");
+    });
+  }
+
+  initHamburger();
+
+})();
+</script>
