@@ -562,3 +562,11 @@ footer {
   max-width: 80%;
 }
 
+.references {
+  max-width: 800px;
+  line-height: 1.6;
+}
+
+.references li {
+  margin-bottom: 12px;
+}
