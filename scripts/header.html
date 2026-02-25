@@ -21,12 +21,12 @@
   </div>
 </header>
 
-<script>
-(function() {
+<<script>
+setTimeout(function() {
 
-  function initHamburger() {
-    const hamburger = document.querySelector(".hamburger");
-    if (!hamburger) return;
+  const hamburger = document.querySelector(".hamburger");
+
+  if (hamburger) {
 
     hamburger.addEventListener("click", function(e) {
       e.stopPropagation();
@@ -36,9 +36,8 @@
     document.addEventListener("click", function() {
       hamburger.classList.remove("active");
     });
+
   }
 
-  initHamburger();
-
-})();
+}, 100);
 </script>
