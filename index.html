@@ -134,11 +134,28 @@
 
 <!-- ================= LOAD HEADER ================= -->
 <script>
-  fetch('/myWebsite/scripts/header.html')
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById('site-header').innerHTML = data;
-    });
+fetch('/myWebsite/scripts/header.html')
+  .then(response => response.text())
+  .then(data => {
+    document.getElementById('site-header').innerHTML = data;
+
+    // Initialize hamburger AFTER header loads
+    const hamburger = document.querySelector(".hamburger");
+
+    if (hamburger) {
+
+      hamburger.addEventListener("click", function(e) {
+        e.stopPropagation();
+        hamburger.classList.toggle("active");
+      });
+
+      document.addEventListener("click", function() {
+        hamburger.classList.remove("active");
+      });
+
+    }
+
+  });
 </script>
 
 </body>
