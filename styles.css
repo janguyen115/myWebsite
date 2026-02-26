@@ -526,6 +526,7 @@ footer {
 
 .text { 
   margin: 4rem auto;
+  margin-bottom: 0rem;
   padding: 1rem 1rem; 
   text-align: left; 
   display: flex; 
