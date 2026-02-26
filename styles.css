@@ -158,7 +158,9 @@ iframe {
 }
 
 .section {
-  margin: 4rem auto;
+  margin-left: 4rem;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
   padding: 2rem 3rem;
   text-align: center;
   display: flex;
