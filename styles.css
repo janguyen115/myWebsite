@@ -32,6 +32,20 @@ h1, h2, h3, h4, h5, h6 {
   color: #79291A;  /* headings color */
 }
 
+.section {
+  margin-left: 4rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding: 2rem 1rem;
+  max-width: var(--max-width);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+}
+
 .section h1{
   font-size: 3rem;
   margin-bottom: 1.5rem
@@ -156,19 +170,6 @@ a:hover {
 iframe {
   opacity: 1 !important;
   visibility: visible !important;
-}
-
-.section {
-  margin-left: 4rem;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-  padding: 2rem 1rem;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
 }
 
 .section img {
