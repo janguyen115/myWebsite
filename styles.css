@@ -89,9 +89,9 @@ h1, h2, h3, h4, h5, h6 {
    ========================= */
 
 :root {
-  --bg-main: #f9f8f5;
-  --bg-card: #f9f8f5ff;
-  --bg-accent: #f9f8f5ff;
+  --bg-main: #fffdf8;
+  --bg-card: #fffdf8;
+  --bg-accent: #fffdf8;
 
   --text-main: #703500;
   --text-muted: #a73000;
