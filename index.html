@@ -8,6 +8,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Libre+Caslon+Text:ital@0;1&family=Archivo:wght@400;500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <script>
+    window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] }, startup: { typeset: false } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
   <style>
     html, body, #root { margin: 0; padding: 0; min-height: 100%; background: #f4f1ea; }
     * { box-sizing: border-box; }
@@ -133,11 +137,41 @@ window.JN_DATA = {
       keywords: ['hippocampus', 'replay', 'neural decoding', 'working memory'],
     },
   ],
+  collaboratorSections: [
+    {
+      heading: 'Research Advisors',
+      members: [
+        { name: 'Dr. Erik Sudderth',     inst: 'UC Irvine, Computer Science',          note: 'Advisor, Bayesian ML' },
+        { name: 'Dr. Stephan Mandt',     inst: 'UC Irvine, Computer Science',          note: 'Co-Advisor, Variational Inference' },
+        { name: 'Dr. Anna Ma',           inst: 'Claremont Graduate University',        note: 'Professor of Mathematics' },
+        { name: 'Dr. Babak Shahbaba',    inst: 'UC Irvine, Statistics',               note: 'Professor of Statistics · Chancellor\'s Fellow' },
+        { name: 'Dr. Volodymyr Minin',   inst: 'UC Irvine, Statistics',               note: 'Professor of Statistics' },
+        { name: 'Dr. Norbert Fortin',    inst: 'UC Irvine, CNLM',                     note: 'Associate Professor of Neurobiology and Behavior' },
+      ],
+    },
+    {
+      heading: 'Undergraduate Collaborators',
+      members: [
+        { name: 'Adityakrishnan Radhakrishnan', inst: 'UC Irvine',               note: 'B.S. Mathematics' },
+        { name: 'Oleg Presnyakov',              inst: 'University of Michigan',   note: 'Ph.D. student, Machine Learning' },
+        { name: 'Azahdeh Baniasad',             inst: 'UC Los Angeles',           note: 'Statistics and Data Science' },
+        { name: 'Emily Tian',                   inst: 'UC Irvine',                note: 'Ph.D. student, Statistics' },
+        { name: 'Siheng Chao',                  inst: 'University of Pittsburgh', note: 'Statistics' },
+      ],
+    },
+    {
+      heading: 'Graduate Collaborators',
+      members: [
+        { name: 'Zhishun Yang',      inst: 'UC Irvine', note: 'Ph.D. candidate, Mathematical and Computational Systems Biology' },
+        { name: 'Jessalyn Sebastian', inst: 'UC Irvine', note: 'Ph.D. candidate, Statistics' },
+      ],
+    },
+  ],
   collaborators: [
-    { name: 'Dr. Erik Sudderth',  role: 'Advisor, Bayesian ML',            inst: 'UC Irvine, Computer Science' },
+    { name: 'Dr. Erik Sudderth',  role: 'Advisor, Bayesian ML',             inst: 'UC Irvine, Computer Science' },
     { name: 'Dr. Stephan Mandt',  role: 'Co-Advisor, Variational Inference', inst: 'UC Irvine, Computer Science' },
-    { name: 'Dr. Norbert Fortin', role: 'Hippocampal replay',                   inst: 'UC Irvine, CNLM' },
-    { name: 'Dr. Babak Shahbaba', role: 'Statistical neuroscience',             inst: 'UC Irvine, Statistics' },
+    { name: 'Dr. Norbert Fortin', role: 'Hippocampal replay',                inst: 'UC Irvine, CNLM' },
+    { name: 'Dr. Babak Shahbaba', role: 'Statistical neuroscience',          inst: 'UC Irvine, Statistics' },
   ],
   cv: {
     education: [
@@ -859,11 +893,10 @@ function InstructionBlueprint({ nav }) {
         <div style={{ marginTop: 48 }}>
           <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 16 }}>Table of contents</div>
           {toc.map((c, i) => (
-            <div key={c.n} style={{ display: 'grid', gridTemplateColumns: '60px 260px 1fr auto', padding: '16px 0', borderBottom: i < toc.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none', alignItems: 'baseline', gap: 20 }}>
+            <div key={c.n} style={{ display: 'grid', gridTemplateColumns: '60px 260px 1fr', padding: '16px 0', borderBottom: i < toc.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none', alignItems: 'baseline', gap: 20 }}>
               <span style={{ fontFamily: fonts.serif, fontSize: 18, color: JN.red, fontStyle: 'italic' }}>{c.n}.</span>
               <span style={{ fontFamily: fonts.serif, fontSize: 20, color: JN.ink }}>{c.title}</span>
               <span style={{ fontFamily: fonts.serif, fontSize: 15, color: JN.inkSoft, lineHeight: 1.5 }}>{c.desc}</span>
-              <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 13, color: JN.mute }}>p. {i * 7 + 3}</span>
             </div>
           ))}
         </div>
@@ -895,10 +928,30 @@ function InstructionBlueprint({ nav }) {
 // ─── Guide ────────────────────────────────────────────────────────────────────
 function GuideBlueprint({ nav }) {
   const fonts = B_FONTS;
+  const ref = React.useRef(null);
+
+  React.useEffect(() => {
+    if (window.MathJax && ref.current) {
+      window.MathJax.typesetPromise([ref.current]).catch(() => {});
+    }
+  }, []);
+
+  const P = ({ children, style }) => (
+    <p style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 1.8, color: JN.inkSoft, margin: '0 0 24px', ...style }}>{children}</p>
+  );
+  const Eq = ({ children }) => (
+    <div style={{ margin: '24px 0', overflowX: 'auto', textAlign: 'center' }}>{children}</div>
+  );
+
   return (
     <div style={{ ...BG(), color: JN.ink, fontFamily: fonts.serif, minHeight: '100%' }}>
       <TopNav fonts={fonts} nav={nav} active="instruction" />
-      <div style={{ maxWidth: 760, margin: '0 auto', padding: '80px 72px' }}>
+      <div ref={ref} style={{ maxWidth: 760, margin: '0 auto', padding: '80px 72px' }}>
+        <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: JN.mute, marginBottom: 32 }}>
+          <button onClick={() => nav('instruction')} style={{ all: 'unset', cursor: 'pointer', color: JN.red }}>Instruction</button>
+          <span style={{ margin: '0 8px' }}>/</span>
+          <span>A Student&rsquo;s Guide to Numerical Bayes</span>
+        </div>
         <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.mute, marginBottom: 14 }}>Volume I, a draft</div>
         <h1 style={{ fontFamily: fonts.serif, fontSize: 'clamp(40px, 6vw, 64px)', lineHeight: 1.05, fontWeight: 400, letterSpacing: '-0.01em', margin: '0 0 20px', color: JN.ink }}>
           A Student&rsquo;s Guide to <em>Numerical Bayes</em>
@@ -907,26 +960,81 @@ function GuideBlueprint({ nav }) {
           with worked examples, after Turkman, Paulino &amp; M&uuml;ller.
         </p>
         <SashikoRule color={JN.red} opacity={1} width={80} my={8} />
-        <p style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 1.75, color: JN.inkSoft, margin: '28px 0 40px' }}>
-          This is a reading companion, not a textbook. I wrote it while working through <em>Computational Bayesian Statistics, An Introduction</em>, and kept it public so that another student starting the same book might have a slightly shorter road.
-        </p>
+        <P style={{ margin: '28px 0 40px' }}>
+          This is a reading companion, not a textbook. I wrote it while working through <em>Computational Bayesian Statistics, An Introduction</em>, and kept it public so that another student starting the same book might have a slightly shorter road. This guide is a work in progress and likely contains mistakes; please <a href="mailto:nguyen.james115@gmail.com" style={{ color: JN.red }}>write to me</a> with any corrections.
+        </P>
+
         <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 16 }}>Contents</div>
         {[
-          ['I',   'Bayes, in brief',                  3],
-          ['II',  'Monte Carlo & importance sampling', 10],
-          ['III', 'Metropolis–Hastings',           17],
-          ['IV',  'Gibbs sampling',                    24],
-          ['V',   'Variational methods',               31],
-          ['VI',  'Examples & errata',                 38],
-        ].map(([n, title, pg]) => (
-          <div key={n} style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 0', borderBottom: `1px dashed ${JN.ruleSoft}`, fontFamily: fonts.serif, fontSize: 18, color: JN.ink }}>
-            <span><span style={{ color: JN.red, fontStyle: 'italic', marginRight: 16 }}>{n}.</span>{title}</span>
-            <span style={{ fontStyle: 'italic', color: JN.mute, fontSize: 14 }}>p. {pg}</span>
+          ['I',   'Bayes, in brief'],
+          ['II',  'Monte Carlo & importance sampling'],
+          ['III', 'Metropolis–Hastings'],
+          ['IV',  'Gibbs sampling'],
+          ['V',   'Variational methods'],
+          ['VI',  'Examples & errata'],
+        ].map(([n, title]) => (
+          <div key={n} style={{ padding: '14px 0', borderBottom: `1px dashed ${JN.ruleSoft}`, fontFamily: fonts.serif, fontSize: 18, color: JN.ink }}>
+            <span style={{ color: JN.red, fontStyle: 'italic', marginRight: 16 }}>{n}.</span>{title}
           </div>
         ))}
-        <div style={{ marginTop: 48, padding: '24px 0', textAlign: 'center', fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.mute }}>
-          &middot; body text in the PDF build &middot;
+
+        {/* ── Chapter I ── */}
+        <div style={{ marginTop: 64, borderTop: `1px solid ${JN.rule}`, paddingTop: 48 }}>
+          <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.red, marginBottom: 8 }}>Chapter I</div>
+          <h2 style={{ fontFamily: fonts.serif, fontSize: 36, fontWeight: 400, letterSpacing: '-0.01em', margin: '0 0 32px', color: JN.ink }}>
+            Bayes, in brief
+          </h2>
+
+          <P>
+            There are two major ideologies that dominate modern statistics: <strong>Frequentist</strong> (Classical) and <strong>Bayesian</strong> statistics. Throughout this chapter we discuss how Thomas Bayes&rsquo; perspective contrasts the assumptions and interpretations of the more commonly taught Frequentist approach.
+          </P>
+
+          <P>
+            First, recall the structure of Frequentist inference. Suppose there exists some unknown true parameter vector {'\\( \\theta^* \\in \\Theta \\)'} that explains the relationship between a random variable {'\\( X \\)'} following some distribution {'\\( F \\)'}. Let {'\\( x = (x_1, \\dots, x_n) \\in \\mathcal{X} \\)'} denote the observed data generated from {'\\( X \\)'} with sample size {'\\( n \\)'}.
+          </P>
+
+          <Eq>{'\\[ X \\sim F(\\theta^*), \\quad x = (x_1, \\dots, x_n) \\in \\mathcal{X} \\]'}</Eq>
+
+          <P>
+            Frequentist inference quantifies the probability of observing a sample as extreme or more extreme than {'\\( x \\)'} under a hypothesized distribution {'\\( F \\)'}. For some hypothesized parameter {'\\( \\theta_0 \\)'}, we are interested in the <em>frequency</em> of obtaining a sample as extreme as our observed data over many repeated samples. This is the inspiration for the name &ldquo;Frequentist,&rdquo; and it yields a confidence interval for {'\\( \\theta \\)'} believed to contain the true parameter {'\\( \\theta^* \\)'} with some confidence level.
+          </P>
+
+          <P>
+            Frequentist ideology assumes the existence of a true constant parameter {'\\( \\theta^* \\)'} that objectively describes the distribution of the data, and it relies on confidence intervals that lack axiomatic interpretations in probability calculus. Bayesian inference addresses these concerns by treating the parameter as a <em>random variable</em> informed by the observed data. Bayesians make claims about the distribution of the parameter itself, derived directly from the axioms of probability, and iterative learning allows the model to adapt as new data affirms or contradicts prior beliefs.
+          </P>
+
+          <P>
+            This branch of inference follows Thomas Bayes&rsquo; concept of a <strong>posterior distribution</strong> dependent on the <strong>likelihood</strong> of the observed data and a <strong>prior distribution</strong> encoding beliefs about the parameter before any data is seen. A priori information may be sourced from previous studies, expert knowledge, or subjective belief. Bayes&rsquo; theorem states:
+          </P>
+
+          <Eq>{`\\[
+            \\begin{align*}
+              {\\color{#7a1a1a}\\text{Posterior}} &= \\frac{{\\color{#2b3f6b}\\text{Likelihood}} \\times {\\color{#5e1515}\\text{Prior}}}{{\\color{#6e655a}\\text{Marginal}}} \\\\
+              {\\color{#7a1a1a}P(\\theta \\mid x)} &= \\frac{{\\color{#2b3f6b}L(x \\mid \\theta)}\\,{\\color{#5e1515}P(\\theta)}}{{\\color{#6e655a}P(x)}}, \\quad L(x \\mid \\theta) = \\prod_{i=1}^n f(x_i \\mid \\theta) \\\\
+              &= \\begin{cases}
+                \\dfrac{{\\color{#2b3f6b}L(x \\mid \\theta)}\\,{\\color{#5e1515}P(\\theta)}}{{\\color{#6e655a}\\int_\\theta L(x \\mid \\theta)\\,P(\\theta)\\,d\\theta}} & X \\text{ continuous} \\\\[10pt]
+                \\dfrac{{\\color{#2b3f6b}L(x \\mid \\theta)}\\,{\\color{#5e1515}P(\\theta)}}{{\\color{#6e655a}\\sum_\\theta L(x \\mid \\theta)\\,P(\\theta)}} & X \\text{ discrete}
+              \\end{cases}
+            \\end{align*}
+          \\]`}</Eq>
+
+          <P>
+            The normalizing constant {'\\( P(x) \\)'} ensures the posterior integrates to 1, making it a valid probability distribution. We often call it the <em>marginal likelihood</em> or <em>evidence</em>.
+          </P>
+
+          <P>
+            The goal of Bayesian inference is to obtain a credible interval {'\\( C(x) \\)'} such that {'\\( P(\\theta \\in C(x) \\mid x) = 1 - \\alpha \\)'} under the assumed model. Although different prior choices yield different credible intervals, posterior distributions with varying priors converge as sample size increases&mdash;a desirable property known as <strong>asymptotic consistency</strong>. Methods for constructing credible intervals, which are often not unique, will be discussed later in the text.
+          </P>
+
+          <P>
+            Bayesian inference also invites iterative learning: replacing the prior with the most recent posterior yields an adaptive model that reflects accumulated beliefs as new data arrives. This contrasts sharply with the Frequentist interpretation of a fixed, cross-sectional parameter estimate.
+          </P>
         </div>
+
+        <div style={{ marginTop: 56, padding: '20px 0', fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.mute, textAlign: 'center', borderTop: `1px dashed ${JN.ruleSoft}` }}>
+          Chapters II&ndash;VI in progress.
+        </div>
+
         <div style={{ marginTop: 24, textAlign: 'center' }}>
           <button onClick={() => nav('instruction')} style={{ all: 'unset', cursor: 'pointer', fontFamily: fonts.serif, fontStyle: 'italic', color: JN.red, fontSize: 16 }}>
             &larr; back to instruction
@@ -1003,7 +1111,7 @@ function CVBlueprint({ nav }) {
 // ─── Collaborators ────────────────────────────────────────────────────────────
 function CollaboratorsBlueprint({ nav }) {
   const fonts = B_FONTS;
-  const L = window.JN_DATA;
+  const sections = window.JN_DATA.collaboratorSections;
   return (
     <div style={{ ...BG(), color: JN.ink, fontFamily: fonts.serif, minHeight: '100%', position: 'relative' }}>
       <TopNav fonts={fonts} nav={nav} active="collaborators" />
@@ -1014,17 +1122,21 @@ function CollaboratorsBlueprint({ nav }) {
           People I&rsquo;ve had the fortune to work with.
         </h1>
         <SashikoRule color={JN.red} opacity={1} />
-        <div style={{ marginTop: 8 }}>
-          {L.collaborators.map((c, i) => (
-            <div key={c.name} style={{ display: 'grid', gridTemplateColumns: '40px 1fr 1fr 1fr', padding: '22px 0', borderBottom: i < L.collaborators.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none', alignItems: 'baseline', gap: 20 }}>
-              <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.red }}>{i + 1}.</span>
-              <span style={{ fontFamily: fonts.serif, fontSize: 22, color: JN.ink }}>{c.name}</span>
-              <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute }}>{c.role}</span>
-              <span style={{ fontFamily: fonts.serif, fontSize: 16, color: JN.inkSoft }}>{c.inst}</span>
+        {sections.map((sec, si) => (
+          <div key={sec.heading} style={{ marginTop: si === 0 ? 8 : 48 }}>
+            <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: JN.muteCool, marginBottom: 4, paddingTop: si > 0 ? 0 : 0 }}>
+              {sec.heading}
             </div>
-          ))}
-        </div>
-        <p style={{ fontFamily: fonts.serif, fontSize: 17, color: JN.inkSoft, fontStyle: 'italic', marginTop: 40, maxWidth: 720, lineHeight: 1.6 }}>
+            {sec.members.map((c, i) => (
+              <div key={c.name} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '18px 0', borderBottom: `1px dashed ${JN.ruleSoft}`, alignItems: 'baseline', gap: 20 }}>
+                <span style={{ fontFamily: fonts.serif, fontSize: 20, color: JN.ink }}>{c.name}</span>
+                <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute }}>{c.note}</span>
+                <span style={{ fontFamily: fonts.serif, fontSize: 15, color: JN.inkSoft }}>{c.inst}</span>
+              </div>
+            ))}
+          </div>
+        ))}
+        <p style={{ fontFamily: fonts.serif, fontSize: 17, color: JN.inkSoft, fontStyle: 'italic', marginTop: 48, maxWidth: 720, lineHeight: 1.6 }}>
           Collaboration is the quiet engine of academic work. If you think there&rsquo;s a useful overlap with what you&rsquo;re working on, <a href="mailto:nguyen.james115@gmail.com" style={{ color: JN.red }}>please write</a>.
         </p>
       </section>
