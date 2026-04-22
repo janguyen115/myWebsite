@@ -1,59 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
-<link rel="icon" href="/myWebsite/images/favicon.ico" type="image/x-icon">
-
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Curriculum Vitae | James A. Nguyen</title>
-  <link rel="stylesheet" href="/myWebsite/styles.css" />
+<head><meta charset="UTF-8"><title>Redirecting…</title>
+<script>window.location.replace('index.html#cv');</script>
 </head>
-<body>
-
-<header id="site-header"></header>
-
-<div class="container">
-    <h1>Curriculum Vitae</h1>
-
-    <iframe
-        src="/myWebsite/files/nguyenJames_cv.pdf"
-        width="100%"
-        height="900px"
-        style="border:none;">
-    </iframe>
-
-
-    <a href="/myWebsite/files/nguyenJames_cv.pdf" download class="btn">
-        Download PDF
-    </a>
-</div>
-
-
-<script src="/myWebsite/script.js"></script>
-
-<footer id="site-footer"></footer>
-
-<!-- ================= FOOTER SCRIPT ================= -->
-<script>
-  fetch('/myWebsite/scripts/footer.html')
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById('site-footer').innerHTML = data;
-    });
-</script>
-<!-- ================= END FOOTER SCRIPT ================= -->
-
-<!-- ================= HEADER SCRIPT ================= -->
-<script>
-  fetch('/myWebsite/scripts/header.html')
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById('site-header').innerHTML = data;
-    });
-</script>
-<!-- ================= END HEADER SCRIPT ================= -->
-
-</body>
+<body></body>
 </html>

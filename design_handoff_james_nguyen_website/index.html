@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>James A. Nguyen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Libre+Caslon+Text:ital@0;1&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Spectral:ital,wght@0,400;0,500;1,400&family=Archivo:wght@400;500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; padding: 0; background: #f4f1ea; }
+    * { box-sizing: border-box; }
+
+    .tweaks-panel {
+      position: fixed; right: 24px; bottom: 24px; z-index: 1000;
+      background: #fffdf7; color: #1a1a1c; padding: 16px 18px;
+      border: 1px solid #cec8bb; border-radius: 3px;
+      font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 11px;
+      letter-spacing: 0.08em; box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      min-width: 280px;
+      display: none;
+    }
+    .tweaks-panel.visible { display: block; }
+    .tweaks-panel h4 { margin: 0 0 12px; font-family: "Libre Caslon Text", Georgia, serif; font-size: 14px; font-weight: 400; letter-spacing: 0.04em; color: #7a1a1a; }
+    .tweaks-row { margin-bottom: 10px; }
+    .tweaks-row:last-child { margin-bottom: 0; }
+    .tweaks-label { display: block; margin-bottom: 6px; color: #6e655a; text-transform: uppercase; }
+    .tweaks-opts { display: flex; flex-wrap: wrap; gap: 4px; }
+    .tweaks-opts button {
+      all: unset; cursor: pointer; padding: 5px 10px; border: 1px solid #cec8bb;
+      font-family: inherit; font-size: 10px; letter-spacing: 0.1em; color: #1a1a1c;
+      text-transform: uppercase; background: transparent;
+    }
+    .tweaks-opts button.active { background: #7a1a1a; color: #fffdf7; border-color: #7a1a1a; }
+    .tweaks-opts button:hover:not(.active) { background: #f4f1ea; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" data-presets="env,react">
+
+// ============ shared/tokens.jsx ============
+// Shared design tokens for the Nguyen website redesign explorations.
+// Palette: neutral paper/bone base, oxblood/iron-red dominant, muted indigo secondary.
+
+window.JN_TOKENS = {
+  // Bone / paper neutrals
+  paper: '#f4f1ea',       // primary bg
+  paperWarm: '#efeadf',   // alt bg
+  paperCool: '#edeae3',   // cooler alt
+  ink: '#1a1a1c',         // near-black body
+  inkSoft: '#2c2a28',
+  mute: '#6e655a',        // muted warm gray
+  muteCool: '#5a5c62',    // muted cool gray
+  rule: '#cec8bb',        // rule lines
+  ruleSoft: '#e2dccf',
+
+  // Oxblood red (deep iron-red)
+  red: '#7a1a1a',
+  redInk: '#5e1515',
+  redSoft: '#a23d32',
+  redTint: '#e8d6d0',
+
+  // Muted indigo secondary (blueprint-ish but toned down)
+  blue: '#2b3f6b',
+  blueSoft: '#4d6a9a',
+  blueTint: '#d3dbe8',
+};
+
+// Graph paper + sashiko textures as data URIs (intensity 1 per user prefs — very subtle)
+window.JN_TEXTURES = {
+  graphPaper: (opacity = 0.04, size = 24, color = '#6e655a') => {
+    const c = encodeURIComponent(color);
+    return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}'%3E%3Cpath d='M ${size} 0 L 0 0 0 ${size}' fill='none' stroke='${c}' stroke-width='0.5' opacity='${opacity}'/%3E%3C/svg%3E")`;
+  },
+  sashikoHitomezashi: (color = '#7a1a1a', opacity = 0.5) => {
+    // small vertical dashed line — used as a tiny repeating accent
+    const c = encodeURIComponent(color);
+    return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M6 0 V4 M6 6 V10' stroke='${c}' stroke-width='1' opacity='${opacity}'/%3E%3C/svg%3E")`;
+  },
+  // Horizontal sashiko running stitch — hand-drawn feel inspired by loose District-Vision-style linework.
+  // Each stitch is a curved path with per-stitch wobble, pressure variation (stroke-width),
+  // and small ink-bleed dots at terminations.
+  sashikoRule: (color = '#7a1a1a', opacity = 0.55) => {
+    const c = encodeURIComponent(color);
+    // Tile: 200x12. Center y ≈ 6.
+    const stitches = [
+      { x: 2,   len: 12, o: 0.9,  sw: 1.4, ty: 5.6, wob: 0.6,  pull: -0.3 },
+      { x: 20,  len: 9,  o: 0.7,  sw: 1.0, ty: 6.3, wob: -0.4, pull: 0.2 },
+      { x: 36,  len: 14, o: 0.95, sw: 1.6, ty: 5.7, wob: 0.8,  pull: -0.5 },
+      { x: 58,  len: 8,  o: 0.65, sw: 0.9, ty: 6.4, wob: -0.5, pull: 0.3 },
+      { x: 72,  len: 13, o: 0.88, sw: 1.3, ty: 5.9, wob: 0.5,  pull: -0.2 },
+      { x: 92,  len: 10, o: 0.75, sw: 1.1, ty: 6.1, wob: -0.6, pull: 0.4 },
+      { x: 108, len: 15, o: 0.93, sw: 1.5, ty: 5.8, wob: 0.7,  pull: -0.4 },
+      { x: 130, len: 9,  o: 0.7,  sw: 1.0, ty: 6.2, wob: -0.3, pull: 0.2 },
+      { x: 146, len: 12, o: 0.85, sw: 1.3, ty: 6.0, wob: 0.5,  pull: -0.3 },
+      { x: 164, len: 8,  o: 0.68, sw: 0.95,ty: 6.3, wob: -0.4, pull: 0.1 },
+      { x: 178, len: 13, o: 0.88, sw: 1.35,ty: 5.9, wob: 0.6,  pull: -0.3 },
+    ];
+    // Build a curved path for each stitch — quadratic bezier w/ a wobble control point.
+    // Start and end y are slightly offset (handheld pull); control point adds the curvy wobble.
+    const strokes = stitches.map(s => {
+      const x1 = s.x;
+      const y1 = s.ty + s.pull * 0.4;
+      const x2 = s.x + s.len;
+      const y2 = s.ty - s.pull * 0.4;
+      const cx = s.x + s.len * 0.5;
+      const cy = (y1 + y2) / 2 + s.wob;
+      return `%3Cpath d='M${x1} ${y1.toFixed(2)} Q${cx.toFixed(2)} ${cy.toFixed(2)} ${x2} ${y2.toFixed(2)}' stroke='${c}' stroke-width='${s.sw}' stroke-linecap='round' fill='none' opacity='${(s.o * opacity).toFixed(2)}'/%3E`;
+    }).join('');
+    // Ink-bleed dots at stitch endpoints — tiny, low opacity
+    const dots = stitches.map(s => {
+      const r1 = (s.sw * 0.7).toFixed(2);
+      const r2 = (s.sw * 0.6).toFixed(2);
+      return `%3Ccircle cx='${s.x}' cy='${(s.ty + s.pull * 0.4).toFixed(2)}' r='${r1}' fill='${c}' opacity='${(s.o * opacity * 0.35).toFixed(2)}'/%3E%3Ccircle cx='${s.x + s.len}' cy='${(s.ty - s.pull * 0.4).toFixed(2)}' r='${r2}' fill='${c}' opacity='${(s.o * opacity * 0.3).toFixed(2)}'/%3E`;
+    }).join('');
+    // Blurred bloom layer — wider, very low opacity, filtered
+    const bloom = stitches.map(s => {
+      const x1 = s.x;
+      const y1 = s.ty + s.pull * 0.4;
+      const x2 = s.x + s.len;
+      const y2 = s.ty - s.pull * 0.4;
+      const cx = s.x + s.len * 0.5;
+      const cy = (y1 + y2) / 2 + s.wob;
+      return `%3Cpath d='M${x1} ${y1.toFixed(2)} Q${cx.toFixed(2)} ${cy.toFixed(2)} ${x2} ${y2.toFixed(2)}' stroke='${c}' stroke-width='${(s.sw * 2.4).toFixed(2)}' stroke-linecap='round' fill='none' opacity='${(s.o * opacity * 0.22).toFixed(2)}'/%3E`;
+    }).join('');
+    return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='12' viewBox='0 0 200 12'%3E%3Cdefs%3E%3Cfilter id='b' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeGaussianBlur stdDeviation='0.7'/%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url(%23b)'%3E${bloom}%3C/g%3E${dots}${strokes}%3C/svg%3E")`;
+  },
+  // Grainy mesh gradient: warm paper with soft komorebi dapples.
+  grainMesh: () => (
+    `radial-gradient(ellipse 900px 600px at 12% 8%, rgba(255, 244, 214, 0.55), transparent 60%),
+     radial-gradient(ellipse 700px 500px at 88% 18%, rgba(232, 214, 208, 0.35), transparent 65%),
+     radial-gradient(ellipse 600px 700px at 30% 95%, rgba(211, 219, 232, 0.28), transparent 70%),
+     radial-gradient(circle 300px at 70% 70%, rgba(255, 236, 196, 0.32), transparent 70%)`
+  ),
+  // Fine film grain via SVG turbulence
+  grainNoise: (opacity = 0.07) => {
+    return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.4 0 0 0 0 0.36 0 0 0 0 0.3 0 0 0 ${opacity} 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
+  },
+};
+
+// Komorebi (light-through-leaves) dappled light overlay component markup
+window.JN_KOMOREBI_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:soft-light;opacity:0.6">
+  <defs>
+    <filter id="komBlur"><feGaussianBlur stdDeviation="28"/></filter>
+  </defs>
+  <g filter="url(#komBlur)">
+    <ellipse cx="180" cy="140" rx="90" ry="40" fill="#fff4c8" opacity="0.55"/>
+    <ellipse cx="320" cy="240" rx="60" ry="30" fill="#ffecb0" opacity="0.4"/>
+    <ellipse cx="540" cy="90" rx="110" ry="50" fill="#fff0c0" opacity="0.5"/>
+    <ellipse cx="850" cy="180" rx="80" ry="40" fill="#ffe8a8" opacity="0.45"/>
+    <ellipse cx="1050" cy="320" rx="100" ry="50" fill="#fff4c8" opacity="0.4"/>
+    <ellipse cx="240" cy="520" rx="70" ry="35" fill="#fff0c0" opacity="0.35"/>
+    <ellipse cx="720" cy="640" rx="120" ry="55" fill="#ffecb0" opacity="0.4"/>
+  </g>
+</svg>
+`;
+
+
+// ============ shared/data.jsx ============
+window.JN_DATA = {
+  name: 'James A. Nguyen',
+  tagline: 'University of California, Irvine',
+  role: 'Ph.D, Statistics',
+  cohort: 'co. 2032',
+  location: 'Irvine, California',
+  about: `Hello — I'm James A. Nguyen, a recent graduate from the University of California, Irvine (UCI) with a B.S. in Applied Mathematics. I'm pursuing a Ph.D. in Statistics under the advisement of Dr. Sudderth and Dr. Mandt, with whom I am focused on problems related to the computational limitations of Bayesian inference. I'm especially interested in developing efficient inference methods for variational approaches applied to high-dimensional data, with applications in machine learning.`,
+  projects: [
+    {
+      id: 'spectral_sampling',
+      num: '01',
+      year: '2025',
+      tag: 'NUMERICAL LINEAR ALGEBRA',
+      title: 'Spectrally-Assisted Sampling for Randomized Kaczmarz',
+      shortTitle: 'Spectrally-Assisted Sampling',
+      desc: 'Aiming to address inefficiencies in the standard random sampling distribution for Randomized Kaczmarz and related algorithms, we explore alternatives that promote faster, more reliable convergence on ill-conditioned, overdetermined systems of linear inequalities.',
+      kind: 'iterative solvers',
+      page: 'projects/spectral_sampling.html',
+      arxiv: 'https://arxiv.org/abs/2407.00000',
+      pdf: 'files/read_between_the_hyperplanes.pdf',
+      collaborators: ['Dr. E. Sudderth', 'Dr. S. Mandt'],
+      status: 'preprint · under review',
+      keywords: ['Randomized Kaczmarz', 'spectral sampling', 'ill-conditioned systems', 'convergence rates'],
+    },
+    {
+      id: 'hiv_tb',
+      num: '02',
+      year: '2024',
+      tag: 'EPIDEMIOLOGY · PUBLIC HEALTH',
+      title: 'HIV on Tuberculosis Treatment Outcomes in Botswana',
+      shortTitle: 'HIV on TB Treatment Outcomes',
+      desc: 'An epidemiological study on the impact of public health policy in Gaborone, Botswana in response to the high prevalence of HIV and its effect on tuberculosis treatment outcomes — adjusted for universal access to antiretroviral therapy.',
+      kind: 'causal inference',
+      page: 'projects/hiv_tb.html',
+      arxiv: null,
+      pdf: 'files/hiv_tb.pdf',
+      collaborators: ['Botswana Ministry of Health (data)', 'Dr. M. Mbulaiteye'],
+      status: 'report · 2024',
+      keywords: ['causal inference', 'public health', 'ART', 'Botswana'],
+    },
+    {
+      id: 'hippocampal_replay',
+      num: '03',
+      year: '2023',
+      tag: 'COMPUTATIONAL NEUROSCIENCE',
+      title: 'Hippocampal Replay of Nonspatial Sequences',
+      shortTitle: 'Hippocampal Replay',
+      desc: 'An exploratory analysis on the neuronal decoding of odor presentations in the hippocampus — a look into the brain and how understanding it could inform the treatment and identification of cognitive diseases related to working memory.',
+      kind: 'neural decoding',
+      page: 'projects/hippocampal_replay.html',
+      arxiv: null,
+      pdf: 'files/hippocampal_ensembles.pdf',
+      collaborators: ['Dr. N. Fortin lab, UCI CNLM'],
+      status: 'published · Nature Communications',
+      publication: 'files/nature_communications.pdf',
+      keywords: ['hippocampus', 'replay', 'neural decoding', 'working memory'],
+    },
+  ],
+  nav: [
+    { label: 'About', href: '#about' },
+    { label: 'Projects', href: '#projects' },
+    { label: 'Instruction', href: 'instruction.html' },
+    { label: 'Contact', href: '#contact' },
+  ],
+  hamburger: [
+    { label: 'CV', href: 'cv.html', file: 'files/nguyenJames_cv.pdf' },
+    { label: 'Collaborators', href: 'collaborators.html' },
+    { label: "A Student's Guide to Numerical Bayes", href: "A Student's Guide to Numerical Bayes.html" },
+  ],
+  collaborators: [
+    { name: 'Dr. Erik Sudderth', role: 'Advisor — Bayesian ML', inst: 'UC Irvine, Computer Science' },
+    { name: 'Dr. Stephan Mandt', role: 'Co-Advisor — Variational Inference', inst: 'UC Irvine, Computer Science' },
+    { name: 'Dr. Norbert Fortin', role: 'Hippocampal replay', inst: 'UC Irvine, CNLM' },
+    { name: 'Dr. Babak Shahbaba', role: 'Statistical neuroscience', inst: 'UC Irvine, Statistics' },
+  ],
+  cv: {
+    education: [
+      { year: '2026 –', title: 'Ph.D, Statistics', inst: 'University of California, Irvine', note: 'Advisors: Dr. Sudderth · Dr. Mandt' },
+      { year: '2022 – 2025', title: 'B.S., Applied Mathematics', inst: 'University of California, Irvine', note: 'Emphasis in probability & computation · magna cum laude' },
+    ],
+    research: [
+      { year: '2025 –', title: 'Graduate Researcher', inst: 'Sudderth & Mandt Labs, UCI', note: 'Variational Bayesian inference for high-dim data' },
+      { year: '2023 – 2025', title: 'Undergraduate Researcher', inst: 'Fortin Lab, UCI CNLM', note: 'Hippocampal replay · nonspatial sequence decoding' },
+    ],
+    awards: [
+      { year: '2025', title: 'Chancellor\u2019s Award for Excellence in Undergraduate Research' },
+      { year: '2024', title: 'UCI Statistics Honors Program' },
+      { year: '2023', title: 'NSF Research Experience for Undergraduates (REU)' },
+    ],
+    teaching: [
+      { year: '2025', title: 'STATS 120A · Intro to Probability (TA)' },
+      { year: '2024', title: 'MATH 3A · Linear Algebra (Reader)' },
+    ],
+  },
+  contacts: [
+    { label: 'email', value: 'nguyen.james115@gmail.com', href: 'mailto:nguyen.james115@gmail.com' },
+    { label: 'linkedin', value: 'in/jamesanguyen115', href: 'https://www.linkedin.com/in/jamesanguyen115' },
+    { label: 'github', value: 'janguyen115', href: 'https://github.com/janguyen115' },
+    { label: 'scholar', value: 'Google Scholar', href: 'https://scholar.google.com/citations?user=Hm5224EAAAAJ&hl=en' },
+    { label: 'arxiv', value: 'arxiv.org/a/nguyen_j', href: 'https://arxiv.org/search/math?searchtype=author&query=Nguyen,+J' },
+    { label: 'instagram', value: '@jamesanguyen', href: 'https://www.instagram.com/jamesanguyen/' },
+  ],
+};
+
+
+// ============ shared/BayesianHero.jsx ============
+// Animated Bayesian hero: prior fades in, then posterior + marginal draw
+// in and subtly adapt. Plays once on load, persists static after.
+// Renders inside an SVG so it scales cleanly.
+
+function BayesianHero({ color = '#7a1a1a', accent = '#2b3f6b', height = 220, showCaption = true, seed = 0 }) {
+  const W = 780, H = height;
+  const [t, setT] = React.useState(0); // 0..1 progress
+
+  React.useEffect(() => {
+    const key = 'jn_hero_played_' + seed;
+    const played = sessionStorage.getItem(key);
+    if (played) { setT(1); return; }
+    let raf;
+    const start = performance.now();
+    const dur = 2600;
+    const tick = (now) => {
+      const p = Math.min(1, (now - start) / dur);
+      setT(p);
+      if (p < 1) raf = requestAnimationFrame(tick);
+      else sessionStorage.setItem(key, '1');
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [seed]);
+
+  // Easings
+  const e1 = easeOutCubic(clamp01(t / 0.45));          // prior 0..0.45
+  const e2 = easeOutCubic(clamp01((t - 0.35) / 0.45)); // likelihood 0.35..0.8
+  const e3 = easeOutCubic(clamp01((t - 0.55) / 0.45)); // posterior 0.55..1
+
+  // Distributions
+  const prior    = makeGaussian(0.50, 0.17, 1.0);           // wide prior
+  const likeAdult = makeGaussian(0.62, 0.09, 1.25);         // sharp likelihood shifts right
+  // Posterior interpolates from prior→combined as e3 progresses (Bayes update feeling)
+  const postMu = lerp(prior.mu, combineMu(prior, likeAdult), e3);
+  const postSd = lerp(prior.sd, combineSd(prior, likeAdult), e3);
+  const posterior = makeGaussian(postMu, postSd, 1.45);
+
+  const path = (d, amp) => distPath(d, W, H, amp);
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="auto" style={{ display: 'block', overflow: 'visible' }}>
+      <defs>
+        <linearGradient id={`jn-prior-${seed}`} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor={color} stopOpacity="0.18" />
+          <stop offset="1" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id={`jn-like-${seed}`} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor={accent} stopOpacity="0.22" />
+          <stop offset="1" stopColor={accent} stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id={`jn-post-${seed}`} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor={color} stopOpacity="0.55" />
+          <stop offset="1" stopColor={color} stopOpacity="0.04" />
+        </linearGradient>
+      </defs>
+
+      {/* Baseline */}
+      <line x1="0" y1={H - 18} x2={W} y2={H - 18} stroke={color} strokeWidth="0.5" strokeOpacity="0.35" />
+
+      {/* Prior — fill + stroke */}
+      <path d={path(prior, e1)} fill={`url(#jn-prior-${seed})`} />
+      <path d={strokePath(prior, W, H, e1)} fill="none" stroke={color} strokeOpacity="0.5" strokeWidth="1" />
+
+      {/* Likelihood (marginal feel) */}
+      <path d={path(likeAdult, e2)} fill={`url(#jn-like-${seed})`} />
+      <path d={strokePath(likeAdult, W, H, e2)} fill="none" stroke={accent} strokeOpacity="0.6" strokeWidth="1" strokeDasharray="3 2" />
+
+      {/* Posterior — bold */}
+      <path d={path(posterior, e3)} fill={`url(#jn-post-${seed})`} />
+      <path d={strokePath(posterior, W, H, e3)} fill="none" stroke={color} strokeWidth="1.6" />
+
+      {/* Reflection (subtle) */}
+      <g transform={`translate(0 ${H - 18}) scale(1 -0.35)`} opacity="0.18">
+        <path d={strokePath(posterior, W, H, e3)} fill="none" stroke={color} strokeWidth="1.2" />
+      </g>
+
+      {showCaption && (
+        <g opacity={clamp01((t - 0.8) / 0.2)}>
+          <text x={prior.mu * W - 110} y={H - 32} fontSize="10" fill={color} fontFamily="ui-monospace, Menlo, monospace" letterSpacing="0.08em">PRIOR π(θ)</text>
+          <text x={likeAdult.mu * W + 10} y={H - 80} fontSize="10" fill={accent} fontFamily="ui-monospace, Menlo, monospace" letterSpacing="0.08em">LIKELIHOOD L(θ|x)</text>
+          <text x={posterior.mu * W - 40} y={24} fontSize="10" fill={color} fontFamily="ui-monospace, Menlo, monospace" letterSpacing="0.08em">POSTERIOR π(θ|x)</text>
+        </g>
+      )}
+    </svg>
+  );
+}
+
+function clamp01(x) { return Math.max(0, Math.min(1, x)); }
+function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function makeGaussian(mu, sd, h) { return { mu, sd, h }; }
+function combineMu(a, b) {
+  const wa = 1 / (a.sd * a.sd), wb = 1 / (b.sd * b.sd);
+  return (wa * a.mu + wb * b.mu) / (wa + wb);
+}
+function combineSd(a, b) {
+  return Math.sqrt(1 / (1 / (a.sd * a.sd) + 1 / (b.sd * b.sd)));
+}
+function distY(d, x) {
+  const z = (x - d.mu) / d.sd;
+  return d.h * Math.exp(-0.5 * z * z);
+}
+function distPath(d, W, H, amp) {
+  const baseline = H - 18;
+  const topPad = 28;
+  const maxY = H - topPad - 18;
+  const N = 180;
+  let out = `M 0 ${baseline}`;
+  for (let i = 0; i <= N; i++) {
+    const x = i / N;
+    const px = x * W;
+    const y = distY(d, x);
+    const py = baseline - y * maxY * amp;
+    out += ` L ${px.toFixed(1)} ${py.toFixed(1)}`;
+  }
+  out += ` L ${W} ${baseline} Z`;
+  return out;
+}
+function strokePath(d, W, H, amp) {
+  const baseline = H - 18;
+  const topPad = 28;
+  const maxY = H - topPad - 18;
+  const N = 180;
+  let out = '';
+  for (let i = 0; i <= N; i++) {
+    const x = i / N;
+    const px = x * W;
+    const y = distY(d, x);
+    const py = baseline - y * maxY * amp;
+    out += (i === 0 ? 'M' : 'L') + ` ${px.toFixed(1)} ${py.toFixed(1)} `;
+  }
+  return out;
+}
+
+Object.assign(window, { BayesianHero });
+
+
+// ============ shared/CircledWord.jsx ============
+// Hand-drawn ellipse around a word — the signature accent from old site.
+function CircledWord({ children, color = '#7a1a1a', stroke = 2, tilt = -4, pad = 10 }) {
+  const ref = React.useRef(null);
+  const [box, setBox] = React.useState(null);
+  React.useLayoutEffect(() => {
+    if (!ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    setBox({ w: r.width, h: r.height });
+  }, [children]);
+
+  return (
+    <span ref={ref} style={{ position: 'relative', display: 'inline-block', padding: `0 ${pad}px` }}>
+      <span style={{ position: 'relative', zIndex: 2 }}>{children}</span>
+      {box && (
+        <svg width={box.w} height={box.h}
+          viewBox={`0 0 ${box.w} ${box.h}`}
+          style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'visible', transform: `rotate(${tilt}deg)` }}>
+          <ellipse cx={box.w / 2} cy={box.h / 2}
+            rx={box.w / 2 - 2} ry={box.h / 2 - 1}
+            fill="none" stroke={color} strokeWidth={stroke} />
+        </svg>
+      )}
+    </span>
+  );
+}
+
+// Spiked underline (Hartcopy-style) — zigzag beneath text
+function SpikedUnderline({ color = '#7a1a1a', spikes = 14, height = 8, width = '100%' }) {
+  const pts = [];
+  for (let i = 0; i <= spikes; i++) {
+    const x = (i / spikes) * 100;
+    const y = i % 2 === 0 ? 0 : height;
+    pts.push(`${x},${y}`);
+  }
+  return (
+    <svg viewBox={`0 0 100 ${height}`} preserveAspectRatio="none" style={{ width, height, display: 'block' }}>
+      <polyline points={pts.join(' ')} fill="none" stroke={color} strokeWidth="1" vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+
+Object.assign(window, { CircledWord, SpikedUnderline });
+
+
+// ============ variations/A_editorial.jsx ============
+/* Variation A — Editorial Index
+   Typographic, serif-first, magazine column grid. Sashiko as tiny gutter accent. */
+
+const A = window.JN_TOKENS;
+
+function VarAEditorial({ fontPair = 'baskerville' }) {
+  const fonts = fontPair === 'playfair'
+    ? { serif: '"Playfair Display", "EB Garamond", Georgia, serif', sans: 'Inter, system-ui, sans-serif' }
+    : fontPair === 'garamond'
+    ? { serif: '"EB Garamond", Georgia, serif', sans: '"Archivo", Inter, sans-serif' }
+    : { serif: '"Libre Baskerville", Georgia, serif', sans: '"Archivo", Inter, sans-serif' };
+
+  const paperBg = {
+    background: `${window.JN_TEXTURES.graphPaper(0.035, 28, '#6e655a')}, ${A.paper}`,
+    backgroundSize: '28px 28px, auto',
+  };
+
+  return (
+    <div style={{ ...paperBg, color: A.ink, fontFamily: fonts.serif, minHeight: '100%', width: '100%' }}>
+      <style>{`
+        .a-a { color: ${A.red}; text-decoration: none; border-bottom: 1px solid ${A.redTint}; transition: border-color .15s, color .15s; }
+        .a-a:hover { color: ${A.redInk}; border-color: ${A.red}; }
+        .a-num { font-family: ${fonts.sans}; font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+      `}</style>
+
+      {/* Nav */}
+      <header style={{ position: 'sticky', top: 0, zIndex: 10, background: A.paper, borderBottom: `1px solid ${A.rule}`, padding: '14px 40px', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', fontFamily: fonts.sans, fontSize: 13 }}>
+        <div style={{ letterSpacing: '0.18em', textTransform: 'uppercase', color: A.mute }}>Nguyen · Journal</div>
+        <nav style={{ display: 'flex', gap: 28, color: A.inkSoft, letterSpacing: '0.06em' }}>
+          <a href="#about" className="a-a" style={{ borderBottom: 'none' }}>About</a>
+          <a href="#projects" className="a-a" style={{ borderBottom: 'none' }}>Projects</a>
+          <a href="#instruction" className="a-a" style={{ borderBottom: 'none' }}>Instruction</a>
+          <a href="#contact" className="a-a" style={{ borderBottom: 'none' }}>Contact</a>
+        </nav>
+        <div style={{ color: A.mute, fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11 }}>VOL. I · MMXXVI</div>
+      </header>
+
+      {/* Masthead */}
+      <section style={{ padding: '72px 40px 20px', borderBottom: `1px solid ${A.rule}` }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'end', gap: 24, marginBottom: 18 }}>
+          <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.2em', color: A.mute, textTransform: 'uppercase' }}>Irvine, California</div>
+          <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.2em', color: A.mute, textTransform: 'uppercase', textAlign: 'center' }}>Statistics · Bayesian Inference</div>
+          <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.2em', color: A.mute, textTransform: 'uppercase', textAlign: 'right' }}>Est. co. 2032</div>
+        </div>
+        <h1 style={{ fontSize: 'clamp(64px, 10vw, 148px)', lineHeight: 0.9, fontWeight: 400, textAlign: 'center', letterSpacing: '-0.02em', margin: '0 0 16px' }}>
+          James A. <em style={{ fontStyle: 'italic' }}><CircledWord color={A.red} stroke={1.5} tilt={-3} pad={14}>Nguyen</CircledWord></em>
+        </h1>
+        <div style={{ maxWidth: 880, margin: '0 auto', padding: '0 12px', borderTop: `1px solid ${A.rule}`, borderBottom: `1px solid ${A.rule}` }}>
+          <BayesianHero color={A.red} accent={A.blue} height={180} seed="a" />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12, fontFamily: fonts.sans, fontSize: 11, color: A.mute, letterSpacing: '0.08em' }}>
+          <span>Fig. 01 — π(θ) → π(θ|x)</span>
+          <span>prior ∪ likelihood ⇒ posterior</span>
+        </div>
+      </section>
+
+      {/* About — editorial 3-col */}
+      <section id="about" style={{ padding: '72px 40px 56px', borderBottom: `1px solid ${A.rule}` }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: 32, marginBottom: 28 }}>
+          <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.22em', color: A.red, textTransform: 'uppercase', paddingTop: 14 }}>§ I · About</div>
+          <h2 style={{ fontSize: 'clamp(34px, 5vw, 60px)', fontWeight: 400, lineHeight: 1.05, letterSpacing: '-0.02em', margin: 0, textWrap: 'pretty' }}>
+            On computational limits, variational methods, and the quiet work of being a student.
+          </h2>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: 40, alignItems: 'start' }}>
+          <figure style={{ margin: 0 }}>
+            <img src="assets/about_banner.jpg" alt="James at Rowland Hall, UCI" style={{ width: '100%', display: 'block', filter: 'saturate(0.75) contrast(1.02)' }} />
+            <figcaption style={{ fontFamily: fonts.sans, fontSize: 11, color: A.mute, marginTop: 8, letterSpacing: '0.04em' }}>
+              Pl. 01 — Rowland Hall, UCI · commencement, summer.
+            </figcaption>
+          </figure>
+          <p style={{ fontSize: 17, lineHeight: 1.55, columnCount: 1, textWrap: 'pretty', color: A.inkSoft, margin: 0 }}>
+            <span style={{ float: 'left', fontSize: 56, lineHeight: 0.9, paddingRight: 8, paddingTop: 6, color: A.red, fontFamily: fonts.serif }}>H</span>
+            ello — I'm James A. Nguyen, a recent graduate from UCI with a B.S. in Applied Mathematics. I'm pursuing a Ph.D. in Statistics under Dr. Sudderth and Dr. Mandt.
+          </p>
+          <div style={{ fontSize: 15, lineHeight: 1.6, color: A.inkSoft }}>
+            <p style={{ margin: '0 0 14px' }}>My research addresses computational limits of Bayesian inference — especially efficient <em>variational</em> methods for high-dimensional data, with applications in machine learning.</p>
+            <div style={{ borderTop: `1px solid ${A.rule}`, paddingTop: 12, fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.1em', color: A.mute }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}><span>ADVISED BY</span><span>SUDDERTH · MANDT</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}><span>FIELD</span><span>BAYESIAN · VI</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}><span>PRIOR</span><span>B.S. APPL. MATH · UCI</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Projects — editorial magazine, asymmetric */}
+      <section id="projects" style={{ padding: '72px 40px 56px', borderBottom: `1px solid ${A.rule}` }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr auto', gap: 32, marginBottom: 44 }}>
+          <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.22em', color: A.red, textTransform: 'uppercase', paddingTop: 14 }}>§ II · Projects</div>
+          <h2 style={{ fontSize: 'clamp(34px, 5vw, 60px)', fontWeight: 400, lineHeight: 1.05, letterSpacing: '-0.02em', margin: 0 }}>
+            A working index of <em>inquiries</em>.
+          </h2>
+          <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.1em', color: A.mute, textAlign: 'right', paddingTop: 20 }}>THREE ENTRIES</div>
+        </div>
+
+        {/* Feature — project 01 */}
+        <article style={{ display: 'grid', gridTemplateColumns: '5fr 7fr', gap: 40, marginBottom: 56, paddingBottom: 40, borderBottom: `1px solid ${A.rule}` }}>
+          <div>
+            <div style={{ aspectRatio: '4/5', background: A.paperWarm, position: 'relative', overflow: 'hidden', border: `1px solid ${A.rule}` }}>
+              <KaczmarzPlaceholder color={A.red} />
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 16, fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.2em', color: A.mute }}>
+                <span className="a-num" style={{ color: A.red, fontSize: 13 }}>01</span>
+                <span style={{ flex: 1, borderTop: `1px solid ${A.rule}` }} />
+                <span>2025 · NUMERICAL LA</span>
+              </div>
+              <h3 style={{ fontSize: 'clamp(28px, 3.4vw, 46px)', fontWeight: 400, lineHeight: 1.05, margin: '0 0 20px', letterSpacing: '-0.01em' }}>
+                Spectrally-Assisted Sampling for <em>Randomized Kaczmarz</em>
+              </h3>
+              <p style={{ fontSize: 16, lineHeight: 1.55, color: A.inkSoft, maxWidth: 560, textWrap: 'pretty' }}>
+                Addressing inefficiencies in the standard sampling distribution for Randomized Kaczmarz and related iterative solvers — alternatives that promote faster, more reliable convergence on ill-conditioned systems of linear inequalities.
+              </p>
+            </div>
+            <a href="projects/spectral_sampling.html" className="a-a" style={{ alignSelf: 'flex-start', fontFamily: fonts.sans, fontSize: 12, letterSpacing: '0.22em', textTransform: 'uppercase', padding: '10px 0', borderBottom: `1px solid ${A.red}` }}>Read the paper →</a>
+          </div>
+        </article>
+
+        {/* Two columns — project 02 & 03 */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48 }}>
+          {window.JN_DATA.projects.slice(1).map(p => (
+            <article key={p.id} style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{ aspectRatio: '3/2', background: A.paperWarm, position: 'relative', border: `1px solid ${A.rule}`, marginBottom: 18 }}>
+                {p.id === 'hiv_tb' ? <HivTbPlaceholder color={A.red} accent={A.blue} /> : <ReplayPlaceholder color={A.red} accent={A.blue} />}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 12, fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.18em', color: A.mute }}>
+                <span className="a-num" style={{ color: A.red }}>{p.num}</span>
+                <span style={{ flex: 1, borderTop: `1px solid ${A.rule}` }} />
+                <span>{p.year} · {p.tag.split(' · ')[0]}</span>
+              </div>
+              <h3 style={{ fontSize: 26, fontWeight: 400, lineHeight: 1.1, margin: '0 0 12px', letterSpacing: '-0.01em' }}>{p.title}</h3>
+              <p style={{ fontSize: 14, lineHeight: 1.55, color: A.inkSoft, margin: 0, flex: 1 }}>{p.desc}</p>
+              <a href={`projects/${p.id}.html`} className="a-a" style={{ alignSelf: 'flex-start', marginTop: 16, fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase', borderBottom: `1px solid ${A.red}`, paddingBottom: 2 }}>Read →</a>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* Instruction */}
+      <section id="instruction" style={{ padding: '72px 40px 56px', borderBottom: `1px solid ${A.rule}` }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr 1fr', gap: 32 }}>
+          <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.22em', color: A.red, textTransform: 'uppercase', paddingTop: 14 }}>§ III · Instruction</div>
+          <div>
+            <h2 style={{ fontSize: 'clamp(30px, 4vw, 50px)', fontWeight: 400, lineHeight: 1.05, margin: '0 0 16px', letterSpacing: '-0.02em' }}>
+              A Student's Guide to <em>Numerical Bayes</em>
+            </h2>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: A.inkSoft, textWrap: 'pretty' }}>
+              An in-progress reading companion to Turkman, Paulino & Müller's <em>Computational Bayesian Statistics</em>. My attempt to simplify — to others, and to myself — the concepts and methods of numerical solutions to Bayesian inference, with timely examples that develop gradually and reveal step-by-step work.
+            </p>
+          </div>
+          <aside style={{ borderLeft: `1px solid ${A.rule}`, paddingLeft: 32, fontFamily: fonts.sans, fontSize: 12, color: A.mute, letterSpacing: '0.04em' }}>
+            <div style={{ textTransform: 'uppercase', letterSpacing: '0.2em', color: A.red, marginBottom: 14 }}>Contents</div>
+            {['I. Bayes, in brief', 'II. Monte Carlo & importance', 'III. Metropolis–Hastings', 'IV. Gibbs sampling', 'V. Variational methods', 'VI. Examples & errata'].map((c, i) => (
+              <div key={i} style={{ padding: '8px 0', borderBottom: `1px dashed ${A.ruleSoft}`, display: 'flex', justifyContent: 'space-between' }}>
+                <span>{c}</span><span className="a-num">p. {(i + 1) * 7}</span>
+              </div>
+            ))}
+          </aside>
+        </div>
+      </section>
+
+      {/* Contact */}
+      <section id="contact" style={{ padding: '72px 40px 40px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: 32, marginBottom: 32 }}>
+          <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.22em', color: A.red, textTransform: 'uppercase', paddingTop: 14 }}>§ IV · Contact</div>
+          <h2 style={{ fontSize: 'clamp(34px, 5vw, 60px)', fontWeight: 400, lineHeight: 1.05, margin: 0, letterSpacing: '-0.02em' }}>
+            Write in. Corrections <em>especially</em> welcome.
+          </h2>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 0, borderTop: `1px solid ${A.rule}` }}>
+          {window.JN_DATA.contacts.map((c, i) => (
+            <a key={c.label} href={c.href} className="a-a" target="_blank" style={{ padding: '22px 20px', borderBottom: `1px solid ${A.rule}`, borderRight: (i % 3 !== 2) ? `1px solid ${A.rule}` : 'none', display: 'block', textDecoration: 'none' }}>
+              <div style={{ fontFamily: fonts.sans, fontSize: 10, letterSpacing: '0.22em', color: A.mute, textTransform: 'uppercase', marginBottom: 6 }}>{c.label}</div>
+              <div style={{ fontSize: 18, color: A.ink }}>{c.value}</div>
+            </a>
+          ))}
+        </div>
+        <footer style={{ marginTop: 48, paddingTop: 24, borderTop: `1px solid ${A.rule}`, display: 'flex', justifyContent: 'space-between', fontFamily: fonts.sans, fontSize: 11, color: A.mute, letterSpacing: '0.1em' }}>
+          <span>© J. A. Nguyen, MMXXVI</span>
+          <span>Set in {fontPair === 'playfair' ? 'Playfair Display' : fontPair === 'garamond' ? 'EB Garamond' : 'Libre Baskerville'} & Archivo</span>
+          <span>Printed digitally · Irvine, CA</span>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
+// Minimal placeholder figures for project tiles
+function KaczmarzPlaceholder({ color }) {
+  return (
+    <svg viewBox="0 0 200 250" style={{ width: '100%', height: '100%' }}>
+      <defs>
+        <pattern id="ka-grid" width="10" height="10" patternUnits="userSpaceOnUse">
+          <path d="M10 0 L0 0 0 10" fill="none" stroke={color} strokeOpacity="0.12" strokeWidth="0.5" />
+        </pattern>
+      </defs>
+      <rect width="200" height="250" fill="url(#ka-grid)" />
+      {/* Hyperplanes + projection zigzag */}
+      <line x1="20" y1="180" x2="180" y2="60" stroke={color} strokeOpacity="0.4" strokeWidth="1" />
+      <line x1="30" y1="40" x2="170" y2="220" stroke={color} strokeOpacity="0.4" strokeWidth="1" />
+      <line x1="0" y1="120" x2="200" y2="140" stroke={color} strokeOpacity="0.4" strokeWidth="1" />
+      <polyline points="60,200 90,150 110,180 130,140 145,160 155,128 160,135" fill="none" stroke={color} strokeWidth="1.5" />
+      {['60,200','90,150','110,180','130,140','145,160','155,128','160,135'].map((p,i) => {
+        const [x,y] = p.split(',').map(Number);
+        return <circle key={i} cx={x} cy={y} r="2" fill={color} />;
+      })}
+      <text x="10" y="240" fontFamily="ui-monospace, monospace" fontSize="8" fill={color} opacity="0.5">fig. kaczmarz iterate · spectral weights</text>
+    </svg>
+  );
+}
+function HivTbPlaceholder({ color, accent }) {
+  return (
+    <svg viewBox="0 0 300 200" style={{ width: '100%', height: '100%' }}>
+      <rect width="300" height="200" fill="#efeadf" />
+      {[40, 90, 140, 190, 240].map(x => <line key={x} x1={x} y1="40" x2={x} y2="170" stroke={color} strokeOpacity="0.15" />)}
+      <polyline points="30,150 70,130 110,100 150,105 190,78 230,70 270,55" fill="none" stroke={color} strokeWidth="1.5" />
+      <polyline points="30,160 70,155 110,140 150,148 190,130 230,125 270,115" fill="none" stroke={accent} strokeWidth="1.5" strokeDasharray="3 2" />
+      <text x="12" y="190" fontFamily="ui-monospace, monospace" fontSize="8" fill={color} opacity="0.55">treatment outcomes · pre/post ART · 2014–2022</text>
+    </svg>
+  );
+}
+function ReplayPlaceholder({ color, accent }) {
+  return (
+    <svg viewBox="0 0 300 200" style={{ width: '100%', height: '100%' }}>
+      <rect width="300" height="200" fill="#efeadf" />
+      {Array.from({ length: 20 }).map((_, i) => (
+        <g key={i}>
+          {Array.from({ length: 12 }).map((_, j) => (
+            <rect key={j} x={20 + j * 22} y={20 + i * 8} width="18" height="5" fill={Math.random() > 0.8 ? color : (Math.random() > 0.5 ? accent : color)} opacity={Math.random() * 0.6 + 0.1} />
+          ))}
+        </g>
+      ))}
+      <text x="12" y="192" fontFamily="ui-monospace, monospace" fontSize="8" fill={color} opacity="0.55">spike raster · odor A–F · CA1 pyramidal cells</text>
+    </svg>
+  );
+}
+
+Object.assign(window, { VarAEditorial });
+
+
+// ============ variations/C_atelier.jsx ============
+/* Variation C — Atelier
+   Architectural sketch + komorebi gradient. Softer, personal. Serif-forward. */
+
+const C = window.JN_TOKENS;
+
+function VarCAtelier({ fontPair = 'fraunces' }) {
+  const fonts = fontPair === 'gtsectra'
+    ? { display: '"GT Sectra", "Cormorant Garamond", Georgia, serif', body: '"Nitti", "Inter", system-ui, sans-serif', mono: 'ui-monospace, Menlo, monospace' }
+    : fontPair === 'italiana'
+    ? { display: '"Italiana", "Libre Caslon Display", Georgia, serif', body: '"Work Sans", Inter, sans-serif', mono: 'ui-monospace, Menlo, monospace' }
+    : { display: '"Fraunces", "Libre Caslon Text", Georgia, serif', body: '"Inter", system-ui, sans-serif', mono: 'ui-monospace, Menlo, monospace' };
+
+  const L = window.JN_DATA;
+
+  return (
+    <div style={{ position: 'relative', background: C.paper, color: C.ink, fontFamily: fonts.body, minHeight: '100%', width: '100%', overflow: 'hidden' }}>
+      {/* Komorebi: soft dappled light, layered gradients */}
+      <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: `
+        radial-gradient(900px 600px at 15% -5%, ${hexA(C.red, 0.06)} 0%, transparent 60%),
+        radial-gradient(1100px 700px at 95% 40%, ${hexA(C.blue, 0.05)} 0%, transparent 55%),
+        radial-gradient(600px 400px at 60% 110%, ${hexA(C.red, 0.04)} 0%, transparent 60%)
+      ` }} />
+      <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.5,
+        background: window.JN_TEXTURES.graphPaper(0.03, 32, '#6e655a'), backgroundSize: '32px 32px' }} />
+
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <style>{`
+          .c-a { color: ${C.red}; text-decoration: none; }
+          .c-a:hover { color: ${C.redInk}; }
+          .c-display { font-family: ${fonts.display}; font-weight: 400; }
+        `}</style>
+
+        {/* Nav */}
+        <header style={{ padding: '28px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <HandStar color={C.red} />
+            <span className="c-display" style={{ fontSize: 20, fontStyle: 'italic' }}>Nguyen</span>
+          </div>
+          <nav style={{ display: 'flex', gap: 32, fontSize: 14, color: C.inkSoft, letterSpacing: '0.02em' }}>
+            <a href="#about" className="c-a">about</a>
+            <a href="#projects" className="c-a">projects</a>
+            <a href="#instruction" className="c-a">instruction</a>
+            <a href="#contact" className="c-a">contact</a>
+          </nav>
+        </header>
+
+        {/* Hero */}
+        <section style={{ padding: '40px 48px 80px', textAlign: 'center', position: 'relative' }}>
+          <div style={{ fontFamily: fonts.mono, fontSize: 11, letterSpacing: '0.22em', color: C.mute, marginBottom: 28 }}>
+            ✦ &nbsp; UC IRVINE &nbsp; · &nbsp; PH.D STATISTICS &nbsp; · &nbsp; CO. 2032 &nbsp; ✦
+          </div>
+          <h1 className="c-display" style={{ fontSize: 'clamp(72px, 13vw, 180px)', lineHeight: 0.88, margin: 0, letterSpacing: '-0.025em' }}>
+            James A.
+          </h1>
+          <h1 className="c-display" style={{ fontSize: 'clamp(72px, 13vw, 180px)', lineHeight: 0.88, margin: '4px 0 0', letterSpacing: '-0.025em', fontStyle: 'italic', color: C.red }}>
+            <CircledWord color={C.red} stroke={1.4} tilt={-3} pad={22}>Nguyen</CircledWord>
+          </h1>
+
+          <div style={{ maxWidth: 820, margin: '48px auto 0', position: 'relative' }}>
+            <BayesianHero color={C.red} accent={C.blue} height={200} seed="c" showCaption={false} />
+            {/* Hand-drawn annotation overlay */}
+            <svg viewBox="0 0 820 200" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+              <path d="M 580 40 C 560 30, 540 30, 520 40" fill="none" stroke={C.blue} strokeOpacity="0.5" strokeWidth="1" />
+              <text x="585" y="44" fontFamily={fonts.display} fontStyle="italic" fontSize="13" fill={C.blue}>posterior</text>
+              <path d="M 140 150 C 160 160, 180 162, 200 158" fill="none" stroke={C.red} strokeOpacity="0.4" strokeWidth="1" />
+              <text x="80" y="148" fontFamily={fonts.display} fontStyle="italic" fontSize="12" fill={C.red}>prior π(θ)</text>
+            </svg>
+          </div>
+
+          <div style={{ marginTop: 40, fontSize: 16, color: C.inkSoft, maxWidth: 520, margin: '40px auto 0', textWrap: 'pretty' }}>
+            A record of coursework, papers, and notes on the <em>quiet arithmetic</em> of Bayesian inference.
+          </div>
+        </section>
+
+        {/* About — asymmetric */}
+        <section id="about" style={{ padding: '80px 48px', position: 'relative' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 72, alignItems: 'center', maxWidth: 1200, margin: '0 auto' }}>
+            <div style={{ position: 'relative' }}>
+              {/* Architectural frame / hand-drawn corners */}
+              <div style={{ position: 'relative', padding: 14 }}>
+                <HandFrame color={C.red} />
+                <img src="assets/about_banner.jpg" alt="James at Rowland Hall" style={{ width: '100%', display: 'block', position: 'relative', filter: 'saturate(0.65) contrast(1.02)' }} />
+              </div>
+              {/* Annotation arrows */}
+              <svg viewBox="0 0 400 100" style={{ position: 'absolute', right: -40, bottom: -60, width: 220, height: 80, pointerEvents: 'none' }}>
+                <path d="M 200 70 Q 120 50, 40 40" fill="none" stroke={C.inkSoft} strokeOpacity="0.45" strokeWidth="1" />
+                <path d="M 36 34 L 30 40 L 38 44" fill="none" stroke={C.inkSoft} strokeOpacity="0.45" strokeWidth="1" />
+                <text x="200" y="86" fontFamily={fonts.display} fontStyle="italic" fontSize="13" fill={C.inkSoft}>Rowland Hall, UCI — summer</text>
+              </svg>
+            </div>
+            <div>
+              <div style={{ fontFamily: fonts.mono, fontSize: 11, letterSpacing: '0.22em', color: C.red, marginBottom: 18 }}>✦ ABOUT</div>
+              <h2 className="c-display" style={{ fontSize: 'clamp(36px, 4.5vw, 56px)', lineHeight: 1.05, margin: '0 0 28px', letterSpacing: '-0.015em' }}>
+                Working on things that are a little <em>too big</em> for the computer.
+              </h2>
+              <p style={{ fontSize: 17, lineHeight: 1.6, color: C.inkSoft, textWrap: 'pretty', margin: '0 0 14px' }}>
+                I'm James — a recent UCI graduate in Applied Mathematics, now a Ph.D. candidate in Statistics under Dr. Sudderth and Dr. Mandt.
+              </p>
+              <p style={{ fontSize: 15, lineHeight: 1.65, color: C.mute, textWrap: 'pretty', margin: 0 }}>
+                My research addresses the computational limits of Bayesian inference — efficient variational methods for high-dimensional data, with applications in machine learning. Problems where the geometry of the posterior tells you something real.
+              </p>
+              <div style={{ marginTop: 32, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                {['bayesian', 'variational', 'mcmc', 'high-dim', 'sequential', 'applied ml'].map(t => (
+                  <span key={t} style={{ padding: '6px 12px', border: `1px solid ${C.rule}`, fontFamily: fonts.mono, fontSize: 11, letterSpacing: '0.08em', color: C.inkSoft, borderRadius: 999 }}>{t}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Projects — asymmetric editorial */}
+        <section id="projects" style={{ padding: '80px 48px' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 56 }}>
+              <div>
+                <div style={{ fontFamily: fonts.mono, fontSize: 11, letterSpacing: '0.22em', color: C.red, marginBottom: 12 }}>✦ PROJECTS</div>
+                <h2 className="c-display" style={{ fontSize: 'clamp(36px, 4.5vw, 56px)', lineHeight: 1.05, margin: 0, letterSpacing: '-0.015em' }}>
+                  Three <em>inquiries</em>, loosely sorted.
+                </h2>
+              </div>
+              <div style={{ fontFamily: fonts.mono, fontSize: 11, color: C.mute, letterSpacing: '0.1em' }}>2023 → 2025</div>
+            </div>
+
+            {/* Big feature, offset left */}
+            <article style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56, marginBottom: 80 }}>
+              <div style={{ position: 'relative', padding: 14 }}>
+                <HandFrame color={C.red} />
+                <div style={{ aspectRatio: '4/5', background: C.paperWarm, position: 'relative' }}>
+                  <KaczmarzPlaceholder color={C.red} />
+                </div>
+              </div>
+              <div style={{ alignSelf: 'center' }}>
+                <div style={{ fontFamily: fonts.mono, fontSize: 11, letterSpacing: '0.14em', color: C.mute, marginBottom: 12 }}>01 · 2025 · NUMERICAL LINEAR ALGEBRA</div>
+                <h3 className="c-display" style={{ fontSize: 42, lineHeight: 1.05, margin: '0 0 20px', letterSpacing: '-0.01em' }}>
+                  Spectrally-Assisted Sampling for <em>Randomized Kaczmarz</em>
+                </h3>
+                <p style={{ fontSize: 16, lineHeight: 1.6, color: C.inkSoft, textWrap: 'pretty', margin: '0 0 24px' }}>
+                  Addressing inefficiencies in the standard sampling distribution for Randomized Kaczmarz — alternatives that promote faster, more reliable convergence on ill-conditioned systems.
+                </p>
+                <a href="projects/spectral_sampling.html" className="c-a" style={{ fontFamily: fonts.mono, fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', borderBottom: `1px solid ${C.red}`, paddingBottom: 3 }}>read the paper →</a>
+              </div>
+            </article>
+
+            {/* Two stacked, mirrored */}
+            {L.projects.slice(1).map((p, idx) => (
+              <article key={p.id} style={{ display: 'grid', gridTemplateColumns: idx % 2 === 0 ? '1fr 1fr' : '1fr 1fr', gap: 56, marginBottom: 72, alignItems: 'center', direction: idx % 2 === 0 ? 'rtl' : 'ltr' }}>
+                <div style={{ direction: 'ltr', position: 'relative', padding: 14 }}>
+                  <HandFrame color={C.red} />
+                  <div style={{ aspectRatio: '3/2', position: 'relative' }}>
+                    {p.id === 'hiv_tb' ? <HivTbPlaceholder color={C.red} accent={C.blue} /> : <ReplayPlaceholder color={C.red} accent={C.blue} />}
+                  </div>
+                </div>
+                <div style={{ direction: 'ltr' }}>
+                  <div style={{ fontFamily: fonts.mono, fontSize: 11, letterSpacing: '0.14em', color: C.mute, marginBottom: 12 }}>{p.num} · {p.year} · {p.tag}</div>
+                  <h3 className="c-display" style={{ fontSize: 34, lineHeight: 1.08, margin: '0 0 16px', letterSpacing: '-0.01em' }}>{p.title}</h3>
+                  <p style={{ fontSize: 15, lineHeight: 1.6, color: C.inkSoft, textWrap: 'pretty', margin: '0 0 20px' }}>{p.desc}</p>
+                  <a href={`projects/${p.id}.html`} className="c-a" style={{ fontFamily: fonts.mono, fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', borderBottom: `1px solid ${C.red}`, paddingBottom: 3 }}>read →</a>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {/* Instruction */}
+        <section id="instruction" style={{ padding: '80px 48px', background: hexA(C.redTint, 0.4) }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 72, alignItems: 'center' }}>
+            <div>
+              <div style={{ fontFamily: fonts.mono, fontSize: 11, letterSpacing: '0.22em', color: C.red, marginBottom: 12 }}>✦ INSTRUCTION</div>
+              <h2 className="c-display" style={{ fontSize: 'clamp(34px, 4.2vw, 52px)', lineHeight: 1.05, margin: '0 0 20px', letterSpacing: '-0.015em' }}>
+                A Student's Guide to <em>Numerical Bayes</em>
+              </h2>
+              <p style={{ fontSize: 16, lineHeight: 1.6, color: C.inkSoft, textWrap: 'pretty', margin: '0 0 20px' }}>
+                An in-progress reading companion to Turkman, Paulino & Müller's <em>Computational Bayesian Statistics</em>. My attempt to simplify — to others, and to myself — numerical solutions to Bayesian inference, with worked examples that develop gradually.
+              </p>
+              <p style={{ fontSize: 14, lineHeight: 1.6, color: C.mute, fontStyle: 'italic' }}>
+                This guide is a work in progress and likely contains mistakes. Please write in if you find one.
+              </p>
+            </div>
+            <div style={{ position: 'relative', padding: 18 }}>
+              <HandFrame color={C.red} />
+              <div style={{ background: C.paper, padding: '32px 36px', border: `1px solid ${C.ruleSoft}` }}>
+                <div style={{ fontFamily: fonts.mono, fontSize: 10, letterSpacing: '0.2em', color: C.mute, marginBottom: 14 }}>CONTENTS · DRAFT</div>
+                {['I. Bayes, in brief', 'II. Monte Carlo & importance', 'III. Metropolis–Hastings', 'IV. Gibbs sampling', 'V. Variational methods', 'VI. Examples & errata'].map((c, i) => (
+                  <div key={i} style={{ padding: '10px 0', borderBottom: i < 5 ? `1px dashed ${C.ruleSoft}` : 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <span style={{ fontFamily: fonts.display, fontSize: 16, fontStyle: 'italic' }}>{c}</span>
+                    <span style={{ fontFamily: fonts.mono, fontSize: 11, color: C.mute }}>§ {i + 1}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Contact */}
+        <section id="contact" style={{ padding: '80px 48px 60px' }}>
+          <div style={{ maxWidth: 1100, margin: '0 auto', textAlign: 'center' }}>
+            <div style={{ fontFamily: fonts.mono, fontSize: 11, letterSpacing: '0.22em', color: C.red, marginBottom: 18 }}>✦ CONTACT</div>
+            <h2 className="c-display" style={{ fontSize: 'clamp(40px, 5.5vw, 72px)', lineHeight: 1.0, margin: '0 0 48px', letterSpacing: '-0.02em' }}>
+              Write in. <em>Corrections especially welcome.</em>
+            </h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 32, textAlign: 'left' }}>
+              {L.contacts.map(c => (
+                <a key={c.label} href={c.href} target="_blank" className="c-a" style={{ display: 'block', padding: '20px 24px', border: `1px solid ${C.rule}`, background: hexA('#ffffff', 0.5), textDecoration: 'none' }}>
+                  <div style={{ fontFamily: fonts.mono, fontSize: 10, letterSpacing: '0.22em', color: C.mute, textTransform: 'uppercase', marginBottom: 8 }}>{c.label}</div>
+                  <div style={{ fontFamily: fonts.display, fontSize: 20, fontStyle: 'italic', color: C.ink }}>{c.value}</div>
+                </a>
+              ))}
+            </div>
+          </div>
+          <footer style={{ maxWidth: 1100, margin: '72px auto 0', paddingTop: 24, borderTop: `1px solid ${C.rule}`, display: 'flex', justifyContent: 'space-between', fontFamily: fonts.mono, fontSize: 11, color: C.mute, letterSpacing: '0.08em' }}>
+            <span>© J. A. Nguyen — MMXXVI</span>
+            <span>hand-set with care</span>
+            <span>Irvine, California</span>
+          </footer>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function HandStar({ color }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 22 22">
+      <path d="M11 2 L12.5 9 L19 9.5 L13.8 13.5 L15.5 20 L11 16 L6.5 20 L8.2 13.5 L3 9.5 L9.5 9 Z"
+        fill="none" stroke={color} strokeWidth="1.2" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function HandFrame({ color }) {
+  // four hand-drawn corner brackets
+  return (
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+      <g fill="none" stroke={color} strokeOpacity="0.6" strokeWidth="0.4" strokeLinecap="round">
+        <path d="M 1 6 C 1 3, 3 1, 6 1 L 14 1" />
+        <path d="M 86 1 L 94 1 C 97 1, 99 3, 99 6" />
+        <path d="M 1 94 L 1 86 M 99 94 L 99 86" />
+        <path d="M 1 94 C 1 97, 3 99, 6 99 L 14 99" />
+        <path d="M 86 99 L 94 99 C 97 99, 99 97, 99 94" />
+      </g>
+    </svg>
+  );
+}
+
+function hexA(hex, a) {
+  const c = hex.replace('#', '');
+  const r = parseInt(c.slice(0, 2), 16), g = parseInt(c.slice(2, 4), 16), b = parseInt(c.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+Object.assign(window, { VarCAtelier, hexA });
+
+
+// ============ pages/JamesWebsite.jsx ============
+/* James A. Nguyen — unified clickable prototype
+   Direction: B (Technical Blueprint) for home + instruction + CV + collaborators,
+              A (Editorial) for project detail pages.
+   Single-document routing via window.JN_ROUTE state. */
+
+const JN = window.JN_TOKENS;
+
+function useRoute() {
+  const [route, setRoute] = React.useState(() => {
+    if (typeof window === 'undefined') return { page: 'home' };
+    const h = window.location.hash.slice(1);
+    if (!h) return { page: 'home' };
+    const [page, id] = h.split('/');
+    return { page, id };
+  });
+  React.useEffect(() => {
+    const onHash = () => {
+      const h = window.location.hash.slice(1);
+      if (!h) return setRoute({ page: 'home' });
+      const [page, id] = h.split('/');
+      setRoute({ page, id });
+    };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
+  const nav = (page, id) => {
+    window.location.hash = id ? `${page}/${id}` : page;
+    window.scrollTo(0, 0);
+  };
+  return [route, nav];
+}
+
+function JamesWebsite({ fontPairB = 'ibm', fontPairA = 'baskerville' }) {
+  const [route, nav] = useRoute();
+  // On route change, scroll to top
+  React.useEffect(() => {
+    const el = document.scrollingElement || document.documentElement;
+    el.scrollTo?.(0, 0);
+  }, [route.page, route.id]);
+
+  if (route.page === 'project') {
+    return <ProjectDetailEditorial id={route.id} fontPair={fontPairA} nav={nav} />;
+  }
+  if (route.page === 'instruction') {
+    return <InstructionBlueprint fontPair={fontPairB} nav={nav} />;
+  }
+  if (route.page === 'cv') {
+    return <CVBlueprint fontPair={fontPairB} nav={nav} />;
+  }
+  if (route.page === 'collaborators') {
+    return <CollaboratorsBlueprint fontPair={fontPairB} nav={nav} />;
+  }
+  if (route.page === 'guide') {
+    return <GuideBlueprint fontPair={fontPairB} nav={nav} />;
+  }
+  return <HomeBlueprint fontPair={fontPairB} nav={nav} />;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Shared chrome: top meta bar + nav
+// ─────────────────────────────────────────────────────────────
+function BFonts(fontPair) {
+  return fontPair === 'jetbrains'
+    ? { mono: '"JetBrains Mono", ui-monospace, Menlo, monospace', serif: '"Cormorant Garamond", Georgia, serif', sans: '"Inter", system-ui, sans-serif' }
+    : fontPair === 'spectral'
+    ? { mono: '"IBM Plex Mono", ui-monospace, Menlo, monospace', serif: '"Spectral", Georgia, serif', sans: '"IBM Plex Sans", system-ui, sans-serif' }
+    : { mono: '"IBM Plex Mono", ui-monospace, Menlo, monospace', serif: '"Libre Caslon Text", "Libre Baskerville", Georgia, serif', sans: '"IBM Plex Sans", system-ui, sans-serif' };
+}
+
+function AFonts(fontPair) {
+  return fontPair === 'playfair'
+    ? { serif: '"Playfair Display", Georgia, serif', sans: 'Inter, system-ui, sans-serif', mono: '"IBM Plex Mono", ui-monospace, monospace' }
+    : fontPair === 'garamond'
+    ? { serif: '"EB Garamond", Georgia, serif', sans: '"Archivo", sans-serif', mono: '"IBM Plex Mono", ui-monospace, monospace' }
+    : { serif: '"Libre Baskerville", Georgia, serif', sans: '"Archivo", system-ui, sans-serif', mono: '"IBM Plex Mono", ui-monospace, monospace' };
+}
+
+// A tiny sashiko running-stitch divider. Quiet, handmade feel.
+function SashikoRule({ color = JN.red, opacity = 1, width = '100%', my = 0 }) {
+  return (
+    <div style={{
+      width,
+      height: 12,
+      margin: my ? `${my}px 0` : 0,
+      backgroundImage: window.JN_TEXTURES.sashikoRule(color, opacity),
+      backgroundRepeat: 'repeat-x',
+      backgroundPosition: 'left center',
+      backgroundSize: '200px 12px',
+    }} />
+  );
+}
+
+// Komorebi overlay — soft dapples of warm light, very low contrast.
+function Komorebi({ opacity = 0.55 }) {
+  return (
+    <div
+      aria-hidden
+      style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity, mixBlendMode: 'soft-light' }}
+      dangerouslySetInnerHTML={{ __html: window.JN_KOMOREBI_SVG }}
+    />
+  );
+}
+
+// Kept for backwards-compat: MetaBar is now a no-op so older pages don't break while we migrate.
+function MetaBar() { return null; }
+
+function TopNav({ fonts, nav, active = 'home' }) {
+  const items = [
+    ['home', 'index'],
+    ['home#about', 'about'],
+    ['home#projects', 'projects'],
+    ['instruction', 'instruction'],
+    ['home#contact', 'contact'],
+  ];
+  const hamburger = [
+    ['cv', 'CV'],
+    ['collaborators', 'Collaborators'],
+    ['guide', "A Student's Guide to Numerical Bayes"],
+  ];
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const isActive = (path) => {
+    if (active === 'home' && path.startsWith('home')) return path === 'home';
+    return active === path;
+  };
+  return (
+    <header style={{ position: 'sticky', top: 0, zIndex: 20, background: 'rgba(244, 241, 234, 0.88)', backdropFilter: 'blur(8px)', borderBottom: `1px solid ${JN.ruleSoft}`, padding: '18px 72px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: fonts.sans, fontSize: 13 }}>
+      <button onClick={() => nav('home')} style={{ all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'baseline', gap: 6, fontFamily: fonts.serif, fontSize: 17, letterSpacing: '0.01em', color: JN.ink }}>
+        <span style={{ fontStyle: 'italic' }}>James A.</span><span style={{ color: JN.red }}>Nguyen</span>
+      </button>
+      <nav style={{ display: 'flex', gap: 28, alignItems: 'center', color: JN.inkSoft }}>
+        {items.map(([path, l]) => {
+          const act = isActive(path);
+          return (
+            <button key={l} onClick={() => {
+              if (path.includes('#')) {
+                const [p, anchor] = path.split('#');
+                if (active === 'home') {
+                  document.getElementById(anchor)?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+                } else {
+                  nav(p);
+                  setTimeout(() => document.getElementById(anchor)?.scrollIntoView?.({ behavior: 'smooth' }), 100);
+                }
+              } else {
+                nav(path);
+              }
+            }} style={{ all: 'unset', cursor: 'pointer', color: act ? JN.red : JN.inkSoft, fontFamily: fonts.sans, fontSize: 13, letterSpacing: '0.02em', borderBottom: act ? `1px solid ${JN.red}` : '1px solid transparent', paddingBottom: 2 }}>
+              {l}
+            </button>
+          );
+        })}
+        <div style={{ position: 'relative', marginLeft: 8 }}>
+          <button onClick={() => setMenuOpen(o => !o)} onBlur={() => setTimeout(() => setMenuOpen(false), 200)} style={{ all: 'unset', cursor: 'pointer', color: JN.inkSoft, fontFamily: fonts.sans, fontSize: 16, letterSpacing: '0.05em' }}>
+            more +
+          </button>
+          {menuOpen && (
+            <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, minWidth: 300, background: JN.paper, border: `1px solid ${JN.ruleSoft}`, boxShadow: '0 10px 30px rgba(40,30,20,0.08)', zIndex: 30 }}>
+              {hamburger.map(([p, label], i) => (
+                <button key={p} onMouseDown={() => nav(p)} style={{ all: 'unset', cursor: 'pointer', display: 'block', width: '100%', boxSizing: 'border-box', padding: '14px 18px', borderBottom: i < hamburger.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none', fontFamily: fonts.serif, fontSize: 15, color: JN.inkSoft, fontStyle: 'italic' }}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </nav>
+    </header>
+  );
+}
+
+function SheetFooter({ fonts, fontName }) {
+  return (
+    <footer style={{ padding: '32px 72px 40px', borderTop: `1px solid ${JN.ruleSoft}`, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontFamily: fonts.serif, fontSize: 14, color: JN.mute, background: 'transparent' }}>
+      <span style={{ fontStyle: 'italic' }}>© James A. Nguyen, 2026</span>
+      <span style={{ fontSize: 12, color: JN.muteCool }}>Set in {fontName || `${fonts.serif.split(',')[0].replace(/"/g,'')} &amp; ${fonts.mono.split(',')[0].replace(/"/g,'')}`}</span>
+      <span style={{ fontStyle: 'italic' }}>Irvine, California</span>
+    </footer>
+  );
+}
+
+function SheetHeaderB({ num, title, subtitle, fonts }) {
+  // Roman section markers look more "literary" than a giant mono number block.
+  const roman = { '01': 'I', '02': 'II', '03': 'III', '04': 'IV', '05': 'V', '06': 'VI' }[num] || num;
+  return (
+    <div style={{ paddingBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginBottom: 8 }}>
+        <span style={{ fontFamily: fonts.serif, fontSize: 18, color: JN.red, fontStyle: 'italic', letterSpacing: '0.02em' }}>§ {roman}</span>
+        <SashikoRule color={JN.red} opacity={1} width={48} />
+        <span style={{ fontFamily: fonts.serif, fontSize: 14, color: JN.mute, fontStyle: 'italic' }}>{subtitle}</span>
+      </div>
+      <h2 style={{ fontFamily: fonts.serif, fontSize: 'clamp(32px, 4.2vw, 52px)', fontWeight: 400, letterSpacing: '-0.015em', margin: 0, color: JN.ink, lineHeight: 1.05 }}>
+        {title.charAt(0) + title.slice(1).toLowerCase()}
+      </h2>
+    </div>
+  );
+}
+
+// Retained for backwards-compat; now renders nothing.
+function CornerTicks() { return null; }
+
+// ─────────────────────────────────────────────────────────────
+// HOME — Blueprint
+// ─────────────────────────────────────────────────────────────
+function HomeBlueprint({ fontPair = 'ibm', nav }) {
+  const fonts = BFonts(fontPair);
+  const L = window.JN_DATA;
+  const bg = {
+    backgroundColor: JN.paper,
+    backgroundImage: `${window.JN_TEXTURES.graphPaper(0.035, 26, '#8a7a60')}`,
+    backgroundSize: '26px 26px',
+  };
+  return (
+    <div style={{ ...bg, color: JN.ink, fontFamily: fonts.serif, minHeight: '100%', width: '100%', position: 'relative' }}>
+      <style>{`
+        .b-a { color: ${JN.red}; text-decoration: none; }
+        .b-a:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+      `}</style>
+
+      <TopNav fonts={fonts} nav={nav} active="home" />
+
+      {/* Hero */}
+      <section id="index" style={{ padding: '72px 72px 48px', position: 'relative', overflow: 'hidden' }}>
+        <Komorebi opacity={0.5} />
+        <div style={{ position: 'relative' }}>
+          {/* Bayesian hero — aligned to bottom of the meta row, sized to hug the right side */}
+          <div style={{
+            position: 'absolute',
+            right: -24,
+            bottom: 0,
+            width: 'min(560px, 55%)',
+            pointerEvents: 'none',
+            opacity: 0.9,
+            zIndex: 2,
+          }}>
+            <BayesianHero color={JN.red} accent={JN.blue} height={220} seed="hero3" showCaption={false} />
+          </div>
+
+          {/* Foreground heading + intro */}
+          <div style={{ position: 'relative', zIndex: 1, maxWidth: 680 }}>
+            <h1 style={{ fontFamily: fonts.serif, fontSize: 'clamp(40px, 6.4vw, 96px)', lineHeight: 1.02, fontWeight: 400, letterSpacing: '-0.02em', margin: 0, color: JN.ink, whiteSpace: 'nowrap' }}>
+              James A.&nbsp;<span style={{ fontStyle: 'italic' }}><CircledWord color={JN.red} stroke={1.5} tilt={-4} pad={14}>Nguyen</CircledWord></span>
+            </h1>
+            <p style={{ fontFamily: fonts.serif, fontSize: 22, lineHeight: 1.45, color: JN.inkSoft, margin: '28px 0 0', maxWidth: 560, textWrap: 'pretty' }}>
+              Ph.D. candidate in Statistics at UC Irvine, working with <span style={{ color: JN.red }}>Eric Sudderth</span> and <span style={{ color: JN.red }}>Stephan Mandt</span> on scalable Bayesian inference.
+            </p>
+            <SashikoRule color={JN.red} opacity={1} width={120} my={36} />
+            <div style={{ display: 'flex', gap: 40, fontFamily: fonts.sans, fontSize: 13, color: JN.mute, letterSpacing: '0.02em' }}>
+              <div><span style={{ color: JN.muteCool, display: 'block', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 4 }}>Program</span>PhD, Statistics</div>
+              <div><span style={{ color: JN.muteCool, display: 'block', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 4 }}>Advisors</span>Sudderth · Mandt</div>
+              <div><span style={{ color: JN.muteCool, display: 'block', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 4 }}>Cohort</span>Class of 2032</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <SashikoRule color={JN.red} opacity={1} />
+
+      {/* About */}
+      <section id="about" style={{ padding: '72px 72px', scrollMarginTop: 64, position: 'relative' }}>
+        <SheetHeaderB num="01" title="About" subtitle="A few words" fonts={fonts} />
+        <div style={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: 56, marginTop: 40 }}>
+          <figure style={{ margin: 0 }}>
+            <img src="assets/about_banner.jpg" alt="James at Rowland Hall" style={{ width: '100%', display: 'block', filter: 'saturate(0.7) contrast(1.02)' }} />
+            <figcaption style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 13, color: JN.mute, marginTop: 10 }}>
+              Rowland Hall, a quiet afternoon.
+            </figcaption>
+          </figure>
+          <div>
+            <p style={{ fontFamily: fonts.serif, fontSize: 22, lineHeight: 1.5, color: JN.ink, textWrap: 'pretty', margin: '0 0 20px' }}>
+              Hello — I'm James. A recent UCI graduate in Applied Mathematics, now a Ph.D. student in Statistics.
+            </p>
+            <p style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 1.65, color: JN.inkSoft, textWrap: 'pretty', maxWidth: 560, margin: '0 0 28px' }}>
+              My research is about the computational limits of Bayesian inference — particularly efficient <em>variational</em> methods for high-dimensional data, with applications in machine learning. I like problems where the geometry of the posterior tells you something about the system.
+            </p>
+            <div style={{ fontFamily: fonts.serif, fontSize: 16, color: JN.inkSoft, lineHeight: 1.9 }}>
+              <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>Interests</div>
+              scalable variational inference · high-dimensional posteriors ·<br/>
+              iterative solvers &amp; linear systems · applied ML and sequential data
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <SashikoRule color={JN.red} opacity={1} />
+
+      {/* Projects */}
+      <section id="projects" style={{ padding: '72px 72px', scrollMarginTop: 64 }}>
+        <SheetHeaderB num="02" title="Projects" subtitle={`Selected work, 2023–2025`} fonts={fonts} />
+        <div style={{ marginTop: 40 }}>
+          {L.projects.map((p, i) => (
+            <ProjectRow key={p.id} p={p} i={i} fonts={fonts} last={i === L.projects.length - 1} nav={nav} />
+          ))}
+        </div>
+      </section>
+
+      <SashikoRule color={JN.red} opacity={1} />
+
+      {/* Instruction teaser */}
+      <section id="instruction" style={{ padding: '72px 72px', scrollMarginTop: 64 }}>
+        <SheetHeaderB num="03" title="Instruction" subtitle="Notes in progress" fonts={fonts} />
+        <div style={{ marginTop: 40, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56 }}>
+          <div>
+            <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>In draft</div>
+            <h3 style={{ fontFamily: fonts.serif, fontSize: 32, fontWeight: 400, lineHeight: 1.15, margin: '0 0 16px', color: JN.ink }}>A Student's Guide to <em>Numerical Bayes</em></h3>
+            <p style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 1.65, color: JN.inkSoft, textWrap: 'pretty', margin: 0 }}>
+              A reading companion to Turkman, Paulino &amp; Müller's <em>Computational Bayesian Statistics</em>. My attempt to simplify — to others, and to myself — numerical solutions to Bayesian inference, built around worked examples that develop gradually.
+            </p>
+            <button onClick={() => nav('guide')} className="b-a" style={{ all: 'unset', cursor: 'pointer', display: 'inline-block', marginTop: 20, fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 16, color: JN.red, borderBottom: `1px solid ${JN.red}`, paddingBottom: 2 }}>Read the draft →</button>
+          </div>
+          <div>
+            <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>Contents</div>
+            {['Bayes, in brief', 'Monte Carlo &amp; importance', 'Metropolis–Hastings', 'Gibbs sampling', 'Variational methods', 'Examples &amp; errata'].map((c, i) => (
+              <div key={i} style={{ fontFamily: fonts.serif, padding: '10px 0', borderBottom: i < 5 ? `1px dashed ${JN.ruleSoft}` : 'none', display: 'flex', justifyContent: 'space-between', fontSize: 16, color: JN.inkSoft }}>
+                <span><span style={{ color: JN.red, fontStyle: 'italic', marginRight: 12 }}>{['I','II','III','IV','V','VI'][i]}.</span><span dangerouslySetInnerHTML={{ __html: c }} /></span>
+                <span style={{ color: JN.mute, fontStyle: 'italic', fontSize: 14 }}>§ {i + 1}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <SashikoRule color={JN.red} opacity={1} />
+
+      {/* Contact */}
+      <section id="contact" style={{ padding: '72px 72px', scrollMarginTop: 64 }}>
+        <SheetHeaderB num="04" title="Contact" subtitle="Get in touch" fonts={fonts} />
+        <div style={{ marginTop: 40 }}>
+          {L.contacts.map((c, i) => (
+            <a key={c.label} href={c.href} target="_blank" rel="noopener" style={{ display: 'grid', gridTemplateColumns: '160px 1fr auto', alignItems: 'baseline', padding: '20px 0', borderBottom: `1px dashed ${JN.ruleSoft}`, textDecoration: 'none' }}>
+              <span style={{ fontFamily: fonts.sans, color: JN.muteCool, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase' }}>{c.label}</span>
+              <span style={{ fontFamily: fonts.serif, fontSize: 22, color: JN.ink }}>{c.value}</span>
+              <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', color: JN.red, fontSize: 15 }}>open →</span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <SheetFooter fonts={fonts} />
+    </div>
+  );
+}
+
+function ProjectRow({ p, i, fonts, last, nav }) {
+  return (
+    <button onClick={() => nav('project', p.id)} style={{ all: 'unset', cursor: 'pointer', display: 'grid', gridTemplateColumns: '60px 80px 1fr auto auto', alignItems: 'baseline', gap: 24, padding: '24px 8px', width: '100%', boxSizing: 'border-box', borderBottom: last ? 'none' : `1px dashed ${JN.ruleSoft}`, transition: 'background 0.2s' }}
+      onMouseEnter={e => e.currentTarget.style.background = 'rgba(244, 241, 234, 0.5)'}
+      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+    >
+      <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 16, color: JN.red }}>{p.num}.</span>
+      <span style={{ fontFamily: fonts.sans, fontSize: 12, color: JN.muteCool, letterSpacing: '0.1em' }}>{p.year}</span>
+      <span style={{ fontFamily: fonts.serif, fontSize: 22, color: JN.ink, paddingRight: 24, lineHeight: 1.3 }}>{p.title}</span>
+      <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.mute, paddingRight: 24 }}>{p.tag}</span>
+      <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.red }}>read →</span>
+    </button>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// PROJECT DETAIL — Editorial (Variation A)
+// ─────────────────────────────────────────────────────────────
+function ProjectDetailEditorial({ id, fontPair = 'baskerville', nav }) {
+  const fonts = AFonts(fontPair);
+  const L = window.JN_DATA;
+  const idx = Math.max(0, L.projects.findIndex(x => x.id === id));
+  const p = L.projects[idx];
+  const prev = idx > 0 ? L.projects[idx - 1] : null;
+  const next = idx < L.projects.length - 1 ? L.projects[idx + 1] : null;
+  const bg = {
+    backgroundColor: JN.paper,
+    backgroundImage: `${window.JN_TEXTURES.graphPaper(0.035, 26, '#8a7a60')}`,
+    backgroundSize: '26px 26px',
+  };
+
+  return (
+    <div style={{ ...bg, color: JN.ink, fontFamily: fonts.serif, minHeight: '100%' }}>
+      {/* Minimal editorial nav (no blueprint meta bar — a different register for detail) */}
+      <header style={{ position: 'sticky', top: 0, zIndex: 20, background: 'rgba(244, 241, 234, 0.92)', backdropFilter: 'blur(6px)', borderBottom: `1px solid ${JN.rule}`, padding: '18px 48px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: fonts.sans, fontSize: 12 }}>
+        <button onClick={() => nav('home')} style={{ all: 'unset', cursor: 'pointer', letterSpacing: '0.18em', textTransform: 'uppercase', color: JN.inkSoft }}>
+          ← <span style={{ color: JN.red }}>Nguyen</span> · Journal
+        </button>
+        <nav style={{ display: 'flex', gap: 28, fontFamily: fonts.sans, fontSize: 13, letterSpacing: '0.04em' }}>
+          <button onClick={() => nav('home')} style={{ all: 'unset', cursor: 'pointer', color: JN.inkSoft }}>About</button>
+          <button onClick={() => nav('home')} style={{ all: 'unset', cursor: 'pointer', color: JN.red }}>Projects</button>
+          <button onClick={() => nav('instruction')} style={{ all: 'unset', cursor: 'pointer', color: JN.inkSoft }}>Instruction</button>
+          <button onClick={() => nav('home')} style={{ all: 'unset', cursor: 'pointer', color: JN.inkSoft }}>Contact</button>
+        </nav>
+      </header>
+
+      <div style={{ padding: '56px 48px 80px', maxWidth: 1300, margin: '0 auto' }}>
+        <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.22em', color: JN.mute, textTransform: 'uppercase', marginBottom: 12 }}>
+          <button onClick={() => nav('home')} style={{ all: 'unset', cursor: 'pointer', color: JN.red, textDecoration: 'underline', textUnderlineOffset: 3 }}>Index</button>
+          &nbsp;/ Projects · § {p.num}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr auto', gap: 32, marginBottom: 32, alignItems: 'baseline' }}>
+          <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.22em', color: JN.red, textTransform: 'uppercase' }}>§ {p.num} · {p.year}</div>
+          <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.14em', color: JN.mute }}>{p.tag}</div>
+          <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.mute }}>{p.status || '—'}</div>
+        </div>
+
+        <h1 style={{ fontSize: 'clamp(40px, 6vw, 80px)', lineHeight: 1, fontWeight: 400, letterSpacing: '-0.02em', margin: '0 0 24px', textWrap: 'balance', color: JN.ink }}>
+          {renderEditorialTitle(p.title)}
+        </h1>
+        <p style={{ fontSize: 22, lineHeight: 1.4, color: JN.inkSoft, maxWidth: 820, textWrap: 'pretty', margin: '0 0 48px', fontStyle: 'italic' }}>
+          {p.desc.split('. ')[0]}.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 48, borderTop: `1px solid ${JN.rule}`, paddingTop: 28 }}>
+          <aside style={{ fontFamily: fonts.sans, fontSize: 12, color: JN.mute, letterSpacing: '0.04em', position: 'sticky', top: 96, height: 'min-content' }}>
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ textTransform: 'uppercase', letterSpacing: '0.2em', color: JN.red, marginBottom: 8 }}>Collaborators</div>
+              {(p.collaborators || []).map(a => <div key={a} style={{ color: JN.ink, marginBottom: 3 }}>{a}</div>)}
+            </div>
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ textTransform: 'uppercase', letterSpacing: '0.2em', color: JN.red, marginBottom: 8 }}>Status</div>
+              <div style={{ color: JN.ink }}>{p.status}</div>
+            </div>
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ textTransform: 'uppercase', letterSpacing: '0.2em', color: JN.red, marginBottom: 8 }}>Keywords</div>
+              <div style={{ color: JN.ink, lineHeight: 1.6 }}>{(p.keywords || []).join(' · ')}</div>
+            </div>
+
+            <div style={{ borderTop: `1px solid ${JN.rule}`, paddingTop: 20, marginTop: 24 }}>
+              <div style={{ textTransform: 'uppercase', letterSpacing: '0.2em', color: JN.red, marginBottom: 10 }}>Files</div>
+              {p.pdf && (
+                <a href={p.pdf} target="_blank" rel="noopener" style={{ display: 'block', padding: '10px 0', borderBottom: `1px dashed ${JN.ruleSoft}`, color: JN.ink, textDecoration: 'none', fontFamily: fonts.sans, fontSize: 13 }}>
+                  <span style={{ fontFamily: fonts.mono, color: JN.red, fontSize: 11, letterSpacing: '0.14em', marginRight: 8 }}>PDF</span>
+                  working paper →
+                </a>
+              )}
+              {p.publication && (
+                <a href={p.publication} target="_blank" rel="noopener" style={{ display: 'block', padding: '10px 0', borderBottom: `1px dashed ${JN.ruleSoft}`, color: JN.ink, textDecoration: 'none', fontFamily: fonts.sans, fontSize: 13 }}>
+                  <span style={{ fontFamily: fonts.mono, color: JN.red, fontSize: 11, letterSpacing: '0.14em', marginRight: 8 }}>PUB</span>
+                  Nature Communications →
+                </a>
+              )}
+              {p.arxiv && (
+                <a href={p.arxiv} target="_blank" rel="noopener" style={{ display: 'block', padding: '10px 0', borderBottom: `1px dashed ${JN.ruleSoft}`, color: JN.ink, textDecoration: 'none', fontFamily: fonts.sans, fontSize: 13 }}>
+                  <span style={{ fontFamily: fonts.mono, color: JN.red, fontSize: 11, letterSpacing: '0.14em', marginRight: 8 }}>arXiv</span>
+                  landing page →
+                </a>
+              )}
+            </div>
+          </aside>
+
+          <article>
+            <p style={{ fontSize: 18, lineHeight: 1.6, textWrap: 'pretty', margin: '0 0 32px', color: JN.inkSoft }}>
+              <span style={{ float: 'left', fontSize: 64, lineHeight: 0.85, paddingRight: 10, color: JN.red, fontFamily: fonts.serif, marginTop: 4 }}>{p.desc[0]}</span>
+              {p.desc.slice(1)}
+            </p>
+            <div style={{ aspectRatio: '16/7', border: `1px solid ${JN.rule}`, background: JN.paperWarm, margin: '24px 0 8px' }}>
+              {p.id === 'spectral_sampling' ? <KaczmarzPlaceholder color={JN.red} /> : p.id === 'hiv_tb' ? <HivTbPlaceholder color={JN.red} accent={JN.blue} /> : <ReplayPlaceholder color={JN.red} accent={JN.blue} />}
+            </div>
+            <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.mute, letterSpacing: '0.06em', marginBottom: 40 }}>
+              Fig. 1 — {figCaption(p.id)}.
+            </div>
+            {projectSections(p.id).map(s => (
+              <div key={s.h} style={{ marginBottom: 32 }}>
+                <h3 style={{ fontSize: 24, fontWeight: 400, lineHeight: 1.2, margin: '0 0 10px', letterSpacing: '-0.005em', color: JN.ink }}>{s.h}</h3>
+                <p style={{ fontSize: 16, lineHeight: 1.7, color: JN.inkSoft, textWrap: 'pretty', margin: 0 }}>{s.p}</p>
+              </div>
+            ))}
+
+            <div style={{ marginTop: 56, paddingTop: 20, borderTop: `1px solid ${JN.rule}`, display: 'flex', justifyContent: 'space-between', fontFamily: fonts.sans, fontSize: 12, color: JN.mute, letterSpacing: '0.12em' }}>
+              {prev ? (
+                <button onClick={() => nav('project', prev.id)} style={{ all: 'unset', cursor: 'pointer', color: JN.red }}>← § {prev.num} · {prev.shortTitle}</button>
+              ) : <span />}
+              <button onClick={() => nav('home')} style={{ all: 'unset', cursor: 'pointer', color: JN.mute }}>↑ Index</button>
+              {next ? (
+                <button onClick={() => nav('project', next.id)} style={{ all: 'unset', cursor: 'pointer', color: JN.red }}>§ {next.num} · {next.shortTitle} →</button>
+              ) : <span />}
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function renderEditorialTitle(title) {
+  // italicize trailing "method name" for editorial feel — simple heuristic
+  const words = title.split(' ');
+  if (words.length > 4) {
+    const pivot = Math.floor(words.length * 0.55);
+    return <>{words.slice(0, pivot).join(' ')} <em>{words.slice(pivot).join(' ')}</em></>;
+  }
+  return title;
+}
+
+function figCaption(id) {
+  return id === 'spectral_sampling' ? 'iterates projecting onto successive hyperplanes under spectral weighting'
+       : id === 'hiv_tb' ? 'treatment-outcome trajectories, pre/post universal ART, Gaborone'
+       : 'decoded odor-sequence ensembles during post-task quiescence';
+}
+
+function projectSections(id) {
+  if (id === 'spectral_sampling') return [
+    { h: '01 · Motivation', p: 'In tomography, consensus, and constrained optimization we meet systems Ax = b with m ≫ n. Iterative row-action methods are attractive because they avoid forming A⊤A and scale in m without ever holding the whole matrix. The question is which row to pick next.' },
+    { h: '02 · Spectral weights', p: 'We derive a weight proportional to each row\'s alignment with the least-resolved singular direction. Computed once, reused across iterations. The cost is a small eigenpair estimate; the benefit is a geometry-aware sampler.' },
+    { h: '03 · Convergence', p: 'On ill-conditioned problems we observe a consistent reduction in iterates-to-tolerance, with stronger gains at tighter tolerances. Acceleration is most pronounced for systems whose energy concentrates in a few directions.' },
+    { h: '04 · Inequalities', p: 'The sampler extends naturally to overdetermined systems of linear inequalities, where the projection operator is one-sided. We show conditions under which the spectral bias remains well-defined.' },
+  ];
+  if (id === 'hiv_tb') return [
+    { h: '01 · Background', p: 'Botswana\'s 2016 rollout of universal access to antiretroviral therapy created a natural discontinuity for studying how HIV co-infection interacts with tuberculosis treatment outcomes.' },
+    { h: '02 · Data & design', p: 'Patient-level records from Gaborone health facilities were analyzed with a difference-in-differences specification, paired with a propensity-matched control for ART adherence.' },
+    { h: '03 · Findings', p: 'Post-policy cohorts show meaningfully improved cure rates among HIV-positive TB patients, with the effect concentrated among those achieving viral suppression within six months.' },
+  ];
+  return [
+    { h: '01 · Setup', p: 'Rats trained on an odor-sequence memory task; hippocampal ensemble activity recorded across task performance and subsequent quiescence.' },
+    { h: '02 · Decoding', p: 'Bayesian ensemble decoders trained on task-phase activity were applied to replay windows. Candidate sequences were scored against the trained and novel task structure.' },
+    { h: '03 · Result', p: 'Nonspatial odor sequences are replayed during quiescence with a forward/reverse bias dependent on task epoch, consistent with a role in consolidation of event order.' },
+  ];
+}
+
+// ─────────────────────────────────────────────────────────────
+// INSTRUCTION — Blueprint
+// ─────────────────────────────────────────────────────────────
+function InstructionBlueprint({ fontPair = 'ibm', nav }) {
+  const fonts = BFonts(fontPair);
+  const bg = {
+    backgroundColor: JN.paper,
+    backgroundImage: `${window.JN_TEXTURES.graphPaper(0.035, 26, '#8a7a60')}`,
+    backgroundSize: '26px 26px',
+  };
+  const toc = [
+    { n: 'I', title: 'Bayes, in brief', desc: 'Prior, likelihood, posterior; why the denominator is the hard part.' },
+    { n: 'II', title: 'Monte Carlo & importance sampling', desc: 'Approximating expectations when the integrand is tractable but the integral is not.' },
+    { n: 'III', title: 'Metropolis–Hastings', desc: 'Building a chain whose stationary distribution is the target; proposal design and diagnostics.' },
+    { n: 'IV', title: 'Gibbs sampling', desc: 'Coordinate-wise conditionals when the full conditional is easy; blocked and collapsed variants.' },
+    { n: 'V', title: 'Variational methods', desc: 'Optimization instead of sampling; the ELBO, mean-field approximations, and where they break down.' },
+    { n: 'VI', title: 'Examples & errata', desc: 'Worked examples from Turkman, Paulino & Müller (Chapters 4–9) with corrections.' },
+  ];
+  return (
+    <div style={{ ...bg, color: JN.ink, fontFamily: fonts.serif, minHeight: '100%' }}>
+      <TopNav fonts={fonts} nav={nav} active="instruction" />
+
+      <section style={{ padding: '72px 72px 48px', position: 'relative', overflow: 'hidden' }}>
+        <Komorebi opacity={0.45} />
+        <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute, marginBottom: 18 }}>
+          Instruction
+        </div>
+        <h1 style={{ fontFamily: fonts.serif, fontSize: 'clamp(40px, 6vw, 80px)', lineHeight: 1.05, fontWeight: 400, letterSpacing: '-0.02em', margin: 0, maxWidth: 1000, color: JN.ink, position: 'relative' }}>
+          Notes I write to teach myself, kept public.
+        </h1>
+        <p style={{ fontFamily: fonts.serif, fontSize: 20, color: JN.inkSoft, marginTop: 24, maxWidth: 700, textWrap: 'pretty', position: 'relative' }}>
+          Working documents and teaching material, mostly in progress. Everything here is a draft.
+        </p>
+      </section>
+
+      <SashikoRule color={JN.red} opacity={1} />
+
+      <section style={{ padding: '72px 72px' }}>
+        <SheetHeaderB num="01" title="Resources" subtitle="One active — more to come" fonts={fonts} />
+        <div style={{ marginTop: 40 }}>
+          <button onClick={() => nav('guide')} style={{ all: 'unset', cursor: 'pointer', display: 'block', width: '100%' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr 160px', gap: 48, padding: '28px 8px', transition: 'background 0.2s', borderBottom: `1px dashed ${JN.ruleSoft}` }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(244, 241, 234, 0.5)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              {/* Thumbnail */}
+              <div style={{ aspectRatio: '3/4', background: JN.paperWarm, border: `1px solid ${JN.ruleSoft}`, position: 'relative', overflow: 'hidden', padding: 16 }}>
+                <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 11, color: JN.muteCool, marginBottom: 8 }}>Volume I · draft</div>
+                <div style={{ fontFamily: fonts.serif, fontSize: 22, lineHeight: 1.1, fontStyle: 'italic', color: JN.ink, marginBottom: 16 }}>A Student's Guide to <em style={{ color: JN.red }}>Numerical Bayes</em></div>
+                <svg viewBox="0 0 140 160" style={{ width: '100%', height: 'auto' }}>
+                  <path d="M 10 120 Q 40 40 70 100 T 130 120" fill="none" stroke={JN.red} strokeWidth="1.2" opacity="0.8" />
+                  <path d="M 10 120 Q 40 70 70 110 T 130 120" fill="none" stroke={JN.red} strokeWidth="1.2" opacity="0.5" strokeDasharray="3,3" />
+                  <line x1="10" y1="120" x2="130" y2="120" stroke={JN.ink} strokeWidth="0.5" />
+                  {[20, 40, 60, 80, 100].map(x => <line key={x} x1={x} y1="120" x2={x} y2="124" stroke={JN.ink} strokeWidth="0.5" />)}
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>In draft · 42 pages</div>
+                <h3 style={{ fontFamily: fonts.serif, fontSize: 36, fontWeight: 400, lineHeight: 1.1, margin: '0 0 14px', color: JN.ink }}>A Student's Guide to <em>Numerical Bayes</em></h3>
+                <p style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 1.65, color: JN.inkSoft, textWrap: 'pretty', margin: '0 0 16px', maxWidth: 620 }}>
+                  A reading companion to <em>Computational Bayesian Statistics — An Introduction</em> by Turkman, Paulino &amp; Müller. My attempt to simplify — to others, and to myself — the concepts and methods of numerical solutions to Bayesian inference, in a more accessible and intuitive way.
+                </p>
+                <p style={{ fontFamily: fonts.serif, fontSize: 15, lineHeight: 1.6, color: JN.mute, textWrap: 'pretty', margin: 0, maxWidth: 620, fontStyle: 'italic' }}>
+                  A work in progress, and likely to contain mistakes — please <a href={'mailto:' + window.JN_DATA.contacts[0].value} style={{ color: JN.red }}>write to me</a> with any corrections or feedback.
+                </p>
+              </div>
+              <div style={{ alignSelf: 'center', textAlign: 'right' }}>
+                <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 16, color: JN.red }}>read →</div>
+              </div>
+            </div>
+          </button>
+        </div>
+
+        {/* TOC preview */}
+        <div style={{ marginTop: 48 }}>
+          <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 16 }}>
+            Table of contents
+          </div>
+          {toc.map((c, i) => (
+            <div key={c.n} style={{ display: 'grid', gridTemplateColumns: '60px 260px 1fr auto', padding: '16px 0', borderBottom: i < toc.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none', alignItems: 'baseline', gap: 20 }}>
+              <span style={{ fontFamily: fonts.serif, fontSize: 18, color: JN.red, fontStyle: 'italic' }}>{c.n}.</span>
+              <span style={{ fontFamily: fonts.serif, fontSize: 20, color: JN.ink }}>{c.title}</span>
+              <span style={{ fontFamily: fonts.serif, fontSize: 15, color: JN.inkSoft, textWrap: 'pretty', lineHeight: 1.5 }}>{c.desc}</span>
+              <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 13, color: JN.mute }}>p. {i * 7 + 3}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <SashikoRule color={JN.red} opacity={1} />
+
+      <section style={{ padding: '72px 72px' }}>
+        <SheetHeaderB num="02" title="Soon" subtitle="Placeholders, still drafting" fonts={fonts} />
+        <div style={{ marginTop: 40, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48 }}>
+          {[
+            { t: 'Variational inference, a working intuition', d: 'Why the ELBO looks the way it does; what the mean-field gives up.' },
+            { t: 'Reading Strohmer–Vershynin', d: 'A slow pass through the paper that started my Kaczmarz curiosity.' },
+          ].map(x => (
+            <div key={x.t} style={{ opacity: 0.75 }}>
+              <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 13, color: JN.mute, marginBottom: 8 }}>Not yet drafted</div>
+              <h4 style={{ fontFamily: fonts.serif, fontSize: 24, fontWeight: 400, margin: '0 0 8px', color: JN.ink, lineHeight: 1.2 }}>{x.t}</h4>
+              <p style={{ fontFamily: fonts.serif, fontSize: 16, lineHeight: 1.6, color: JN.inkSoft, margin: 0 }}>{x.d}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <SheetFooter fonts={fonts} />
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// GUIDE — simple reading view placeholder
+// ─────────────────────────────────────────────────────────────
+function GuideBlueprint({ fontPair, nav }) {
+  const fonts = BFonts(fontPair);
+  const bg = {
+    backgroundColor: JN.paper,
+    backgroundImage: `${window.JN_TEXTURES.graphPaper(0.035, 26, '#8a7a60')}`,
+    backgroundSize: '26px 26px',
+  };
+  return (
+    <div style={{ ...bg, color: JN.ink, fontFamily: fonts.serif, minHeight: '100%' }}>
+      <TopNav fonts={fonts} nav={nav} active="instruction" />
+      <div style={{ maxWidth: 760, margin: '0 auto', padding: '80px 72px' }}>
+        <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.mute, marginBottom: 14 }}>Volume I — a draft</div>
+        <h1 style={{ fontFamily: fonts.serif, fontSize: 'clamp(40px, 6vw, 64px)', lineHeight: 1.05, fontWeight: 400, letterSpacing: '-0.01em', margin: '0 0 20px', color: JN.ink }}>
+          A Student's Guide to <em>Numerical Bayes</em>
+        </h1>
+        <p style={{ fontFamily: fonts.serif, fontSize: 20, lineHeight: 1.5, color: JN.inkSoft, textWrap: 'pretty', margin: '0 0 32px', fontStyle: 'italic' }}>
+          with worked examples — after Turkman, Paulino &amp; Müller.
+        </p>
+        <SashikoRule color={JN.red} opacity={1} width={80} my={8} />
+        <p style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 1.75, color: JN.inkSoft, textWrap: 'pretty', margin: '28px 0 40px' }}>
+          This is a reading companion, not a textbook. I wrote it while working through <em>Computational Bayesian Statistics — An Introduction</em>, and kept it public so that another student starting the same book might have a slightly shorter road.
+        </p>
+        <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 16 }}>Contents</div>
+        {[
+          ['I', 'Bayes, in brief', 3],
+          ['II', 'Monte Carlo & importance sampling', 10],
+          ['III', 'Metropolis–Hastings', 17],
+          ['IV', 'Gibbs sampling', 24],
+          ['V', 'Variational methods', 31],
+          ['VI', 'Examples & errata', 38],
+        ].map(([n, title, p], i) => (
+          <div key={n} style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 0', borderBottom: `1px dashed ${JN.ruleSoft}`, fontFamily: fonts.serif, fontSize: 18, color: JN.ink }}>
+            <span><span style={{ color: JN.red, fontStyle: 'italic', marginRight: 16 }}>{n}.</span>{title}</span>
+            <span style={{ fontStyle: 'italic', color: JN.mute, fontSize: 14 }}>p. {p}</span>
+          </div>
+        ))}
+        <div style={{ marginTop: 48, padding: '24px 0', textAlign: 'center', fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.mute }}>
+          · body text in the PDF build ·
+        </div>
+        <div style={{ marginTop: 24, textAlign: 'center' }}>
+          <button onClick={() => nav('instruction')} style={{ all: 'unset', cursor: 'pointer', fontFamily: fonts.serif, fontStyle: 'italic', color: JN.red, fontSize: 16 }}>← back to instruction</button>
+        </div>
+      </div>
+      <SheetFooter fonts={fonts} />
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// CV — Blueprint
+// ─────────────────────────────────────────────────────────────
+function CVBlueprint({ fontPair, nav }) {
+  const fonts = BFonts(fontPair);
+  const L = window.JN_DATA;
+  const cv = L.cv;
+  const bg = {
+    backgroundColor: JN.paper,
+    backgroundImage: `${window.JN_TEXTURES.graphPaper(0.035, 26, '#8a7a60')}`,
+    backgroundSize: '26px 26px',
+  };
+  const roman = (n) => ({ '01': 'I', '02': 'II', '03': 'III', '04': 'IV' }[n] || n);
+  const Block = ({ n, title, rows }) => (
+    <div style={{ marginBottom: 56 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginBottom: 20 }}>
+        <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 18, color: JN.red }}>§ {roman(n)}</span>
+        <SashikoRule color={JN.red} opacity={1} width={32} />
+        <h2 style={{ fontFamily: fonts.serif, fontSize: 32, fontWeight: 400, letterSpacing: '-0.01em', margin: 0, color: JN.ink }}>{title}</h2>
+      </div>
+      <div>
+        {rows.map((r, i) => (
+          <div key={i} style={{ display: 'grid', gridTemplateColumns: '120px 1fr 1fr', padding: '16px 0', borderBottom: i < rows.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none', alignItems: 'baseline', gap: 24 }}>
+            <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.mute }}>{r.year}</span>
+            <div>
+              <div style={{ fontFamily: fonts.serif, fontSize: 19, color: JN.ink }}>{r.title}</div>
+              {r.inst && <div style={{ fontFamily: fonts.serif, fontSize: 15, color: JN.inkSoft, marginTop: 2, fontStyle: 'italic' }}>{r.inst}</div>}
+            </div>
+            <div style={{ fontFamily: fonts.serif, fontSize: 15, color: JN.mute, textWrap: 'pretty', lineHeight: 1.55 }}>{r.note || ''}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+  return (
+    <div style={{ ...bg, color: JN.ink, fontFamily: fonts.serif, minHeight: '100%' }}>
+      <TopNav fonts={fonts} nav={nav} active="cv" />
+      <div style={{ maxWidth: 1080, margin: '0 auto', padding: '72px 72px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 40, alignItems: 'end', marginBottom: 48 }}>
+          <div>
+            <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute, marginBottom: 12 }}>Curriculum vitae</div>
+            <h1 style={{ fontFamily: fonts.serif, fontSize: 'clamp(40px, 6vw, 72px)', lineHeight: 1, fontWeight: 400, letterSpacing: '-0.02em', margin: 0, color: JN.ink }}>
+              James A. <em>Nguyen</em>
+            </h1>
+            <div style={{ fontFamily: fonts.serif, fontSize: 15, color: JN.mute, marginTop: 16, fontStyle: 'italic' }}>
+              UC Irvine · PhD Statistics, class of 2032 · {L.contacts[0].value}
+            </div>
+          </div>
+          <a href="files/nguyenJames_cv.pdf" target="_blank" rel="noopener" style={{ display: 'inline-block', padding: '10px 18px', borderBottom: `1px solid ${JN.red}`, color: JN.red, fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 16, textDecoration: 'none' }}>
+            download PDF ↓
+          </a>
+        </div>
+
+        <SashikoRule color={JN.red} opacity={1} />
+        <div style={{ height: 40 }} />
+
+        <Block n="01" title="Education" rows={cv.education} />
+        <Block n="02" title="Research" rows={cv.research} />
+        <Block n="03" title="Awards" rows={cv.awards} />
+        <Block n="04" title="Teaching" rows={cv.teaching} />
+
+        <div style={{ marginTop: 32, padding: '24px 0', fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute, textAlign: 'center' }}>
+          Full CV as PDF — <a href="files/nguyenJames_cv.pdf" target="_blank" rel="noopener" style={{ color: JN.red }}>files/nguyenJames_cv.pdf</a>
+        </div>
+      </div>
+      <SheetFooter fonts={fonts} />
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// COLLABORATORS — Blueprint
+// ─────────────────────────────────────────────────────────────
+function CollaboratorsBlueprint({ fontPair, nav }) {
+  const fonts = BFonts(fontPair);
+  const L = window.JN_DATA;
+  const bg = {
+    backgroundColor: JN.paper,
+    backgroundImage: `${window.JN_TEXTURES.graphPaper(0.035, 26, '#8a7a60')}`,
+    backgroundSize: '26px 26px',
+  };
+  return (
+    <div style={{ ...bg, color: JN.ink, fontFamily: fonts.serif, minHeight: '100%', position: 'relative' }}>
+      <TopNav fonts={fonts} nav={nav} active="collaborators" />
+      <section style={{ maxWidth: 1080, margin: '0 auto', padding: '72px 72px', position: 'relative' }}>
+        <Komorebi opacity={0.4} />
+        <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute, marginBottom: 16, position: 'relative' }}>Collaborators</div>
+        <h1 style={{ fontFamily: fonts.serif, fontSize: 'clamp(40px, 6vw, 72px)', lineHeight: 1.05, fontWeight: 400, letterSpacing: '-0.02em', margin: '0 0 48px', color: JN.ink, maxWidth: 900, position: 'relative' }}>
+          People I've had the fortune to work with.
+        </h1>
+        <SashikoRule color={JN.red} opacity={1} />
+        <div style={{ marginTop: 8 }}>
+          {L.collaborators.map((c, i) => (
+            <div key={c.name} style={{ display: 'grid', gridTemplateColumns: '40px 1fr 1fr 1fr', padding: '22px 0', borderBottom: i < L.collaborators.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none', alignItems: 'baseline', gap: 20 }}>
+              <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.red }}>{i + 1}.</span>
+              <span style={{ fontFamily: fonts.serif, fontSize: 22, color: JN.ink }}>{c.name}</span>
+              <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute }}>{c.role}</span>
+              <span style={{ fontFamily: fonts.serif, fontSize: 16, color: JN.inkSoft }}>{c.inst}</span>
+            </div>
+          ))}
+        </div>
+        <p style={{ fontFamily: fonts.serif, fontSize: 17, color: JN.inkSoft, fontStyle: 'italic', marginTop: 40, maxWidth: 720, textWrap: 'pretty', lineHeight: 1.6 }}>
+          Collaboration is the quiet engine of academic work. If you think there's a useful overlap with what you're working on, <a href={'mailto:' + L.contacts[0].value} style={{ color: JN.red }}>please write</a>.
+        </p>
+      </section>
+      <SheetFooter fonts={fonts} />
+    </div>
+  );
+}
+
+Object.assign(window, {
+  JamesWebsite,
+  HomeBlueprint,
+  ProjectDetailEditorial,
+  InstructionBlueprint,
+  GuideBlueprint,
+  CVBlueprint,
+  CollaboratorsBlueprint,
+});
+
+
+</script>
+
+  <script type="text/babel" data-presets="env,react">
+    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+      "fontPairB": "ibm",
+      "fontPairA": "baskerville"
+    }/*EDITMODE-END*/;
+
+    function usePersistentState() {
+      const [state, setState] = React.useState(TWEAK_DEFAULTS);
+      const update = (k, v) => {
+        setState(s => {
+          const n = { ...s, [k]: v };
+          window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [k]: v } }, '*');
+          return n;
+        });
+      };
+      return [state, update];
+    }
+
+    function TweaksPanel({ state, update, visible }) {
+      return (
+        <div className={`tweaks-panel ${visible ? 'visible' : ''}`}>
+          <h4>Tweaks · Font pairings</h4>
+          <div className="tweaks-row">
+            <div className="tweaks-label">Home / Instruction / CV (B)</div>
+            <div className="tweaks-opts">
+              {[['ibm','IBM Plex'],['jetbrains','JetBrains'],['spectral','Spectral']].map(([k,l]) => (
+                <button key={k} className={state.fontPairB === k ? 'active' : ''} onClick={() => update('fontPairB', k)}>{l}</button>
+              ))}
+            </div>
+          </div>
+          <div className="tweaks-row">
+            <div className="tweaks-label">Project detail (A)</div>
+            <div className="tweaks-opts">
+              {[['baskerville','Baskerville'],['playfair','Playfair'],['garamond','Garamond']].map(([k,l]) => (
+                <button key={k} className={state.fontPairA === k ? 'active' : ''} onClick={() => update('fontPairA', k)}>{l}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const [state, update] = usePersistentState();
+      const [tweaksOn, setTweaksOn] = React.useState(false);
+      React.useEffect(() => {
+        const onMsg = (e) => {
+          if (!e.data || !e.data.type) return;
+          if (e.data.type === '__activate_edit_mode') setTweaksOn(true);
+          if (e.data.type === '__deactivate_edit_mode') setTweaksOn(false);
+        };
+        window.addEventListener('message', onMsg);
+        window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+        return () => window.removeEventListener('message', onMsg);
+      }, []);
+      return (
+        <>
+          <JamesWebsite fontPairB={state.fontPairB} fontPairA={state.fontPairA} />
+          <TweaksPanel state={state} update={update} visible={tweaksOn} />
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

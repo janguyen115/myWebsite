@@ -22,7 +22,7 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont,
                "Segoe UI", Roboto, sans-serif;
   line-height: 1.6;
-  background-color: #fffdf8;
+  background-color: #ffffff;
   color: #79291A; /* text color for paragraphs and body text */
 }
 
@@ -89,9 +89,9 @@ h1, h2, h3, h4, h5, h6 {
    ========================= */
 
 :root {
-  --bg-main: #fffdf8;
+  --bg-main: #ffffff;
   --bg-card: #fffdf8;
-  --bg-accent: #fffdf8;
+  --bg-accent: #ffffff;
 
   --text-main: #703500;
   --text-muted: #a73000;

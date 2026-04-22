@@ -1,171 +1,1055 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
-
-<link rel="icon" href="/myWebsite/images/favicon.ico" type="image/x-icon">
-
-<script>
-  window.addEventListener("scroll", () => {
-    const header = document.querySelector("header");
-    header.classList.toggle("scrolled", window.scrollY > 10);
-  });
-</script>
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>James A. Nguyen</title>
-
-  <!-- Link your CSS -->
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Libre+Caslon+Text:ital@0;1&family=Archivo:wght@400;500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    html, body, #root { margin: 0; padding: 0; min-height: 100%; background: #f4f1ea; }
+    * { box-sizing: border-box; }
+  </style>
 </head>
-<body id="top">
+<body>
+  <div id="root"></div>
 
-  <!-- ================= HEADER ================= -->
-<header id="site-header"></header>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
 
+  <script type="text/babel" data-presets="env,react">
 
-  <!-- ================= HERO ================= -->
-<section class="hero">
-  <img src="images/hero_center_image_name_phd_uci.png" alt="Hero graphic" class="hero-img">
-</section>
+// ─── Design Tokens ────────────────────────────────────────────────────────────
+window.JN_TOKENS = {
+  paper:     '#f4f1ea',
+  paperWarm: '#efeadf',
+  paperCool: '#edeae3',
+  ink:       '#1a1a1c',
+  inkSoft:   '#2c2a28',
+  mute:      '#6e655a',
+  muteCool:  '#5a5c62',
+  rule:      '#cec8bb',
+  ruleSoft:  '#e2dccf',
+  red:       '#7a1a1a',
+  redInk:    '#5e1515',
+  redSoft:   '#a23d32',
+  redTint:   '#e8d6d0',
+  blue:      '#2b3f6b',
+  blueSoft:  '#4d6a9a',
+  blueTint:  '#d3dbe8',
+};
 
-  <!-- ================= ABOUT ================= -->
-  <section id="about" class="section">
-    <div class="container">
-    <h1>About</h1>
-    <img src="images/about_banner.jpg" alt="about banner" class="img">
-    <p>
-      Hello! I'm James A. Nguyen, a recent graduate from the University of California, Irvine (UCI) with a B.S. Applied Mathematics. 
-      I am pursuing a Ph.D. in Statistics under the advisement of Dr. Suddherth and Dr. Mandt, with whom I am focused on answering problems related to addressing computational limitations in Bayesian inference. 
-      I am especially interested in developing efficient inference methods for variational methods applied to high-dimensional data, with applications in machine learning.
-    </p>
-    </div>
-  </section>
+// ─── Textures ─────────────────────────────────────────────────────────────────
+window.JN_TEXTURES = {
+  graphPaper: (opacity = 0.04, size = 24, color = '#6e655a') => {
+    const c = encodeURIComponent(color);
+    return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}'%3E%3Cpath d='M ${size} 0 L 0 0 0 ${size}' fill='none' stroke='${c}' stroke-width='0.5' opacity='${opacity}'/%3E%3C/svg%3E")`;
+  },
+  sashikoRule: (color = '#7a1a1a', opacity = 0.55) => {
+    const c = encodeURIComponent(color);
+    const stitches = [
+      { x: 2,   len: 12, o: 0.9,  sw: 1.4, ty: 5.6, wob: 0.6,  pull: -0.3 },
+      { x: 20,  len: 9,  o: 0.7,  sw: 1.0, ty: 6.3, wob: -0.4, pull: 0.2 },
+      { x: 36,  len: 14, o: 0.95, sw: 1.6, ty: 5.7, wob: 0.8,  pull: -0.5 },
+      { x: 58,  len: 8,  o: 0.65, sw: 0.9, ty: 6.4, wob: -0.5, pull: 0.3 },
+      { x: 72,  len: 13, o: 0.88, sw: 1.3, ty: 5.9, wob: 0.5,  pull: -0.2 },
+      { x: 92,  len: 10, o: 0.75, sw: 1.1, ty: 6.1, wob: -0.6, pull: 0.4 },
+      { x: 108, len: 15, o: 0.93, sw: 1.5, ty: 5.8, wob: 0.7,  pull: -0.4 },
+      { x: 130, len: 9,  o: 0.7,  sw: 1.0, ty: 6.2, wob: -0.3, pull: 0.2 },
+      { x: 146, len: 12, o: 0.85, sw: 1.3, ty: 6.0, wob: 0.5,  pull: -0.3 },
+      { x: 164, len: 8,  o: 0.68, sw: 0.95,ty: 6.3, wob: -0.4, pull: 0.1 },
+      { x: 178, len: 13, o: 0.88, sw: 1.35,ty: 5.9, wob: 0.6,  pull: -0.3 },
+    ];
+    const strokes = stitches.map(s => {
+      const x1 = s.x, y1 = s.ty + s.pull * 0.4;
+      const x2 = s.x + s.len, y2 = s.ty - s.pull * 0.4;
+      const cx = s.x + s.len * 0.5, cy = (y1 + y2) / 2 + s.wob;
+      return `%3Cpath d='M${x1} ${y1.toFixed(2)} Q${cx.toFixed(2)} ${cy.toFixed(2)} ${x2} ${y2.toFixed(2)}' stroke='${c}' stroke-width='${s.sw}' stroke-linecap='round' fill='none' opacity='${(s.o * opacity).toFixed(2)}'/%3E`;
+    }).join('');
+    const dots = stitches.map(s => {
+      const r1 = (s.sw * 0.7).toFixed(2), r2 = (s.sw * 0.6).toFixed(2);
+      return `%3Ccircle cx='${s.x}' cy='${(s.ty + s.pull * 0.4).toFixed(2)}' r='${r1}' fill='${c}' opacity='${(s.o * opacity * 0.35).toFixed(2)}'/%3E%3Ccircle cx='${s.x + s.len}' cy='${(s.ty - s.pull * 0.4).toFixed(2)}' r='${r2}' fill='${c}' opacity='${(s.o * opacity * 0.3).toFixed(2)}'/%3E`;
+    }).join('');
+    const bloom = stitches.map(s => {
+      const x1 = s.x, y1 = s.ty + s.pull * 0.4;
+      const x2 = s.x + s.len, y2 = s.ty - s.pull * 0.4;
+      const cx = s.x + s.len * 0.5, cy = (y1 + y2) / 2 + s.wob;
+      return `%3Cpath d='M${x1} ${y1.toFixed(2)} Q${cx.toFixed(2)} ${cy.toFixed(2)} ${x2} ${y2.toFixed(2)}' stroke='${c}' stroke-width='${(s.sw * 2.4).toFixed(2)}' stroke-linecap='round' fill='none' opacity='${(s.o * opacity * 0.22).toFixed(2)}'/%3E`;
+    }).join('');
+    return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='12' viewBox='0 0 200 12'%3E%3Cdefs%3E%3Cfilter id='b' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeGaussianBlur stdDeviation='0.7'/%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url(%23b)'%3E${bloom}%3C/g%3E${dots}${strokes}%3C/svg%3E")`;
+  },
+};
 
-  <!-- ================= PROJECTS ================= -->
+// ─── Komorebi SVG ─────────────────────────────────────────────────────────────
+window.JN_KOMOREBI_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:soft-light;opacity:0.6"><defs><filter id="komBlur"><feGaussianBlur stdDeviation="28"/></filter></defs><g filter="url(#komBlur)"><ellipse cx="180" cy="140" rx="90" ry="40" fill="#fff4c8" opacity="0.55"/><ellipse cx="320" cy="240" rx="60" ry="30" fill="#ffecb0" opacity="0.4"/><ellipse cx="540" cy="90" rx="110" ry="50" fill="#fff0c0" opacity="0.5"/><ellipse cx="850" cy="180" rx="80" ry="40" fill="#ffe8a8" opacity="0.45"/><ellipse cx="1050" cy="320" rx="100" ry="50" fill="#fff4c8" opacity="0.4"/><ellipse cx="240" cy="520" rx="70" ry="35" fill="#fff0c0" opacity="0.35"/><ellipse cx="720" cy="640" rx="120" ry="55" fill="#ffecb0" opacity="0.4"/></g></svg>';
 
+// ─── Data ─────────────────────────────────────────────────────────────────────
+window.JN_DATA = {
+  projects: [
+    {
+      id: 'spectral_sampling',
+      num: '01',
+      year: '2025',
+      tag: 'NUMERICAL LINEAR ALGEBRA',
+      title: 'Spectrally-Assisted Sampling for Randomized Kaczmarz',
+      shortTitle: 'Spectrally-Assisted Sampling',
+      desc: 'Aiming to address inefficiencies in the standard random sampling distribution for Randomized Kaczmarz and related algorithms, we explore alternatives that promote faster, more reliable convergence on ill-conditioned, overdetermined systems of linear inequalities.',
+      arxiv: 'https://arxiv.org/abs/2407.00000',
+      pdf: 'files/read_between_the_hyperplanes.pdf',
+      collaborators: ['Dr. E. Sudderth', 'Dr. S. Mandt'],
+      status: 'preprint · under review',
+      keywords: ['Randomized Kaczmarz', 'spectral sampling', 'ill-conditioned systems', 'convergence rates'],
+    },
+    {
+      id: 'hiv_tb',
+      num: '02',
+      year: '2024',
+      tag: 'EPIDEMIOLOGY · PUBLIC HEALTH',
+      title: 'HIV on Tuberculosis Treatment Outcomes in Botswana',
+      shortTitle: 'HIV on TB Treatment Outcomes',
+      desc: 'An epidemiological study on the impact of public health policy in Gaborone, Botswana in response to the high prevalence of HIV and its effect on tuberculosis treatment outcomes — adjusted for universal access to antiretroviral therapy.',
+      arxiv: null,
+      pdf: 'files/hiv_tb.pdf',
+      collaborators: ['Botswana Ministry of Health (data)', 'Dr. M. Mbulaiteye'],
+      status: 'report · 2024',
+      keywords: ['causal inference', 'public health', 'ART', 'Botswana'],
+    },
+    {
+      id: 'hippocampal_replay',
+      num: '03',
+      year: '2023',
+      tag: 'COMPUTATIONAL NEUROSCIENCE',
+      title: 'Hippocampal Replay of Nonspatial Sequences',
+      shortTitle: 'Hippocampal Replay',
+      desc: 'An exploratory analysis on the neuronal decoding of odor presentations in the hippocampus — a look into the brain and how understanding it could inform the treatment and identification of cognitive diseases related to working memory.',
+      arxiv: null,
+      pdf: 'files/hippocampal_ensembles.pdf',
+      collaborators: ['Dr. N. Fortin lab, UCI CNLM'],
+      status: 'published · Nature Communications',
+      publication: 'files/nature_communications.pdf',
+      keywords: ['hippocampus', 'replay', 'neural decoding', 'working memory'],
+    },
+  ],
+  collaborators: [
+    { name: 'Dr. Erik Sudderth',  role: 'Advisor — Bayesian ML',            inst: 'UC Irvine, Computer Science' },
+    { name: 'Dr. Stephan Mandt',  role: 'Co-Advisor — Variational Inference', inst: 'UC Irvine, Computer Science' },
+    { name: 'Dr. Norbert Fortin', role: 'Hippocampal replay',                   inst: 'UC Irvine, CNLM' },
+    { name: 'Dr. Babak Shahbaba', role: 'Statistical neuroscience',             inst: 'UC Irvine, Statistics' },
+  ],
+  cv: {
+    education: [
+      { year: '2026 –',      title: 'Ph.D, Statistics',          inst: 'University of California, Irvine', note: 'Advisors: Dr. Sudderth · Dr. Mandt' },
+      { year: '2022 – 2025', title: 'B.S., Applied Mathematics', inst: 'University of California, Irvine', note: 'Emphasis in probability & computation · magna cum laude' },
+    ],
+    research: [
+      { year: '2025 –',      title: 'Graduate Researcher',      inst: 'Sudderth & Mandt Labs, UCI', note: 'Variational Bayesian inference for high-dim data' },
+      { year: '2023 – 2025', title: 'Undergraduate Researcher', inst: 'Fortin Lab, UCI CNLM',       note: 'Hippocampal replay · nonspatial sequence decoding' },
+    ],
+    awards: [
+      { year: '2025', title: 'Chancellor’s Award for Excellence in Undergraduate Research' },
+      { year: '2024', title: 'UCI Statistics Honors Program' },
+      { year: '2023', title: 'NSF Research Experience for Undergraduates (REU)' },
+    ],
+    teaching: [
+      { year: '2025', title: 'STATS 120A · Intro to Probability (TA)' },
+      { year: '2024', title: 'MATH 3A · Linear Algebra (Reader)' },
+    ],
+  },
+  contacts: [
+    { label: 'email',     value: 'nguyen.james115@gmail.com',  href: 'mailto:nguyen.james115@gmail.com' },
+    { label: 'linkedin',  value: 'in/jamesanguyen115',         href: 'https://www.linkedin.com/in/jamesanguyen115' },
+    { label: 'github',    value: 'janguyen115',                href: 'https://github.com/janguyen115' },
+    { label: 'scholar',   value: 'Google Scholar',             href: 'https://scholar.google.com/citations?user=Hm5224EAAAAJ&hl=en' },
+    { label: 'arxiv',     value: 'arxiv.org/a/nguyen_j',       href: 'https://arxiv.org/search/math?searchtype=author&query=Nguyen,+J' },
+    { label: 'instagram', value: '@jamesanguyen',              href: 'https://www.instagram.com/jamesanguyen/' },
+  ],
+};
 
-  <! change to expand title to see description on hover!>
+// ─── BayesianHero helpers ─────────────────────────────────────────────────────
+function clamp01(x) { return Math.max(0, Math.min(1, x)); }
+function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function makeGaussian(mu, sd, h) { return { mu, sd, h }; }
+function combineMu(a, b) {
+  const wa = 1 / (a.sd * a.sd), wb = 1 / (b.sd * b.sd);
+  return (wa * a.mu + wb * b.mu) / (wa + wb);
+}
+function combineSd(a, b) {
+  return Math.sqrt(1 / (1 / (a.sd * a.sd) + 1 / (b.sd * b.sd)));
+}
+function distY(d, x) {
+  const z = (x - d.mu) / d.sd;
+  return d.h * Math.exp(-0.5 * z * z);
+}
+function distPath(d, W, H, amp) {
+  const baseline = H - 18, maxY = H - 28 - 18, N = 180;
+  let out = `M 0 ${baseline}`;
+  for (let i = 0; i <= N; i++) {
+    const x = i / N;
+    out += ` L ${(x * W).toFixed(1)} ${(baseline - distY(d, x) * maxY * amp).toFixed(1)}`;
+  }
+  return out + ` L ${W} ${baseline} Z`;
+}
+function strokePath(d, W, H, amp) {
+  const baseline = H - 18, maxY = H - 28 - 18, N = 180;
+  let out = '';
+  for (let i = 0; i <= N; i++) {
+    const x = i / N;
+    out += (i === 0 ? 'M' : 'L') + ` ${(x * W).toFixed(1)} ${(baseline - distY(d, x) * maxY * amp).toFixed(1)} `;
+  }
+  return out;
+}
 
-  
-  <section id="projects" class="section">
-    <h1>Projects</h1>
-    <div class="container">
-    <div class="grid">
-      <div class="card">
-        <a href="projects/spectral_sampling.html">
-          <h3>Spectrally-Assisted Sampling for Randomized Kaczmarz</h3>
-          <p>Aiming to address inefficiencies in the standard random sampling distribution for Randomized Kaczmarz and other related algorithms, we explore alternative approaches to promote faster, more reliable convergence on an ill-conditioned subset of overdetermined systems of linear inequalities.</p>
-        </a> 
-      </div>
+// ─── BayesianHero component ───────────────────────────────────────────────────
+function BayesianHero({ color = '#7a1a1a', accent = '#2b3f6b', height = 220, seed = 0 }) {
+  const W = 780, H = height;
+  const [t, setT] = React.useState(0);
+  React.useEffect(() => {
+    const key = 'jn_hero_played_' + seed;
+    if (sessionStorage.getItem(key)) { setT(1); return; }
+    let raf;
+    const start = performance.now();
+    const tick = (now) => {
+      const p = Math.min(1, (now - start) / 2600);
+      setT(p);
+      if (p < 1) raf = requestAnimationFrame(tick);
+      else sessionStorage.setItem(key, '1');
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [seed]);
 
-      <div class="card">
-        <a href="projects/hiv_tb.html">
-          <h3>On the Effect of HIV on Tuberculosis Treatment Outcomes in Botswana, Adjusted for Universal Access to Antiretroviral Therapy (ART)</h3>
-          <p>An epidemiological study on the impact of public health policy in Gaborone, Botswana in response to the high prevalence of HIV and its effect on Tuberculosis treatment outcomes.</p>
-        </a>
-      </div>
+  const e1 = easeOutCubic(clamp01(t / 0.45));
+  const e2 = easeOutCubic(clamp01((t - 0.35) / 0.45));
+  const e3 = easeOutCubic(clamp01((t - 0.55) / 0.45));
+  const prior     = makeGaussian(0.50, 0.17, 1.0);
+  const likelihood = makeGaussian(0.62, 0.09, 1.25);
+  const postMu    = lerp(prior.mu, combineMu(prior, likelihood), e3);
+  const postSd    = lerp(prior.sd, combineSd(prior, likelihood), e3);
+  const posterior = makeGaussian(postMu, postSd, 1.45);
 
-      <div class="card">
-        <a href="projects/hippocampal_replay.html">
-          <h3>Hippocampal Replay of Nonspatial Sequences of Events</h3>
-          <p>An exploratory analysis on the neuronal decoding process of odor presentations in the hippocampus; a look into the brain and how understanding it could teach us about treating and/or identifying cognitive diseases related to working memory.</p>
-        </a>
-      </div>
-    </div>
-    </div>
-  </section>
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="auto" style={{ display: 'block', overflow: 'visible' }}>
+      <defs>
+        <linearGradient id={`jn-prior-${seed}`} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor={color} stopOpacity="0.18" /><stop offset="1" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id={`jn-like-${seed}`} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor={accent} stopOpacity="0.22" /><stop offset="1" stopColor={accent} stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id={`jn-post-${seed}`} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stopColor={color} stopOpacity="0.55" /><stop offset="1" stopColor={color} stopOpacity="0.04" />
+        </linearGradient>
+      </defs>
+      <line x1="0" y1={H - 18} x2={W} y2={H - 18} stroke={color} strokeWidth="0.5" strokeOpacity="0.35" />
+      <path d={distPath(prior, W, H, e1)} fill={`url(#jn-prior-${seed})`} />
+      <path d={strokePath(prior, W, H, e1)} fill="none" stroke={color} strokeOpacity="0.5" strokeWidth="1" />
+      <path d={distPath(likelihood, W, H, e2)} fill={`url(#jn-like-${seed})`} />
+      <path d={strokePath(likelihood, W, H, e2)} fill="none" stroke={accent} strokeOpacity="0.6" strokeWidth="1" strokeDasharray="3 2" />
+      <path d={distPath(posterior, W, H, e3)} fill={`url(#jn-post-${seed})`} />
+      <path d={strokePath(posterior, W, H, e3)} fill="none" stroke={color} strokeWidth="1.6" />
+      <g transform={`translate(0 ${H - 18}) scale(1 -0.35)`} opacity="0.18">
+        <path d={strokePath(posterior, W, H, e3)} fill="none" stroke={color} strokeWidth="1.2" />
+      </g>
+    </svg>
+  );
+}
 
-  <!-- ================= CONTACT ================= -->
+// ─── CircledWord ──────────────────────────────────────────────────────────────
+function CircledWord({ children, color = '#7a1a1a', stroke = 2, tilt = -4, pad = 10 }) {
+  const ref = React.useRef(null);
+  const [box, setBox] = React.useState(null);
+  React.useLayoutEffect(() => {
+    if (!ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    setBox({ w: r.width, h: r.height });
+  }, [children]);
+  return (
+    <span ref={ref} style={{ position: 'relative', display: 'inline-block', padding: `0 ${pad}px` }}>
+      <span style={{ position: 'relative', zIndex: 2 }}>{children}</span>
+      {box && (
+        <svg width={box.w} height={box.h} viewBox={`0 0 ${box.w} ${box.h}`}
+          style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'visible', transform: `rotate(${tilt}deg)` }}>
+          <ellipse cx={box.w / 2} cy={box.h / 2} rx={box.w / 2 - 2} ry={box.h / 2 - 1}
+            fill="none" stroke={color} strokeWidth={stroke} />
+        </svg>
+      )}
+    </span>
+  );
+}
 
-  <section id="contact" class="section">
-    <div class="container">
-    <h1>Contact</h1>
-
-    <p>
-      <img src="images/gmail_icon.png" alt="gmail icon" class="icon-img">
-      [lastname] dot [firstname] 115 at gmail dot com
-    </p>
-
-    <p>
-      <a href="https://www.linkedin.com/in/jamesanguyen115" class="contact-link" target="_blank">
-        <img src="images/linkedin_icon.png" alt="linkedin icon" class="icon-img">
-        www.linkedin.com/in/jamesanguyen115
-      </a>
-    </p>
-
-    <p>
-      <a href="https://www.instagram.com/jamesanguyen/" class="contact-link" target="_blank">
-        <img src="images/instagram_icon.png" alt="instagram icon" class="icon-img">
-        www.instagram.com/jamesanguyen
-      </a>
-    </p>
-
-    <p>
-      <a href="https://github.com/janguyen115" class="contact-link" target="_blank">
-        <img src="images/github_icon.png" alt="github icon" class="icon-img">
-        github.com/janguyen115
-      </a>
-    </p>
-
-    <p>
-      <a href="https://scholar.google.com/citations?user=Hm5224EAAAAJ&hl=en" class="contact-link" target="_blank">
-        <img src="images/google_scholar_icon.png" alt="google scholar icon" class="icon-img">
-        Google Scholar
-      </a>
-    </p>
-
-    <p>
-      <a href="https://arxiv.org/search/math?searchtype=author&query=Nguyen,+J" class="contact-link" target="_blank">
-        <img src="images/arxiv_icon.png" alt="arxiv icon" class="icon-img">
-        arXiv
-      </a>
-    </p>
-
-    </div>
-  </section>
-
-<script src="/myWebsite/script.js"></script>
-
-<footer id="site-footer"></footer>
-
-<!-- ================= FOOTER SCRIPT ================= -->
-<script>
-  fetch('/myWebsite/scripts/footer.html')
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById('site-footer').innerHTML = data;
-    });
-</script>
-<!-- ================= END FOOTER SCRIPT ================= -->
-
-<!-- ================= LOAD HEADER ================= -->
-<script>
-fetch('/myWebsite/scripts/header.html')
-  .then(response => response.text())
-  .then(data => {
-    document.getElementById('site-header').innerHTML = data;
-
-    // Initialize hamburger AFTER header loads
-    const hamburger = document.querySelector(".hamburger");
-
-    if (hamburger) {
-
-      hamburger.addEventListener("click", function(e) {
-        e.stopPropagation();
-        hamburger.classList.toggle("active");
-      });
-
-      document.addEventListener("click", function() {
-        hamburger.classList.remove("active");
-      });
-
+// ─── Project figure placeholders ──────────────────────────────────────────────
+function KaczmarzPlaceholder({ color }) {
+  return (
+    <svg viewBox="0 0 200 250" style={{ width: '100%', height: '100%' }}>
+      <defs>
+        <pattern id="ka-grid" width="10" height="10" patternUnits="userSpaceOnUse">
+          <path d="M10 0 L0 0 0 10" fill="none" stroke={color} strokeOpacity="0.12" strokeWidth="0.5" />
+        </pattern>
+      </defs>
+      <rect width="200" height="250" fill="url(#ka-grid)" />
+      <line x1="20" y1="180" x2="180" y2="60" stroke={color} strokeOpacity="0.4" strokeWidth="1" />
+      <line x1="30" y1="40" x2="170" y2="220" stroke={color} strokeOpacity="0.4" strokeWidth="1" />
+      <line x1="0" y1="120" x2="200" y2="140" stroke={color} strokeOpacity="0.4" strokeWidth="1" />
+      <polyline points="60,200 90,150 110,180 130,140 145,160 155,128 160,135" fill="none" stroke={color} strokeWidth="1.5" />
+      {['60,200','90,150','110,180','130,140','145,160','155,128','160,135'].map((pt, i) => {
+        const [x, y] = pt.split(',').map(Number);
+        return <circle key={i} cx={x} cy={y} r="2" fill={color} />;
+      })}
+      <text x="10" y="240" fontFamily="ui-monospace, monospace" fontSize="8" fill={color} opacity="0.5">fig. kaczmarz iterate &middot; spectral weights</text>
+    </svg>
+  );
+}
+function HivTbPlaceholder({ color, accent }) {
+  return (
+    <svg viewBox="0 0 300 200" style={{ width: '100%', height: '100%' }}>
+      <rect width="300" height="200" fill="#efeadf" />
+      {[40, 90, 140, 190, 240].map(x => <line key={x} x1={x} y1="40" x2={x} y2="170" stroke={color} strokeOpacity="0.15" />)}
+      <polyline points="30,150 70,130 110,100 150,105 190,78 230,70 270,55" fill="none" stroke={color} strokeWidth="1.5" />
+      <polyline points="30,160 70,155 110,140 150,148 190,130 230,125 270,115" fill="none" stroke={accent} strokeWidth="1.5" strokeDasharray="3 2" />
+      <text x="12" y="190" fontFamily="ui-monospace, monospace" fontSize="8" fill={color} opacity="0.55">treatment outcomes &middot; pre/post ART &middot; 2014&ndash;2022</text>
+    </svg>
+  );
+}
+function ReplayPlaceholder({ color, accent }) {
+  const cells = [];
+  for (let i = 0; i < 20; i++) {
+    for (let j = 0; j < 12; j++) {
+      const r = (i * 37 + j * 13 + 7) % 100;
+      const fill = r > 80 ? color : (r > 50 ? accent : color);
+      const op = (((i * 17 + j * 31) % 60) + 10) / 100;
+      cells.push(<rect key={`${i}-${j}`} x={20 + j * 22} y={20 + i * 8} width="18" height="5" fill={fill} opacity={op} />);
     }
+  }
+  return (
+    <svg viewBox="0 0 300 200" style={{ width: '100%', height: '100%' }}>
+      <rect width="300" height="200" fill="#efeadf" />
+      {cells}
+      <text x="12" y="192" fontFamily="ui-monospace, monospace" fontSize="8" fill={color} opacity="0.55">spike raster &middot; odor A&ndash;F &middot; CA1 pyramidal cells</text>
+    </svg>
+  );
+}
 
-  });
-</script>
+// ─── Shared primitives ────────────────────────────────────────────────────────
+const JN = window.JN_TOKENS;
 
+const BG = () => ({
+  backgroundColor: JN.paper,
+  backgroundImage: window.JN_TEXTURES.graphPaper(0.035, 26, '#8a7a60'),
+  backgroundSize: '26px 26px',
+});
+
+function SashikoRule({ color = JN.red, opacity = 1, width = '100%', my = 0 }) {
+  return (
+    <div style={{
+      width, height: 12,
+      margin: my ? `${my}px 0` : 0,
+      backgroundImage: window.JN_TEXTURES.sashikoRule(color, opacity),
+      backgroundRepeat: 'repeat-x',
+      backgroundPosition: 'left center',
+      backgroundSize: '200px 12px',
+    }} />
+  );
+}
+
+function Komorebi({ opacity = 0.55 }) {
+  return (
+    <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity, mixBlendMode: 'soft-light' }}
+      dangerouslySetInnerHTML={{ __html: window.JN_KOMOREBI_SVG }} />
+  );
+}
+
+const B_FONTS = {
+  mono:  '"IBM Plex Mono", ui-monospace, Menlo, monospace',
+  serif: '"Libre Caslon Text", "Libre Baskerville", Georgia, serif',
+  sans:  '"IBM Plex Sans", system-ui, sans-serif',
+};
+const A_FONTS = {
+  serif: '"Libre Baskerville", Georgia, serif',
+  sans:  '"Archivo", system-ui, sans-serif',
+  mono:  '"IBM Plex Mono", ui-monospace, monospace',
+};
+
+function SheetHeaderB({ num, title, subtitle, fonts }) {
+  const roman = { '01': 'I', '02': 'II', '03': 'III', '04': 'IV', '05': 'V', '06': 'VI' }[num] || num;
+  return (
+    <div style={{ paddingBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginBottom: 8 }}>
+        <span style={{ fontFamily: fonts.serif, fontSize: 18, color: JN.red, fontStyle: 'italic', letterSpacing: '0.02em' }}>
+          &sect; {roman}
+        </span>
+        <SashikoRule color={JN.red} opacity={1} width={48} />
+        <span style={{ fontFamily: fonts.serif, fontSize: 14, color: JN.mute, fontStyle: 'italic' }}>{subtitle}</span>
+      </div>
+      <h2 style={{ fontFamily: fonts.serif, fontSize: 'clamp(32px, 4.2vw, 52px)', fontWeight: 400, letterSpacing: '-0.015em', margin: 0, color: JN.ink, lineHeight: 1.05 }}>
+        {title.charAt(0) + title.slice(1).toLowerCase()}
+      </h2>
+    </div>
+  );
+}
+
+function SheetFooter({ fonts }) {
+  return (
+    <footer style={{ padding: '32px 72px 40px', borderTop: `1px solid ${JN.ruleSoft}`, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontFamily: fonts.serif, fontSize: 14, color: JN.mute }}>
+      <span style={{ fontStyle: 'italic' }}>&copy; James A. Nguyen, 2026</span>
+      <span style={{ fontSize: 12, color: JN.muteCool }}>Set in Libre Caslon Text &amp; IBM Plex Mono</span>
+      <span style={{ fontStyle: 'italic' }}>Irvine, California</span>
+    </footer>
+  );
+}
+
+// ─── Routing ──────────────────────────────────────────────────────────────────
+function useRoute() {
+  const parse = () => {
+    const h = window.location.hash.slice(1);
+    if (!h) return { page: 'home' };
+    const [page, id] = h.split('/');
+    return { page, id };
+  };
+  const [route, setRoute] = React.useState(parse);
+  React.useEffect(() => {
+    const onHash = () => setRoute(parse());
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
+  const nav = (page, id) => {
+    window.location.hash = id ? `${page}/${id}` : page;
+    window.scrollTo(0, 0);
+  };
+  return [route, nav];
+}
+
+// ─── TopNav ───────────────────────────────────────────────────────────────────
+function TopNav({ fonts, nav, active = 'home' }) {
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const navItems = [
+    ['home',          'index'],
+    ['home#about',    'about'],
+    ['home#projects', 'projects'],
+    ['instruction',   'instruction'],
+    ['home#contact',  'contact'],
+  ];
+  const moreItems = [
+    ['cv',            'CV'],
+    ['collaborators', 'Collaborators'],
+    ['guide',         "A Student’s Guide to Numerical Bayes"],
+  ];
+  const isActive = (path) => {
+    if (active === 'home' && path.startsWith('home')) return path === 'home';
+    return active === path;
+  };
+  return (
+    <header style={{ position: 'sticky', top: 0, zIndex: 20, background: 'rgba(244,241,234,0.88)', backdropFilter: 'blur(8px)', borderBottom: `1px solid ${JN.ruleSoft}`, padding: '18px 72px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <button onClick={() => nav('home')} style={{ all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'baseline', gap: 6, fontFamily: fonts.serif, fontSize: 17, letterSpacing: '0.01em', color: JN.ink }}>
+        <span style={{ fontStyle: 'italic' }}>James A.</span><span style={{ color: JN.red }}>Nguyen</span>
+      </button>
+      <nav style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
+        {navItems.map(([path, label]) => {
+          const act = isActive(path);
+          return (
+            <button key={label} onClick={() => {
+              if (path.includes('#')) {
+                const [p, anchor] = path.split('#');
+                if (active === 'home') {
+                  document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                  nav(p);
+                  setTimeout(() => document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth' }), 120);
+                }
+              } else {
+                nav(path);
+              }
+            }} style={{ all: 'unset', cursor: 'pointer', color: act ? JN.red : JN.inkSoft, fontFamily: fonts.sans, fontSize: 13, letterSpacing: '0.02em', borderBottom: act ? `1px solid ${JN.red}` : '1px solid transparent', paddingBottom: 2 }}>
+              {label}
+            </button>
+          );
+        })}
+        <div style={{ position: 'relative', marginLeft: 8 }}>
+          <button onClick={() => setMenuOpen(o => !o)} onBlur={() => setTimeout(() => setMenuOpen(false), 200)}
+            style={{ all: 'unset', cursor: 'pointer', color: JN.inkSoft, fontFamily: fonts.sans, fontSize: 16, letterSpacing: '0.05em' }}>
+            more +
+          </button>
+          {menuOpen && (
+            <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, minWidth: 300, background: JN.paper, border: `1px solid ${JN.ruleSoft}`, boxShadow: '0 10px 30px rgba(40,30,20,0.08)', zIndex: 30 }}>
+              {moreItems.map(([p, label], i) => (
+                <button key={p} onMouseDown={() => nav(p)} style={{ all: 'unset', cursor: 'pointer', display: 'block', width: '100%', boxSizing: 'border-box', padding: '14px 18px', borderBottom: i < moreItems.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none', fontFamily: fonts.serif, fontSize: 15, color: JN.inkSoft, fontStyle: 'italic' }}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </nav>
+    </header>
+  );
+}
+
+// ─── Home ─────────────────────────────────────────────────────────────────────
+function HomeBlueprint({ nav }) {
+  const fonts = B_FONTS;
+  const L = window.JN_DATA;
+  return (
+    <div style={{ ...BG(), color: JN.ink, fontFamily: fonts.serif, minHeight: '100%', width: '100%', position: 'relative' }}>
+      <style>{`
+        .b-a { color: ${JN.red}; text-decoration: none; }
+        .b-a:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+      `}</style>
+
+      <TopNav fonts={fonts} nav={nav} active="home" />
+
+      {/* Hero */}
+      <section id="index" style={{ padding: '72px 72px 48px', position: 'relative', overflow: 'hidden' }}>
+        <Komorebi opacity={0.5} />
+        <div style={{ position: 'relative' }}>
+          <div style={{ position: 'absolute', right: -24, bottom: 0, width: 'min(560px, 55%)', pointerEvents: 'none', opacity: 0.9, zIndex: 2 }}>
+            <BayesianHero color={JN.red} accent={JN.blue} height={220} seed="hero3" />
+          </div>
+          <div style={{ position: 'relative', zIndex: 1, maxWidth: 680 }}>
+            <h1 style={{ fontFamily: fonts.serif, fontSize: 'clamp(40px, 6.4vw, 96px)', lineHeight: 1.02, fontWeight: 400, letterSpacing: '-0.02em', margin: 0, color: JN.ink, whiteSpace: 'nowrap' }}>
+              James A.&nbsp;<span style={{ fontStyle: 'italic' }}><CircledWord color={JN.red} stroke={1.5} tilt={-4} pad={14}>Nguyen</CircledWord></span>
+            </h1>
+            <p style={{ fontFamily: fonts.serif, fontSize: 22, lineHeight: 1.45, color: JN.inkSoft, margin: '28px 0 0', maxWidth: 560 }}>
+              Ph.D. candidate in Statistics at UC Irvine, working with{' '}
+              <span style={{ color: JN.red }}>Eric Sudderth</span> and{' '}
+              <span style={{ color: JN.red }}>Stephan Mandt</span> on scalable Bayesian inference.
+            </p>
+            <SashikoRule color={JN.red} opacity={1} width={120} my={36} />
+            <div style={{ display: 'flex', gap: 40, fontFamily: fonts.sans, fontSize: 13, color: JN.mute, letterSpacing: '0.02em' }}>
+              {[
+                ['Program', 'PhD, Statistics'],
+                ['Advisors', 'Sudderth · Mandt'],
+                ['Cohort', 'Class of 2032'],
+              ].map(([label, val]) => (
+                <div key={label}>
+                  <span style={{ color: JN.muteCool, display: 'block', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 4 }}>{label}</span>
+                  {val}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <SashikoRule color={JN.red} opacity={1} />
+
+      {/* About */}
+      <section id="about" style={{ padding: '72px 72px', scrollMarginTop: 64 }}>
+        <SheetHeaderB num="01" title="About" subtitle="A few words" fonts={fonts} />
+        <div style={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: 56, marginTop: 40 }}>
+          <figure style={{ margin: 0 }}>
+            <img src="images/about_banner.jpg" alt="James at Rowland Hall" style={{ width: '100%', display: 'block', filter: 'saturate(0.7) contrast(1.02)' }} />
+            <figcaption style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 13, color: JN.mute, marginTop: 10 }}>
+              Rowland Hall, a quiet afternoon.
+            </figcaption>
+          </figure>
+          <div>
+            <p style={{ fontFamily: fonts.serif, fontSize: 22, lineHeight: 1.5, color: JN.ink, margin: '0 0 20px' }}>
+              Hello &mdash; I&rsquo;m James. A recent UCI graduate in Applied Mathematics, now a Ph.D. student in Statistics.
+            </p>
+            <p style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 1.65, color: JN.inkSoft, maxWidth: 560, margin: '0 0 28px' }}>
+              My research is about the computational limits of Bayesian inference &mdash; particularly efficient <em>variational</em> methods for high-dimensional data, with applications in machine learning. I like problems where the geometry of the posterior tells you something about the system.
+            </p>
+            <div style={{ fontFamily: fonts.serif, fontSize: 16, color: JN.inkSoft, lineHeight: 1.9 }}>
+              <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>Interests</div>
+              scalable variational inference &middot; high-dimensional posteriors &middot;<br/>
+              iterative solvers &amp; linear systems &middot; applied ML and sequential data
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <SashikoRule color={JN.red} opacity={1} />
+
+      {/* Projects */}
+      <section id="projects" style={{ padding: '72px 72px', scrollMarginTop: 64 }}>
+        <SheetHeaderB num="02" title="Projects" subtitle="Selected work, 2023–2025" fonts={fonts} />
+        <div style={{ marginTop: 40 }}>
+          {L.projects.map((p, i) => (
+            <ProjectRow key={p.id} p={p} i={i} fonts={fonts} last={i === L.projects.length - 1} nav={nav} />
+          ))}
+        </div>
+      </section>
+
+      <SashikoRule color={JN.red} opacity={1} />
+
+      {/* Instruction teaser */}
+      <section id="instruction-teaser" style={{ padding: '72px 72px', scrollMarginTop: 64 }}>
+        <SheetHeaderB num="03" title="Instruction" subtitle="Notes in progress" fonts={fonts} />
+        <div style={{ marginTop: 40, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56 }}>
+          <div>
+            <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>In draft</div>
+            <h3 style={{ fontFamily: fonts.serif, fontSize: 32, fontWeight: 400, lineHeight: 1.15, margin: '0 0 16px', color: JN.ink }}>A Student&rsquo;s Guide to <em>Numerical Bayes</em></h3>
+            <p style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 1.65, color: JN.inkSoft, margin: 0 }}>
+              A reading companion to Turkman, Paulino &amp; M&uuml;ller&rsquo;s <em>Computational Bayesian Statistics</em>. My attempt to simplify &mdash; to others, and to myself &mdash; numerical solutions to Bayesian inference, built around worked examples that develop gradually.
+            </p>
+            <button onClick={() => nav('guide')} style={{ all: 'unset', cursor: 'pointer', display: 'inline-block', marginTop: 20, fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 16, color: JN.red, borderBottom: `1px solid ${JN.red}`, paddingBottom: 2 }}>
+              Read the draft &rarr;
+            </button>
+          </div>
+          <div>
+            <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>Contents</div>
+            {[
+              'Bayes, in brief',
+              'Monte Carlo & importance',
+              'Metropolis–Hastings',
+              'Gibbs sampling',
+              'Variational methods',
+              'Examples & errata',
+            ].map((c, i) => (
+              <div key={i} style={{ fontFamily: fonts.serif, padding: '10px 0', borderBottom: i < 5 ? `1px dashed ${JN.ruleSoft}` : 'none', display: 'flex', justifyContent: 'space-between', fontSize: 16, color: JN.inkSoft }}>
+                <span><span style={{ color: JN.red, fontStyle: 'italic', marginRight: 12 }}>{['I','II','III','IV','V','VI'][i]}.</span>{c}</span>
+                <span style={{ color: JN.mute, fontStyle: 'italic', fontSize: 14 }}>&sect; {i + 1}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <SashikoRule color={JN.red} opacity={1} />
+
+      {/* Contact */}
+      <section id="contact" style={{ padding: '72px 72px', scrollMarginTop: 64 }}>
+        <SheetHeaderB num="04" title="Contact" subtitle="Get in touch" fonts={fonts} />
+        <div style={{ marginTop: 40 }}>
+          {L.contacts.map((c) => (
+            <a key={c.label} href={c.href} target="_blank" rel="noopener"
+              style={{ display: 'grid', gridTemplateColumns: '160px 1fr auto', alignItems: 'baseline', padding: '20px 0', borderBottom: `1px dashed ${JN.ruleSoft}`, textDecoration: 'none' }}>
+              <span style={{ fontFamily: fonts.sans, color: JN.muteCool, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase' }}>{c.label}</span>
+              <span style={{ fontFamily: fonts.serif, fontSize: 22, color: JN.ink }}>{c.value}</span>
+              <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', color: JN.red, fontSize: 15 }}>open &rarr;</span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <SheetFooter fonts={fonts} />
+    </div>
+  );
+}
+
+function ProjectRow({ p, i, fonts, last, nav }) {
+  return (
+    <button onClick={() => nav('project', p.id)}
+      style={{ all: 'unset', cursor: 'pointer', display: 'grid', gridTemplateColumns: '60px 80px 1fr auto auto', alignItems: 'baseline', gap: 24, padding: '24px 8px', width: '100%', boxSizing: 'border-box', borderBottom: last ? 'none' : `1px dashed ${JN.ruleSoft}`, transition: 'background 0.2s' }}
+      onMouseEnter={e => e.currentTarget.style.background = 'rgba(244,241,234,0.5)'}
+      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+    >
+      <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 16, color: JN.red }}>{p.num}.</span>
+      <span style={{ fontFamily: fonts.sans, fontSize: 12, color: JN.muteCool, letterSpacing: '0.1em' }}>{p.year}</span>
+      <span style={{ fontFamily: fonts.serif, fontSize: 22, color: JN.ink, paddingRight: 24, lineHeight: 1.3 }}>{p.title}</span>
+      <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.mute, paddingRight: 24 }}>{p.tag}</span>
+      <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.red }}>read &rarr;</span>
+    </button>
+  );
+}
+
+// ─── Project Detail ───────────────────────────────────────────────────────────
+function ProjectDetailEditorial({ id, nav }) {
+  const fonts = A_FONTS;
+  const L = window.JN_DATA;
+  const idx = Math.max(0, L.projects.findIndex(x => x.id === id));
+  const p = L.projects[idx];
+  const prev = idx > 0 ? L.projects[idx - 1] : null;
+  const next = idx < L.projects.length - 1 ? L.projects[idx + 1] : null;
+
+  const figCaption = (pid) =>
+    pid === 'spectral_sampling' ? 'iterates projecting onto successive hyperplanes under spectral weighting'
+    : pid === 'hiv_tb' ? 'treatment-outcome trajectories, pre/post universal ART, Gaborone'
+    : 'decoded odor-sequence ensembles during post-task quiescence';
+
+  const sections = (pid) => {
+    if (pid === 'spectral_sampling') return [
+      { h: '01 · Motivation', p: 'In tomography, consensus, and constrained optimization we meet systems Ax = b with m ≫ n. Iterative row-action methods are attractive because they avoid forming AᵀA and scale in m without ever holding the whole matrix. The question is which row to pick next.' },
+      { h: '02 · Spectral weights', p: "We derive a weight proportional to each row’s alignment with the least-resolved singular direction. Computed once, reused across iterations. The cost is a small eigenpair estimate; the benefit is a geometry-aware sampler." },
+      { h: '03 · Convergence', p: 'On ill-conditioned problems we observe a consistent reduction in iterates-to-tolerance, with stronger gains at tighter tolerances. Acceleration is most pronounced for systems whose energy concentrates in a few directions.' },
+      { h: '04 · Inequalities', p: 'The sampler extends naturally to overdetermined systems of linear inequalities, where the projection operator is one-sided. We show conditions under which the spectral bias remains well-defined.' },
+    ];
+    if (pid === 'hiv_tb') return [
+      { h: '01 · Background', p: 'Botswana’s 2016 rollout of universal access to antiretroviral therapy created a natural discontinuity for studying how HIV co-infection interacts with tuberculosis treatment outcomes.' },
+      { h: '02 · Data & design', p: 'Patient-level records from Gaborone health facilities were analyzed with a difference-in-differences specification, paired with a propensity-matched control for ART adherence.' },
+      { h: '03 · Findings', p: 'Post-policy cohorts show meaningfully improved cure rates among HIV-positive TB patients, with the effect concentrated among those achieving viral suppression within six months.' },
+    ];
+    return [
+      { h: '01 · Setup', p: 'Rats trained on an odor-sequence memory task; hippocampal ensemble activity recorded across task performance and subsequent quiescence.' },
+      { h: '02 · Decoding', p: 'Bayesian ensemble decoders trained on task-phase activity were applied to replay windows. Candidate sequences were scored against the trained and novel task structure.' },
+      { h: '03 · Result', p: 'Nonspatial odor sequences are replayed during quiescence with a forward/reverse bias dependent on task epoch, consistent with a role in consolidation of event order.' },
+    ];
+  };
+
+  const words = p.title.split(' ');
+  const pivot = Math.floor(words.length * 0.55);
+  const editorialTitle = words.length > 4
+    ? <>{words.slice(0, pivot).join(' ')} <em>{words.slice(pivot).join(' ')}</em></>
+    : p.title;
+
+  return (
+    <div style={{ ...BG(), color: JN.ink, fontFamily: fonts.serif, minHeight: '100%' }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 20, background: 'rgba(244,241,234,0.92)', backdropFilter: 'blur(6px)', borderBottom: `1px solid ${JN.rule}`, padding: '18px 48px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: fonts.sans, fontSize: 12 }}>
+        <button onClick={() => nav('home')} style={{ all: 'unset', cursor: 'pointer', letterSpacing: '0.18em', textTransform: 'uppercase', color: JN.inkSoft }}>
+          &larr; <span style={{ color: JN.red }}>Nguyen</span> &middot; Journal
+        </button>
+        <nav style={{ display: 'flex', gap: 28, fontSize: 13, letterSpacing: '0.04em' }}>
+          <button onClick={() => nav('home')} style={{ all: 'unset', cursor: 'pointer', color: JN.inkSoft }}>About</button>
+          <button onClick={() => nav('home')} style={{ all: 'unset', cursor: 'pointer', color: JN.red }}>Projects</button>
+          <button onClick={() => nav('instruction')} style={{ all: 'unset', cursor: 'pointer', color: JN.inkSoft }}>Instruction</button>
+          <button onClick={() => nav('home')} style={{ all: 'unset', cursor: 'pointer', color: JN.inkSoft }}>Contact</button>
+        </nav>
+      </header>
+
+      <div style={{ padding: '56px 48px 80px', maxWidth: 1300, margin: '0 auto' }}>
+        <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.22em', color: JN.mute, textTransform: 'uppercase', marginBottom: 12 }}>
+          <button onClick={() => nav('home')} style={{ all: 'unset', cursor: 'pointer', color: JN.red, textDecoration: 'underline', textUnderlineOffset: 3 }}>Index</button>
+          &nbsp;/ Projects &middot; &sect; {p.num}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr auto', gap: 32, marginBottom: 32, alignItems: 'baseline' }}>
+          <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.22em', color: JN.red, textTransform: 'uppercase' }}>&sect; {p.num} &middot; {p.year}</div>
+          <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.14em', color: JN.mute }}>{p.tag}</div>
+          <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.mute }}>{p.status || '—'}</div>
+        </div>
+
+        <h1 style={{ fontSize: 'clamp(40px, 6vw, 80px)', lineHeight: 1, fontWeight: 400, letterSpacing: '-0.02em', margin: '0 0 24px', color: JN.ink }}>
+          {editorialTitle}
+        </h1>
+        <p style={{ fontSize: 22, lineHeight: 1.4, color: JN.inkSoft, maxWidth: 820, margin: '0 0 48px', fontStyle: 'italic' }}>
+          {p.desc.split('. ')[0]}.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 48, borderTop: `1px solid ${JN.rule}`, paddingTop: 28 }}>
+          <aside style={{ fontFamily: fonts.sans, fontSize: 12, color: JN.mute, letterSpacing: '0.04em', position: 'sticky', top: 96, height: 'min-content' }}>
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ textTransform: 'uppercase', letterSpacing: '0.2em', color: JN.red, marginBottom: 8 }}>Collaborators</div>
+              {(p.collaborators || []).map(a => <div key={a} style={{ color: JN.ink, marginBottom: 3 }}>{a}</div>)}
+            </div>
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ textTransform: 'uppercase', letterSpacing: '0.2em', color: JN.red, marginBottom: 8 }}>Status</div>
+              <div style={{ color: JN.ink }}>{p.status}</div>
+            </div>
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ textTransform: 'uppercase', letterSpacing: '0.2em', color: JN.red, marginBottom: 8 }}>Keywords</div>
+              <div style={{ color: JN.ink, lineHeight: 1.6 }}>{(p.keywords || []).join(' · ')}</div>
+            </div>
+            <div style={{ borderTop: `1px solid ${JN.rule}`, paddingTop: 20, marginTop: 24 }}>
+              <div style={{ textTransform: 'uppercase', letterSpacing: '0.2em', color: JN.red, marginBottom: 10 }}>Files</div>
+              {p.pdf && (
+                <a href={p.pdf} target="_blank" rel="noopener" style={{ display: 'block', padding: '10px 0', borderBottom: `1px dashed ${JN.ruleSoft}`, color: JN.ink, textDecoration: 'none', fontFamily: fonts.sans, fontSize: 13 }}>
+                  <span style={{ fontFamily: fonts.mono, color: JN.red, fontSize: 11, letterSpacing: '0.14em', marginRight: 8 }}>PDF</span>
+                  working paper &rarr;
+                </a>
+              )}
+              {p.publication && (
+                <a href={p.publication} target="_blank" rel="noopener" style={{ display: 'block', padding: '10px 0', borderBottom: `1px dashed ${JN.ruleSoft}`, color: JN.ink, textDecoration: 'none', fontFamily: fonts.sans, fontSize: 13 }}>
+                  <span style={{ fontFamily: fonts.mono, color: JN.red, fontSize: 11, letterSpacing: '0.14em', marginRight: 8 }}>PUB</span>
+                  Nature Communications &rarr;
+                </a>
+              )}
+              {p.arxiv && (
+                <a href={p.arxiv} target="_blank" rel="noopener" style={{ display: 'block', padding: '10px 0', borderBottom: `1px dashed ${JN.ruleSoft}`, color: JN.ink, textDecoration: 'none', fontFamily: fonts.sans, fontSize: 13 }}>
+                  <span style={{ fontFamily: fonts.mono, color: JN.red, fontSize: 11, letterSpacing: '0.14em', marginRight: 8 }}>arXiv</span>
+                  landing page &rarr;
+                </a>
+              )}
+            </div>
+          </aside>
+
+          <article>
+            <p style={{ fontSize: 18, lineHeight: 1.6, margin: '0 0 32px', color: JN.inkSoft }}>
+              <span style={{ float: 'left', fontSize: 64, lineHeight: 0.85, paddingRight: 10, color: JN.red, fontFamily: fonts.serif, marginTop: 4 }}>{p.desc[0]}</span>
+              {p.desc.slice(1)}
+            </p>
+            <div style={{ aspectRatio: '16/7', border: `1px solid ${JN.rule}`, background: JN.paperWarm, margin: '24px 0 8px' }}>
+              {p.id === 'spectral_sampling'
+                ? <KaczmarzPlaceholder color={JN.red} />
+                : p.id === 'hiv_tb'
+                ? <HivTbPlaceholder color={JN.red} accent={JN.blue} />
+                : <ReplayPlaceholder color={JN.red} accent={JN.blue} />}
+            </div>
+            <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.mute, letterSpacing: '0.06em', marginBottom: 40 }}>
+              Fig. 1 &mdash; {figCaption(p.id)}.
+            </div>
+            {sections(p.id).map(s => (
+              <div key={s.h} style={{ marginBottom: 32 }}>
+                <h3 style={{ fontSize: 24, fontWeight: 400, lineHeight: 1.2, margin: '0 0 10px', letterSpacing: '-0.005em', color: JN.ink }}>{s.h}</h3>
+                <p style={{ fontSize: 16, lineHeight: 1.7, color: JN.inkSoft, margin: 0 }}>{s.p}</p>
+              </div>
+            ))}
+            <div style={{ marginTop: 56, paddingTop: 20, borderTop: `1px solid ${JN.rule}`, display: 'flex', justifyContent: 'space-between', fontFamily: fonts.sans, fontSize: 12, color: JN.mute, letterSpacing: '0.12em' }}>
+              {prev ? (
+                <button onClick={() => nav('project', prev.id)} style={{ all: 'unset', cursor: 'pointer', color: JN.red }}>&larr; &sect; {prev.num} &middot; {prev.shortTitle}</button>
+              ) : <span />}
+              <button onClick={() => nav('home')} style={{ all: 'unset', cursor: 'pointer', color: JN.mute }}>&uarr; Index</button>
+              {next ? (
+                <button onClick={() => nav('project', next.id)} style={{ all: 'unset', cursor: 'pointer', color: JN.red }}>&sect; {next.num} &middot; {next.shortTitle} &rarr;</button>
+              ) : <span />}
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Instruction ──────────────────────────────────────────────────────────────
+function InstructionBlueprint({ nav }) {
+  const fonts = B_FONTS;
+  const toc = [
+    { n: 'I',   title: 'Bayes, in brief',                  desc: 'Prior, likelihood, posterior; why the denominator is the hard part.' },
+    { n: 'II',  title: 'Monte Carlo & importance sampling', desc: 'Approximating expectations when the integrand is tractable but the integral is not.' },
+    { n: 'III', title: 'Metropolis–Hastings',           desc: 'Building a chain whose stationary distribution is the target; proposal design and diagnostics.' },
+    { n: 'IV',  title: 'Gibbs sampling',                    desc: 'Coordinate-wise conditionals when the full conditional is easy; blocked and collapsed variants.' },
+    { n: 'V',   title: 'Variational methods',               desc: 'Optimization instead of sampling; the ELBO, mean-field approximations, and where they break down.' },
+    { n: 'VI',  title: 'Examples & errata',                 desc: 'Worked examples from Turkman, Paulino & Müller (Chapters 4–9) with corrections.' },
+  ];
+  return (
+    <div style={{ ...BG(), color: JN.ink, fontFamily: fonts.serif, minHeight: '100%' }}>
+      <TopNav fonts={fonts} nav={nav} active="instruction" />
+
+      <section style={{ padding: '72px 72px 48px', position: 'relative', overflow: 'hidden' }}>
+        <Komorebi opacity={0.45} />
+        <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute, marginBottom: 18, position: 'relative' }}>Instruction</div>
+        <h1 style={{ fontFamily: fonts.serif, fontSize: 'clamp(40px, 6vw, 80px)', lineHeight: 1.05, fontWeight: 400, letterSpacing: '-0.02em', margin: 0, maxWidth: 1000, color: JN.ink, position: 'relative' }}>
+          Notes I write to teach myself, kept public.
+        </h1>
+        <p style={{ fontFamily: fonts.serif, fontSize: 20, color: JN.inkSoft, marginTop: 24, maxWidth: 700, position: 'relative' }}>
+          Working documents and teaching material, mostly in progress. Everything here is a draft.
+        </p>
+      </section>
+
+      <SashikoRule color={JN.red} opacity={1} />
+
+      <section style={{ padding: '72px 72px' }}>
+        <SheetHeaderB num="01" title="Resources" subtitle="One active — more to come" fonts={fonts} />
+        <div style={{ marginTop: 40 }}>
+          <button onClick={() => nav('guide')} style={{ all: 'unset', cursor: 'pointer', display: 'block', width: '100%' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr 160px', gap: 48, padding: '28px 8px', borderBottom: `1px dashed ${JN.ruleSoft}`, transition: 'background 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(244,241,234,0.5)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <div style={{ aspectRatio: '3/4', background: JN.paperWarm, border: `1px solid ${JN.ruleSoft}`, padding: 16 }}>
+                <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 11, color: JN.muteCool, marginBottom: 8 }}>Volume I &middot; draft</div>
+                <div style={{ fontFamily: fonts.serif, fontSize: 22, lineHeight: 1.1, fontStyle: 'italic', color: JN.ink, marginBottom: 16 }}>
+                  A Student&rsquo;s Guide to <em style={{ color: JN.red }}>Numerical Bayes</em>
+                </div>
+                <svg viewBox="0 0 140 160" style={{ width: '100%', height: 'auto' }}>
+                  <path d="M 10 120 Q 40 40 70 100 T 130 120" fill="none" stroke={JN.red} strokeWidth="1.2" opacity="0.8" />
+                  <path d="M 10 120 Q 40 70 70 110 T 130 120" fill="none" stroke={JN.red} strokeWidth="1.2" opacity="0.5" strokeDasharray="3,3" />
+                  <line x1="10" y1="120" x2="130" y2="120" stroke={JN.ink} strokeWidth="0.5" />
+                  {[20, 40, 60, 80, 100].map(x => <line key={x} x1={x} y1="120" x2={x} y2="124" stroke={JN.ink} strokeWidth="0.5" />)}
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>In draft &middot; 42 pages</div>
+                <h3 style={{ fontFamily: fonts.serif, fontSize: 36, fontWeight: 400, lineHeight: 1.1, margin: '0 0 14px', color: JN.ink }}>A Student&rsquo;s Guide to <em>Numerical Bayes</em></h3>
+                <p style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 1.65, color: JN.inkSoft, margin: '0 0 16px', maxWidth: 620 }}>
+                  A reading companion to <em>Computational Bayesian Statistics &mdash; An Introduction</em> by Turkman, Paulino &amp; M&uuml;ller. My attempt to simplify &mdash; to others, and to myself &mdash; the concepts and methods of numerical solutions to Bayesian inference.
+                </p>
+                <p style={{ fontFamily: fonts.serif, fontSize: 15, lineHeight: 1.6, color: JN.mute, margin: 0, maxWidth: 620, fontStyle: 'italic' }}>
+                  A work in progress &mdash; please <a href="mailto:nguyen.james115@gmail.com" style={{ color: JN.red }}>write to me</a> with any corrections or feedback.
+                </p>
+              </div>
+              <div style={{ alignSelf: 'center', textAlign: 'right' }}>
+                <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 16, color: JN.red }}>read &rarr;</div>
+              </div>
+            </div>
+          </button>
+        </div>
+
+        <div style={{ marginTop: 48 }}>
+          <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 16 }}>Table of contents</div>
+          {toc.map((c, i) => (
+            <div key={c.n} style={{ display: 'grid', gridTemplateColumns: '60px 260px 1fr auto', padding: '16px 0', borderBottom: i < toc.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none', alignItems: 'baseline', gap: 20 }}>
+              <span style={{ fontFamily: fonts.serif, fontSize: 18, color: JN.red, fontStyle: 'italic' }}>{c.n}.</span>
+              <span style={{ fontFamily: fonts.serif, fontSize: 20, color: JN.ink }}>{c.title}</span>
+              <span style={{ fontFamily: fonts.serif, fontSize: 15, color: JN.inkSoft, lineHeight: 1.5 }}>{c.desc}</span>
+              <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 13, color: JN.mute }}>p. {i * 7 + 3}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <SashikoRule color={JN.red} opacity={1} />
+
+      <section style={{ padding: '72px 72px' }}>
+        <SheetHeaderB num="02" title="Soon" subtitle="Placeholders, still drafting" fonts={fonts} />
+        <div style={{ marginTop: 40, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48 }}>
+          {[
+            { t: 'Variational inference, a working intuition', d: 'Why the ELBO looks the way it does; what the mean-field gives up.' },
+            { t: 'Reading Strohmer–Vershynin', d: 'A slow pass through the paper that started my Kaczmarz curiosity.' },
+          ].map(x => (
+            <div key={x.t} style={{ opacity: 0.75 }}>
+              <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 13, color: JN.mute, marginBottom: 8 }}>Not yet drafted</div>
+              <h4 style={{ fontFamily: fonts.serif, fontSize: 24, fontWeight: 400, margin: '0 0 8px', color: JN.ink, lineHeight: 1.2 }}>{x.t}</h4>
+              <p style={{ fontFamily: fonts.serif, fontSize: 16, lineHeight: 1.6, color: JN.inkSoft, margin: 0 }}>{x.d}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <SheetFooter fonts={fonts} />
+    </div>
+  );
+}
+
+// ─── Guide ────────────────────────────────────────────────────────────────────
+function GuideBlueprint({ nav }) {
+  const fonts = B_FONTS;
+  return (
+    <div style={{ ...BG(), color: JN.ink, fontFamily: fonts.serif, minHeight: '100%' }}>
+      <TopNav fonts={fonts} nav={nav} active="instruction" />
+      <div style={{ maxWidth: 760, margin: '0 auto', padding: '80px 72px' }}>
+        <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.mute, marginBottom: 14 }}>Volume I &mdash; a draft</div>
+        <h1 style={{ fontFamily: fonts.serif, fontSize: 'clamp(40px, 6vw, 64px)', lineHeight: 1.05, fontWeight: 400, letterSpacing: '-0.01em', margin: '0 0 20px', color: JN.ink }}>
+          A Student&rsquo;s Guide to <em>Numerical Bayes</em>
+        </h1>
+        <p style={{ fontFamily: fonts.serif, fontSize: 20, lineHeight: 1.5, color: JN.inkSoft, margin: '0 0 32px', fontStyle: 'italic' }}>
+          with worked examples &mdash; after Turkman, Paulino &amp; M&uuml;ller.
+        </p>
+        <SashikoRule color={JN.red} opacity={1} width={80} my={8} />
+        <p style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 1.75, color: JN.inkSoft, margin: '28px 0 40px' }}>
+          This is a reading companion, not a textbook. I wrote it while working through <em>Computational Bayesian Statistics &mdash; An Introduction</em>, and kept it public so that another student starting the same book might have a slightly shorter road.
+        </p>
+        <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 16 }}>Contents</div>
+        {[
+          ['I',   'Bayes, in brief',                  3],
+          ['II',  'Monte Carlo & importance sampling', 10],
+          ['III', 'Metropolis–Hastings',           17],
+          ['IV',  'Gibbs sampling',                    24],
+          ['V',   'Variational methods',               31],
+          ['VI',  'Examples & errata',                 38],
+        ].map(([n, title, pg]) => (
+          <div key={n} style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 0', borderBottom: `1px dashed ${JN.ruleSoft}`, fontFamily: fonts.serif, fontSize: 18, color: JN.ink }}>
+            <span><span style={{ color: JN.red, fontStyle: 'italic', marginRight: 16 }}>{n}.</span>{title}</span>
+            <span style={{ fontStyle: 'italic', color: JN.mute, fontSize: 14 }}>p. {pg}</span>
+          </div>
+        ))}
+        <div style={{ marginTop: 48, padding: '24px 0', textAlign: 'center', fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.mute }}>
+          &middot; body text in the PDF build &middot;
+        </div>
+        <div style={{ marginTop: 24, textAlign: 'center' }}>
+          <button onClick={() => nav('instruction')} style={{ all: 'unset', cursor: 'pointer', fontFamily: fonts.serif, fontStyle: 'italic', color: JN.red, fontSize: 16 }}>
+            &larr; back to instruction
+          </button>
+        </div>
+      </div>
+      <SheetFooter fonts={fonts} />
+    </div>
+  );
+}
+
+// ─── CV ───────────────────────────────────────────────────────────────────────
+function CVBlueprint({ nav }) {
+  const fonts = B_FONTS;
+  const cv = window.JN_DATA.cv;
+  const roman = (n) => ({ '01': 'I', '02': 'II', '03': 'III', '04': 'IV' }[n] || n);
+  const Block = ({ n, title, rows }) => (
+    <div style={{ marginBottom: 56 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, marginBottom: 20 }}>
+        <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 18, color: JN.red }}>&sect; {roman(n)}</span>
+        <SashikoRule color={JN.red} opacity={1} width={32} />
+        <h2 style={{ fontFamily: fonts.serif, fontSize: 32, fontWeight: 400, letterSpacing: '-0.01em', margin: 0, color: JN.ink }}>{title}</h2>
+      </div>
+      <div>
+        {rows.map((r, i) => (
+          <div key={i} style={{ display: 'grid', gridTemplateColumns: '120px 1fr 1fr', padding: '16px 0', borderBottom: i < rows.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none', alignItems: 'baseline', gap: 24 }}>
+            <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.mute }}>{r.year}</span>
+            <div>
+              <div style={{ fontFamily: fonts.serif, fontSize: 19, color: JN.ink }}>{r.title}</div>
+              {r.inst && <div style={{ fontFamily: fonts.serif, fontSize: 15, color: JN.inkSoft, marginTop: 2, fontStyle: 'italic' }}>{r.inst}</div>}
+            </div>
+            <div style={{ fontFamily: fonts.serif, fontSize: 15, color: JN.mute, lineHeight: 1.55 }}>{r.note || ''}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+  return (
+    <div style={{ ...BG(), color: JN.ink, fontFamily: fonts.serif, minHeight: '100%' }}>
+      <TopNav fonts={fonts} nav={nav} active="cv" />
+      <div style={{ maxWidth: 1080, margin: '0 auto', padding: '72px 72px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 40, alignItems: 'end', marginBottom: 48 }}>
+          <div>
+            <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute, marginBottom: 12 }}>Curriculum vitae</div>
+            <h1 style={{ fontFamily: fonts.serif, fontSize: 'clamp(40px, 6vw, 72px)', lineHeight: 1, fontWeight: 400, letterSpacing: '-0.02em', margin: 0, color: JN.ink }}>
+              James A. <em>Nguyen</em>
+            </h1>
+            <div style={{ fontFamily: fonts.serif, fontSize: 15, color: JN.mute, marginTop: 16, fontStyle: 'italic' }}>
+              UC Irvine &middot; PhD Statistics, class of 2032 &middot; nguyen.james115@gmail.com
+            </div>
+          </div>
+          <a href="files/nguyenJames_cv.pdf" target="_blank" rel="noopener" style={{ display: 'inline-block', padding: '10px 18px', borderBottom: `1px solid ${JN.red}`, color: JN.red, fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 16, textDecoration: 'none' }}>
+            download PDF &darr;
+          </a>
+        </div>
+
+        <SashikoRule color={JN.red} opacity={1} />
+        <div style={{ height: 40 }} />
+
+        <Block n="01" title="Education" rows={cv.education} />
+        <Block n="02" title="Research" rows={cv.research} />
+        <Block n="03" title="Awards" rows={cv.awards} />
+        <Block n="04" title="Teaching" rows={cv.teaching} />
+
+        <div style={{ marginTop: 32, padding: '24px 0', fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute, textAlign: 'center' }}>
+          Full CV as PDF &mdash; <a href="files/nguyenJames_cv.pdf" target="_blank" rel="noopener" style={{ color: JN.red }}>files/nguyenJames_cv.pdf</a>
+        </div>
+      </div>
+      <SheetFooter fonts={fonts} />
+    </div>
+  );
+}
+
+// ─── Collaborators ────────────────────────────────────────────────────────────
+function CollaboratorsBlueprint({ nav }) {
+  const fonts = B_FONTS;
+  const L = window.JN_DATA;
+  return (
+    <div style={{ ...BG(), color: JN.ink, fontFamily: fonts.serif, minHeight: '100%', position: 'relative' }}>
+      <TopNav fonts={fonts} nav={nav} active="collaborators" />
+      <section style={{ maxWidth: 1080, margin: '0 auto', padding: '72px 72px', position: 'relative' }}>
+        <Komorebi opacity={0.4} />
+        <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute, marginBottom: 16, position: 'relative' }}>Collaborators</div>
+        <h1 style={{ fontFamily: fonts.serif, fontSize: 'clamp(40px, 6vw, 72px)', lineHeight: 1.05, fontWeight: 400, letterSpacing: '-0.02em', margin: '0 0 48px', color: JN.ink, maxWidth: 900, position: 'relative' }}>
+          People I&rsquo;ve had the fortune to work with.
+        </h1>
+        <SashikoRule color={JN.red} opacity={1} />
+        <div style={{ marginTop: 8 }}>
+          {L.collaborators.map((c, i) => (
+            <div key={c.name} style={{ display: 'grid', gridTemplateColumns: '40px 1fr 1fr 1fr', padding: '22px 0', borderBottom: i < L.collaborators.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none', alignItems: 'baseline', gap: 20 }}>
+              <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.red }}>{i + 1}.</span>
+              <span style={{ fontFamily: fonts.serif, fontSize: 22, color: JN.ink }}>{c.name}</span>
+              <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute }}>{c.role}</span>
+              <span style={{ fontFamily: fonts.serif, fontSize: 16, color: JN.inkSoft }}>{c.inst}</span>
+            </div>
+          ))}
+        </div>
+        <p style={{ fontFamily: fonts.serif, fontSize: 17, color: JN.inkSoft, fontStyle: 'italic', marginTop: 40, maxWidth: 720, lineHeight: 1.6 }}>
+          Collaboration is the quiet engine of academic work. If you think there&rsquo;s a useful overlap with what you&rsquo;re working on, <a href="mailto:nguyen.james115@gmail.com" style={{ color: JN.red }}>please write</a>.
+        </p>
+      </section>
+      <SheetFooter fonts={fonts} />
+    </div>
+  );
+}
+
+// ─── App root ─────────────────────────────────────────────────────────────────
+function App() {
+  const [route, nav] = useRoute();
+  React.useEffect(() => {
+    (document.scrollingElement || document.documentElement).scrollTo?.(0, 0);
+  }, [route.page, route.id]);
+
+  if (route.page === 'project')       return <ProjectDetailEditorial id={route.id} nav={nav} />;
+  if (route.page === 'instruction')   return <InstructionBlueprint nav={nav} />;
+  if (route.page === 'cv')            return <CVBlueprint nav={nav} />;
+  if (route.page === 'collaborators') return <CollaboratorsBlueprint nav={nav} />;
+  if (route.page === 'guide')         return <GuideBlueprint nav={nav} />;
+  return <HomeBlueprint nav={nav} />;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
+  </script>
 </body>
 </html>
