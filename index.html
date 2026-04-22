@@ -110,7 +110,7 @@ window.JN_DATA = {
       tag: 'EPIDEMIOLOGY · PUBLIC HEALTH',
       title: 'HIV on Tuberculosis Treatment Outcomes in Botswana',
       shortTitle: 'HIV on TB Treatment Outcomes',
-      desc: 'An epidemiological study on the impact of public health policy in Gaborone, Botswana in response to the high prevalence of HIV and its effect on tuberculosis treatment outcomes — adjusted for universal access to antiretroviral therapy.',
+      desc: 'An epidemiological study on the impact of public health policy in Gaborone, Botswana in response to the high prevalence of HIV and its effect on tuberculosis treatment outcomes, adjusted for universal access to antiretroviral therapy.',
       arxiv: null,
       pdf: 'files/hiv_tb.pdf',
       collaborators: ['Botswana Ministry of Health (data)', 'Dr. M. Mbulaiteye'],
@@ -124,7 +124,7 @@ window.JN_DATA = {
       tag: 'COMPUTATIONAL NEUROSCIENCE',
       title: 'Hippocampal Replay of Nonspatial Sequences',
       shortTitle: 'Hippocampal Replay',
-      desc: 'An exploratory analysis on the neuronal decoding of odor presentations in the hippocampus — a look into the brain and how understanding it could inform the treatment and identification of cognitive diseases related to working memory.',
+      desc: 'An exploratory analysis on the neuronal decoding of odor presentations in the hippocampus, a look into the brain and how understanding it could inform the treatment and identification of cognitive diseases related to working memory.',
       arxiv: null,
       pdf: 'files/hippocampal_ensembles.pdf',
       collaborators: ['Dr. N. Fortin lab, UCI CNLM'],
@@ -134,8 +134,8 @@ window.JN_DATA = {
     },
   ],
   collaborators: [
-    { name: 'Dr. Erik Sudderth',  role: 'Advisor — Bayesian ML',            inst: 'UC Irvine, Computer Science' },
-    { name: 'Dr. Stephan Mandt',  role: 'Co-Advisor — Variational Inference', inst: 'UC Irvine, Computer Science' },
+    { name: 'Dr. Erik Sudderth',  role: 'Advisor, Bayesian ML',            inst: 'UC Irvine, Computer Science' },
+    { name: 'Dr. Stephan Mandt',  role: 'Co-Advisor, Variational Inference', inst: 'UC Irvine, Computer Science' },
     { name: 'Dr. Norbert Fortin', role: 'Hippocampal replay',                   inst: 'UC Irvine, CNLM' },
     { name: 'Dr. Babak Shahbaba', role: 'Statistical neuroscience',             inst: 'UC Irvine, Statistics' },
   ],
@@ -149,7 +149,7 @@ window.JN_DATA = {
       { year: '2023 – 2025', title: 'Undergraduate Researcher', inst: 'Fortin Lab, UCI CNLM',       note: 'Hippocampal replay · nonspatial sequence decoding' },
     ],
     awards: [
-      { year: '2025', title: 'Chancellor’s Award for Excellence in Undergraduate Research' },
+      { year: '2025', title: "Chancellor's Award for Excellence in Undergraduate Research" },
       { year: '2024', title: 'UCI Statistics Honors Program' },
       { year: '2023', title: 'NSF Research Experience for Undergraduates (REU)' },
     ],
@@ -206,17 +206,17 @@ function strokePath(d, W, H, amp) {
 // ─── BayesianHero component ───────────────────────────────────────────────────
 function BayesianHero({ color = '#7a1a1a', accent = '#2b3f6b', height = 220, seed = 0 }) {
   const W = 780, H = height;
-  const [t, setT] = React.useState(0);
+  const [t, setT] = React.useState(0.6);
   React.useEffect(() => {
     const key = 'jn_hero_played_' + seed;
-    if (sessionStorage.getItem(key)) { setT(1); return; }
+    try { if (sessionStorage.getItem(key)) { setT(1); return; } } catch(e) {}
     let raf;
     const start = performance.now();
     const tick = (now) => {
       const p = Math.min(1, (now - start) / 2600);
       setT(p);
       if (p < 1) raf = requestAnimationFrame(tick);
-      else sessionStorage.setItem(key, '1');
+      else { try { sessionStorage.setItem(key, '1'); } catch(e) {} }
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
@@ -232,7 +232,7 @@ function BayesianHero({ color = '#7a1a1a', accent = '#2b3f6b', height = 220, see
   const posterior = makeGaussian(postMu, postSd, 1.45);
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="auto" style={{ display: 'block', overflow: 'visible' }}>
+    <svg viewBox={`0 -${Math.round(H * 0.42)} ${W} ${Math.round(H * 1.95)}`} width="100%" height="auto" style={{ display: 'block' }}>
       <defs>
         <linearGradient id={`jn-prior-${seed}`} x1="0" x2="0" y1="0" y2="1">
           <stop offset="0" stopColor={color} stopOpacity="0.18" /><stop offset="1" stopColor={color} stopOpacity="0" />
@@ -395,7 +395,7 @@ function SheetFooter({ fonts }) {
   return (
     <footer style={{ padding: '32px 72px 40px', borderTop: `1px solid ${JN.ruleSoft}`, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontFamily: fonts.serif, fontSize: 14, color: JN.mute }}>
       <span style={{ fontStyle: 'italic' }}>&copy; James A. Nguyen, 2026</span>
-      <span style={{ fontSize: 12, color: JN.muteCool }}>Set in Libre Caslon Text &amp; IBM Plex Mono</span>
+      <span style={{ fontSize: 12, color: JN.muteCool }}>Last updated April 2026</span>
       <span style={{ fontStyle: 'italic' }}>Irvine, California</span>
     </footer>
   );
@@ -435,7 +435,7 @@ function TopNav({ fonts, nav, active = 'home' }) {
   const moreItems = [
     ['cv',            'CV'],
     ['collaborators', 'Collaborators'],
-    ['guide',         "A Student’s Guide to Numerical Bayes"],
+    ['guide',         "A Student's Guide to Numerical Bayes"],
   ];
   const isActive = (path) => {
     if (active === 'home' && path.startsWith('home')) return path === 'home';
@@ -469,7 +469,7 @@ function TopNav({ fonts, nav, active = 'home' }) {
         })}
         <div style={{ position: 'relative', marginLeft: 8 }}>
           <button onClick={() => setMenuOpen(o => !o)} onBlur={() => setTimeout(() => setMenuOpen(false), 200)}
-            style={{ all: 'unset', cursor: 'pointer', color: JN.inkSoft, fontFamily: fonts.sans, fontSize: 16, letterSpacing: '0.05em' }}>
+            style={{ all: 'unset', cursor: 'pointer', color: JN.inkSoft, fontFamily: fonts.sans, fontSize: 13, letterSpacing: '0.02em', borderBottom: '1px solid transparent', paddingBottom: 2 }}>
             more +
           </button>
           {menuOpen && (
@@ -501,27 +501,27 @@ function HomeBlueprint({ nav }) {
       <TopNav fonts={fonts} nav={nav} active="home" />
 
       {/* Hero */}
-      <section id="index" style={{ padding: '72px 72px 48px', position: 'relative', overflow: 'hidden' }}>
+      <section id="index" style={{ padding: '72px 72px 48px', position: 'relative' }}>
         <Komorebi opacity={0.5} />
+        <div style={{ position: 'absolute', bottom: -100, right: 120, width: 'min(560px, 45%)', pointerEvents: 'none', opacity: 0.9, zIndex: 15 }}>
+          <BayesianHero color={JN.red} accent={JN.blue} height={360} seed="hero3" />
+        </div>
         <div style={{ position: 'relative' }}>
-          <div style={{ position: 'absolute', right: -24, bottom: 0, width: 'min(560px, 55%)', pointerEvents: 'none', opacity: 0.9, zIndex: 2 }}>
-            <BayesianHero color={JN.red} accent={JN.blue} height={220} seed="hero3" />
-          </div>
           <div style={{ position: 'relative', zIndex: 1, maxWidth: 680 }}>
             <h1 style={{ fontFamily: fonts.serif, fontSize: 'clamp(40px, 6.4vw, 96px)', lineHeight: 1.02, fontWeight: 400, letterSpacing: '-0.02em', margin: 0, color: JN.ink, whiteSpace: 'nowrap' }}>
               James A.&nbsp;<span style={{ fontStyle: 'italic' }}><CircledWord color={JN.red} stroke={1.5} tilt={-4} pad={14}>Nguyen</CircledWord></span>
             </h1>
             <p style={{ fontFamily: fonts.serif, fontSize: 22, lineHeight: 1.45, color: JN.inkSoft, margin: '28px 0 0', maxWidth: 560 }}>
               Ph.D. candidate in Statistics at UC Irvine, working with{' '}
-              <span style={{ color: JN.red }}>Eric Sudderth</span> and{' '}
-              <span style={{ color: JN.red }}>Stephan Mandt</span> on scalable Bayesian inference.
+              <span style={{ color: JN.red }}>Dr. Eric Sudderth</span> and{' '}
+              <span style={{ color: JN.red }}>Dr. Stephan Mandt</span> on scalable Bayesian inference.
             </p>
             <SashikoRule color={JN.red} opacity={1} width={120} my={36} />
             <div style={{ display: 'flex', gap: 40, fontFamily: fonts.sans, fontSize: 13, color: JN.mute, letterSpacing: '0.02em' }}>
               {[
                 ['Program', 'PhD, Statistics'],
                 ['Advisors', 'Sudderth · Mandt'],
-                ['Cohort', 'Class of 2032'],
+                ['Cohort', 'Class of 2031'],
               ].map(([label, val]) => (
                 <div key={label}>
                   <span style={{ color: JN.muteCool, display: 'block', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 4 }}>{label}</span>
@@ -547,10 +547,10 @@ function HomeBlueprint({ nav }) {
           </figure>
           <div>
             <p style={{ fontFamily: fonts.serif, fontSize: 22, lineHeight: 1.5, color: JN.ink, margin: '0 0 20px' }}>
-              Hello &mdash; I&rsquo;m James. A recent UCI graduate in Applied Mathematics, now a Ph.D. student in Statistics.
+              Hello, I&rsquo;m James. A recent UCI graduate in Applied Mathematics, now a Ph.D. student in Statistics.
             </p>
             <p style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 1.65, color: JN.inkSoft, maxWidth: 560, margin: '0 0 28px' }}>
-              My research is about the computational limits of Bayesian inference &mdash; particularly efficient <em>variational</em> methods for high-dimensional data, with applications in machine learning. I like problems where the geometry of the posterior tells you something about the system.
+              My research is about the computational limits of Bayesian inference, particularly efficient <em>variational</em> methods for high-dimensional data, with applications in machine learning. I like problems where the geometry of the posterior tells you something about the system.
             </p>
             <div style={{ fontFamily: fonts.serif, fontSize: 16, color: JN.inkSoft, lineHeight: 1.9 }}>
               <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>Interests</div>
@@ -583,7 +583,7 @@ function HomeBlueprint({ nav }) {
             <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>In draft</div>
             <h3 style={{ fontFamily: fonts.serif, fontSize: 32, fontWeight: 400, lineHeight: 1.15, margin: '0 0 16px', color: JN.ink }}>A Student&rsquo;s Guide to <em>Numerical Bayes</em></h3>
             <p style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 1.65, color: JN.inkSoft, margin: 0 }}>
-              A reading companion to Turkman, Paulino &amp; M&uuml;ller&rsquo;s <em>Computational Bayesian Statistics</em>. My attempt to simplify &mdash; to others, and to myself &mdash; numerical solutions to Bayesian inference, built around worked examples that develop gradually.
+              A reading companion to Turkman, Paulino &amp; M&uuml;ller&rsquo;s <em>Computational Bayesian Statistics</em>. My attempt to simplify, to others, and to myself, numerical solutions to Bayesian inference, built around worked examples that develop gradually.
             </p>
             <button onClick={() => nav('guide')} style={{ all: 'unset', cursor: 'pointer', display: 'inline-block', marginTop: 20, fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 16, color: JN.red, borderBottom: `1px solid ${JN.red}`, paddingBottom: 2 }}>
               Read the draft &rarr;
@@ -663,12 +663,12 @@ function ProjectDetailEditorial({ id, nav }) {
   const sections = (pid) => {
     if (pid === 'spectral_sampling') return [
       { h: '01 · Motivation', p: 'In tomography, consensus, and constrained optimization we meet systems Ax = b with m ≫ n. Iterative row-action methods are attractive because they avoid forming AᵀA and scale in m without ever holding the whole matrix. The question is which row to pick next.' },
-      { h: '02 · Spectral weights', p: "We derive a weight proportional to each row’s alignment with the least-resolved singular direction. Computed once, reused across iterations. The cost is a small eigenpair estimate; the benefit is a geometry-aware sampler." },
+      { h: '02 · Spectral weights', p: "We derive a weight proportional to each row's alignment with the least-resolved singular direction. Computed once, reused across iterations. The cost is a small eigenpair estimate; the benefit is a geometry-aware sampler." },
       { h: '03 · Convergence', p: 'On ill-conditioned problems we observe a consistent reduction in iterates-to-tolerance, with stronger gains at tighter tolerances. Acceleration is most pronounced for systems whose energy concentrates in a few directions.' },
       { h: '04 · Inequalities', p: 'The sampler extends naturally to overdetermined systems of linear inequalities, where the projection operator is one-sided. We show conditions under which the spectral bias remains well-defined.' },
     ];
     if (pid === 'hiv_tb') return [
-      { h: '01 · Background', p: 'Botswana’s 2016 rollout of universal access to antiretroviral therapy created a natural discontinuity for studying how HIV co-infection interacts with tuberculosis treatment outcomes.' },
+      { h: '01 · Background', p: "Botswana's 2016 rollout of universal access to antiretroviral therapy created a natural discontinuity for studying how HIV co-infection interacts with tuberculosis treatment outcomes." },
       { h: '02 · Data & design', p: 'Patient-level records from Gaborone health facilities were analyzed with a difference-in-differences specification, paired with a propensity-matched control for ART adherence.' },
       { h: '03 · Findings', p: 'Post-policy cohorts show meaningfully improved cure rates among HIV-positive TB patients, with the effect concentrated among those achieving viral suppression within six months.' },
     ];
@@ -767,7 +767,7 @@ function ProjectDetailEditorial({ id, nav }) {
                 : <ReplayPlaceholder color={JN.red} accent={JN.blue} />}
             </div>
             <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.mute, letterSpacing: '0.06em', marginBottom: 40 }}>
-              Fig. 1 &mdash; {figCaption(p.id)}.
+              Fig. 1, {figCaption(p.id)}.
             </div>
             {sections(p.id).map(s => (
               <div key={s.h} style={{ marginBottom: 32 }}>
@@ -820,7 +820,7 @@ function InstructionBlueprint({ nav }) {
       <SashikoRule color={JN.red} opacity={1} />
 
       <section style={{ padding: '72px 72px' }}>
-        <SheetHeaderB num="01" title="Resources" subtitle="One active — more to come" fonts={fonts} />
+        <SheetHeaderB num="01" title="Resources" subtitle="One active, more to come" fonts={fonts} />
         <div style={{ marginTop: 40 }}>
           <button onClick={() => nav('guide')} style={{ all: 'unset', cursor: 'pointer', display: 'block', width: '100%' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr 160px', gap: 48, padding: '28px 8px', borderBottom: `1px dashed ${JN.ruleSoft}`, transition: 'background 0.2s' }}
@@ -843,10 +843,10 @@ function InstructionBlueprint({ nav }) {
                 <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>In draft &middot; 42 pages</div>
                 <h3 style={{ fontFamily: fonts.serif, fontSize: 36, fontWeight: 400, lineHeight: 1.1, margin: '0 0 14px', color: JN.ink }}>A Student&rsquo;s Guide to <em>Numerical Bayes</em></h3>
                 <p style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 1.65, color: JN.inkSoft, margin: '0 0 16px', maxWidth: 620 }}>
-                  A reading companion to <em>Computational Bayesian Statistics &mdash; An Introduction</em> by Turkman, Paulino &amp; M&uuml;ller. My attempt to simplify &mdash; to others, and to myself &mdash; the concepts and methods of numerical solutions to Bayesian inference.
+                  A reading companion to <em>Computational Bayesian Statistics, An Introduction</em> by Turkman, Paulino &amp; M&uuml;ller. My attempt to simplify, to others, and to myself, the concepts and methods of numerical solutions to Bayesian inference.
                 </p>
                 <p style={{ fontFamily: fonts.serif, fontSize: 15, lineHeight: 1.6, color: JN.mute, margin: 0, maxWidth: 620, fontStyle: 'italic' }}>
-                  A work in progress &mdash; please <a href="mailto:nguyen.james115@gmail.com" style={{ color: JN.red }}>write to me</a> with any corrections or feedback.
+                  A work in progress, please <a href="mailto:nguyen.james115@gmail.com" style={{ color: JN.red }}>write to me</a> with any corrections or feedback.
                 </p>
               </div>
               <div style={{ alignSelf: 'center', textAlign: 'right' }}>
@@ -899,16 +899,16 @@ function GuideBlueprint({ nav }) {
     <div style={{ ...BG(), color: JN.ink, fontFamily: fonts.serif, minHeight: '100%' }}>
       <TopNav fonts={fonts} nav={nav} active="instruction" />
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '80px 72px' }}>
-        <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.mute, marginBottom: 14 }}>Volume I &mdash; a draft</div>
+        <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.mute, marginBottom: 14 }}>Volume I, a draft</div>
         <h1 style={{ fontFamily: fonts.serif, fontSize: 'clamp(40px, 6vw, 64px)', lineHeight: 1.05, fontWeight: 400, letterSpacing: '-0.01em', margin: '0 0 20px', color: JN.ink }}>
           A Student&rsquo;s Guide to <em>Numerical Bayes</em>
         </h1>
         <p style={{ fontFamily: fonts.serif, fontSize: 20, lineHeight: 1.5, color: JN.inkSoft, margin: '0 0 32px', fontStyle: 'italic' }}>
-          with worked examples &mdash; after Turkman, Paulino &amp; M&uuml;ller.
+          with worked examples, after Turkman, Paulino &amp; M&uuml;ller.
         </p>
         <SashikoRule color={JN.red} opacity={1} width={80} my={8} />
         <p style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 1.75, color: JN.inkSoft, margin: '28px 0 40px' }}>
-          This is a reading companion, not a textbook. I wrote it while working through <em>Computational Bayesian Statistics &mdash; An Introduction</em>, and kept it public so that another student starting the same book might have a slightly shorter road.
+          This is a reading companion, not a textbook. I wrote it while working through <em>Computational Bayesian Statistics, An Introduction</em>, and kept it public so that another student starting the same book might have a slightly shorter road.
         </p>
         <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 16 }}>Contents</div>
         {[
@@ -975,7 +975,7 @@ function CVBlueprint({ nav }) {
               James A. <em>Nguyen</em>
             </h1>
             <div style={{ fontFamily: fonts.serif, fontSize: 15, color: JN.mute, marginTop: 16, fontStyle: 'italic' }}>
-              UC Irvine &middot; PhD Statistics, class of 2032 &middot; nguyen.james115@gmail.com
+              UC Irvine &middot; PhD Statistics, class of 2031 &middot; nguyen.james115@gmail.com
             </div>
           </div>
           <a href="files/nguyenJames_cv.pdf" target="_blank" rel="noopener" style={{ display: 'inline-block', padding: '10px 18px', borderBottom: `1px solid ${JN.red}`, color: JN.red, fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 16, textDecoration: 'none' }}>
@@ -992,7 +992,7 @@ function CVBlueprint({ nav }) {
         <Block n="04" title="Teaching" rows={cv.teaching} />
 
         <div style={{ marginTop: 32, padding: '24px 0', fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute, textAlign: 'center' }}>
-          Full CV as PDF &mdash; <a href="files/nguyenJames_cv.pdf" target="_blank" rel="noopener" style={{ color: JN.red }}>files/nguyenJames_cv.pdf</a>
+          Full CV as PDF, <a href="files/nguyenJames_cv.pdf" target="_blank" rel="noopener" style={{ color: JN.red }}>files/nguyenJames_cv.pdf</a>
         </div>
       </div>
       <SheetFooter fonts={fonts} />
