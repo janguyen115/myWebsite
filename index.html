@@ -15,6 +15,36 @@
   <style>
     html, body, #root { margin: 0; padding: 0; min-height: 100%; background: #f4f1ea; }
     * { box-sizing: border-box; }
+    @media (max-width: 768px) {
+      .jn-header         { padding: 14px 20px !important; }
+      .jn-nav-items      { display: none !important; }
+      .jn-hero           { padding: 40px 20px 32px !important; }
+      .jn-hero-graphic   { display: none !important; }
+      .jn-h1-nowrap      { white-space: normal !important; }
+      .jn-section        { padding: 48px 20px !important; }
+      .jn-footer         { padding: 24px 20px 32px !important; flex-direction: column !important; gap: 12px !important; }
+      .jn-grid-about     { grid-template-columns: 1fr !important; }
+      .jn-grid-2col      { grid-template-columns: 1fr !important; }
+      .jn-grid-contact   { grid-template-columns: 1fr auto !important; }
+      .jn-contact-label  { display: none !important; }
+      .jn-grid-proj      { grid-template-columns: 1fr auto !important; gap: 12px !important; }
+      .jn-proj-meta      { display: none !important; }
+      .jn-grid-collab    { grid-template-columns: 1fr !important; }
+      .jn-collab-meta    { display: none !important; }
+      .jn-grid-cv        { grid-template-columns: 90px 1fr !important; }
+      .jn-cv-note        { display: none !important; }
+      .jn-toc-row        { grid-template-columns: 40px 1fr !important; }
+      .jn-toc-desc       { display: none !important; }
+      .jn-proj-header    { padding: 14px 20px !important; }
+      .jn-proj-header-nav { display: none !important; }
+      .jn-proj-content   { padding: 32px 20px 48px !important; }
+      .jn-proj-meta-row  { display: none !important; }
+      .jn-proj-detail-grid { grid-template-columns: 1fr !important; }
+      .jn-proj-aside     { position: static !important; height: auto !important; margin-bottom: 32px !important; }
+      .jn-guide-content  { padding: 48px 20px 64px !important; }
+      .jn-collab-section { padding: 48px 20px !important; }
+      .jn-cv-content     { padding: 48px 20px !important; }
+    }
   </style>
 </head>
 <body>
@@ -427,7 +457,7 @@ function SheetHeaderB({ num, title, subtitle, fonts }) {
 
 function SheetFooter({ fonts }) {
   return (
-    <footer style={{ padding: '32px 72px 40px', borderTop: `1px solid ${JN.ruleSoft}`, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontFamily: fonts.serif, fontSize: 14, color: JN.mute }}>
+    <footer className="jn-footer" style={{ padding: '32px 72px 40px', borderTop: `1px solid ${JN.ruleSoft}`, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontFamily: fonts.serif, fontSize: 14, color: JN.mute }}>
       <span style={{ fontStyle: 'italic' }}>&copy; James A. Nguyen, 2026</span>
       <span style={{ fontSize: 12, color: JN.muteCool }}>Last updated April 2026</span>
       <span style={{ fontStyle: 'italic' }}>Irvine, California</span>
@@ -476,11 +506,11 @@ function TopNav({ fonts, nav, active = 'home' }) {
     return active === path;
   };
   return (
-    <header style={{ position: 'sticky', top: 0, zIndex: 20, background: 'rgba(244,241,234,0.88)', backdropFilter: 'blur(8px)', borderBottom: `1px solid ${JN.ruleSoft}`, padding: '18px 72px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <header className="jn-header" style={{ position: 'sticky', top: 0, zIndex: 20, background: 'rgba(244,241,234,0.88)', backdropFilter: 'blur(8px)', borderBottom: `1px solid ${JN.ruleSoft}`, padding: '18px 72px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
       <button onClick={() => nav('home')} style={{ all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'baseline', gap: 6, fontFamily: fonts.serif, fontSize: 17, letterSpacing: '0.01em', color: JN.ink }}>
         <span style={{ fontStyle: 'italic' }}>James A.</span><span style={{ color: JN.red }}>Nguyen</span>
       </button>
-      <nav style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
+      <nav className="jn-nav-items" style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
         {navItems.map(([path, label]) => {
           const act = isActive(path);
           return (
@@ -535,14 +565,14 @@ function HomeBlueprint({ nav }) {
       <TopNav fonts={fonts} nav={nav} active="home" />
 
       {/* Hero */}
-      <section id="index" style={{ padding: '72px 72px 48px', position: 'relative' }}>
+      <section id="index" className="jn-hero" style={{ padding: '72px 72px 48px', position: 'relative' }}>
         <Komorebi opacity={0.5} />
-        <div style={{ position: 'absolute', bottom: -100, right: 120, width: 'min(560px, 45%)', pointerEvents: 'none', opacity: 0.9, zIndex: 15 }}>
+        <div className="jn-hero-graphic" style={{ position: 'absolute', bottom: -100, right: 120, width: 'min(560px, 45%)', pointerEvents: 'none', opacity: 0.9, zIndex: 15 }}>
           <BayesianHero color={JN.red} accent={JN.blue} height={360} seed="hero3" />
         </div>
         <div style={{ position: 'relative' }}>
           <div style={{ position: 'relative', zIndex: 1, maxWidth: 680 }}>
-            <h1 style={{ fontFamily: fonts.serif, fontSize: 'clamp(40px, 6.4vw, 96px)', lineHeight: 1.02, fontWeight: 400, letterSpacing: '-0.02em', margin: 0, color: JN.ink, whiteSpace: 'nowrap' }}>
+            <h1 className="jn-h1-nowrap" style={{ fontFamily: fonts.serif, fontSize: 'clamp(40px, 6.4vw, 96px)', lineHeight: 1.02, fontWeight: 400, letterSpacing: '-0.02em', margin: 0, color: JN.ink, whiteSpace: 'nowrap' }}>
               James A.&nbsp;<span style={{ fontStyle: 'italic' }}><CircledWord color={JN.red} stroke={1.5} tilt={-4} pad={14}>Nguyen</CircledWord></span>
             </h1>
             <p style={{ fontFamily: fonts.serif, fontSize: 22, lineHeight: 1.45, color: JN.inkSoft, margin: '28px 0 0', maxWidth: 560 }}>
@@ -570,9 +600,9 @@ function HomeBlueprint({ nav }) {
       <SashikoRule color={JN.red} opacity={1} />
 
       {/* About */}
-      <section id="about" style={{ padding: '72px 72px', scrollMarginTop: 64 }}>
+      <section id="about" className="jn-section" style={{ padding: '72px 72px', scrollMarginTop: 64 }}>
         <SheetHeaderB num="01" title="About" subtitle="A few words" fonts={fonts} />
-        <div style={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: 56, marginTop: 40 }}>
+        <div className="jn-grid-about" style={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: 56, marginTop: 40 }}>
           <figure style={{ margin: 0 }}>
             <img src="images/about_banner.jpg" alt="James at Rowland Hall" style={{ width: '100%', display: 'block', filter: 'saturate(0.7) contrast(1.02)' }} />
             <figcaption style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 13, color: JN.mute, marginTop: 10 }}>
@@ -598,7 +628,7 @@ function HomeBlueprint({ nav }) {
       <SashikoRule color={JN.red} opacity={1} />
 
       {/* Projects */}
-      <section id="projects" style={{ padding: '72px 72px', scrollMarginTop: 64 }}>
+      <section id="projects" className="jn-section" style={{ padding: '72px 72px', scrollMarginTop: 64 }}>
         <SheetHeaderB num="02" title="Projects" subtitle="Selected work, 2023–2025" fonts={fonts} />
         <div style={{ marginTop: 40 }}>
           {L.projects.map((p, i) => (
@@ -610,9 +640,9 @@ function HomeBlueprint({ nav }) {
       <SashikoRule color={JN.red} opacity={1} />
 
       {/* Instruction teaser */}
-      <section id="instruction-teaser" style={{ padding: '72px 72px', scrollMarginTop: 64 }}>
+      <section id="instruction-teaser" className="jn-section" style={{ padding: '72px 72px', scrollMarginTop: 64 }}>
         <SheetHeaderB num="03" title="Instruction" subtitle="Notes in progress" fonts={fonts} />
-        <div style={{ marginTop: 40, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56 }}>
+        <div className="jn-grid-2col" style={{ marginTop: 40, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56 }}>
           <div>
             <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>In draft</div>
             <h3 style={{ fontFamily: fonts.serif, fontSize: 32, fontWeight: 400, lineHeight: 1.15, margin: '0 0 16px', color: JN.ink }}>A Student&rsquo;s Guide to <em>Numerical Bayes</em></h3>
@@ -645,13 +675,14 @@ function HomeBlueprint({ nav }) {
       <SashikoRule color={JN.red} opacity={1} />
 
       {/* Contact */}
-      <section id="contact" style={{ padding: '72px 72px', scrollMarginTop: 64 }}>
+      <section id="contact" className="jn-section" style={{ padding: '72px 72px', scrollMarginTop: 64 }}>
         <SheetHeaderB num="04" title="Contact" subtitle="Get in touch" fonts={fonts} />
         <div style={{ marginTop: 40 }}>
           {L.contacts.map((c) => (
             <a key={c.label} href={c.href} target="_blank" rel="noopener"
+              className="jn-grid-contact"
               style={{ display: 'grid', gridTemplateColumns: '160px 1fr auto', alignItems: 'baseline', padding: '20px 0', borderBottom: `1px dashed ${JN.ruleSoft}`, textDecoration: 'none' }}>
-              <span style={{ fontFamily: fonts.sans, color: JN.muteCool, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase' }}>{c.label}</span>
+              <span className="jn-contact-label" style={{ fontFamily: fonts.sans, color: JN.muteCool, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase' }}>{c.label}</span>
               <span style={{ fontFamily: fonts.serif, fontSize: 22, color: JN.ink }}>{c.value}</span>
               <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', color: JN.red, fontSize: 15 }}>open &rarr;</span>
             </a>
@@ -667,14 +698,15 @@ function HomeBlueprint({ nav }) {
 function ProjectRow({ p, i, fonts, last, nav }) {
   return (
     <button onClick={() => nav('project', p.id)}
+      className="jn-grid-proj"
       style={{ all: 'unset', cursor: 'pointer', display: 'grid', gridTemplateColumns: '60px 80px 1fr auto auto', alignItems: 'baseline', gap: 24, padding: '24px 8px', width: '100%', boxSizing: 'border-box', borderBottom: last ? 'none' : `1px dashed ${JN.ruleSoft}`, transition: 'background 0.2s' }}
       onMouseEnter={e => e.currentTarget.style.background = 'rgba(244,241,234,0.5)'}
       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
     >
-      <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 16, color: JN.red }}>{p.num}.</span>
-      <span style={{ fontFamily: fonts.sans, fontSize: 12, color: JN.muteCool, letterSpacing: '0.1em' }}>{p.year}</span>
+      <span className="jn-proj-meta" style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 16, color: JN.red }}>{p.num}.</span>
+      <span className="jn-proj-meta" style={{ fontFamily: fonts.sans, fontSize: 12, color: JN.muteCool, letterSpacing: '0.1em' }}>{p.year}</span>
       <span style={{ fontFamily: fonts.serif, fontSize: 22, color: JN.ink, paddingRight: 24, lineHeight: 1.3 }}>{p.title}</span>
-      <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.mute, paddingRight: 24 }}>{p.tag}</span>
+      <span className="jn-proj-meta" style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.mute, paddingRight: 24 }}>{p.tag}</span>
       <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.red }}>read &rarr;</span>
     </button>
   );
@@ -721,11 +753,11 @@ function ProjectDetailEditorial({ id, nav }) {
 
   return (
     <div style={{ ...BG(), color: JN.ink, fontFamily: fonts.serif, minHeight: '100%' }}>
-      <header style={{ position: 'sticky', top: 0, zIndex: 20, background: 'rgba(244,241,234,0.92)', backdropFilter: 'blur(6px)', borderBottom: `1px solid ${JN.rule}`, padding: '18px 48px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: fonts.sans, fontSize: 12 }}>
+      <header className="jn-proj-header" style={{ position: 'sticky', top: 0, zIndex: 20, background: 'rgba(244,241,234,0.92)', backdropFilter: 'blur(6px)', borderBottom: `1px solid ${JN.rule}`, padding: '18px 48px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontFamily: fonts.sans, fontSize: 12 }}>
         <button onClick={() => nav('home')} style={{ all: 'unset', cursor: 'pointer', letterSpacing: '0.18em', textTransform: 'uppercase', color: JN.inkSoft }}>
           &larr; <span style={{ color: JN.red }}>Nguyen</span> &middot; Journal
         </button>
-        <nav style={{ display: 'flex', gap: 28, fontSize: 13, letterSpacing: '0.04em' }}>
+        <nav className="jn-proj-header-nav" style={{ display: 'flex', gap: 28, fontSize: 13, letterSpacing: '0.04em' }}>
           <button onClick={() => nav('home')} style={{ all: 'unset', cursor: 'pointer', color: JN.inkSoft }}>About</button>
           <button onClick={() => nav('home')} style={{ all: 'unset', cursor: 'pointer', color: JN.red }}>Projects</button>
           <button onClick={() => nav('instruction')} style={{ all: 'unset', cursor: 'pointer', color: JN.inkSoft }}>Instruction</button>
@@ -733,12 +765,12 @@ function ProjectDetailEditorial({ id, nav }) {
         </nav>
       </header>
 
-      <div style={{ padding: '56px 48px 80px', maxWidth: 1300, margin: '0 auto' }}>
+      <div className="jn-proj-content" style={{ padding: '56px 48px 80px', maxWidth: 1300, margin: '0 auto' }}>
         <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.22em', color: JN.mute, textTransform: 'uppercase', marginBottom: 12 }}>
           <button onClick={() => nav('home')} style={{ all: 'unset', cursor: 'pointer', color: JN.red, textDecoration: 'underline', textUnderlineOffset: 3 }}>Index</button>
           &nbsp;/ Projects &middot; &sect; {p.num}
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr auto', gap: 32, marginBottom: 32, alignItems: 'baseline' }}>
+        <div className="jn-proj-meta-row" style={{ display: 'grid', gridTemplateColumns: '140px 1fr auto', gap: 32, marginBottom: 32, alignItems: 'baseline' }}>
           <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.22em', color: JN.red, textTransform: 'uppercase' }}>&sect; {p.num} &middot; {p.year}</div>
           <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.14em', color: JN.mute }}>{p.tag}</div>
           <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.mute }}>{p.status || '—'}</div>
@@ -751,8 +783,8 @@ function ProjectDetailEditorial({ id, nav }) {
           {p.desc.split('. ')[0]}.
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 48, borderTop: `1px solid ${JN.rule}`, paddingTop: 28 }}>
-          <aside style={{ fontFamily: fonts.sans, fontSize: 12, color: JN.mute, letterSpacing: '0.04em', position: 'sticky', top: 96, height: 'min-content' }}>
+        <div className="jn-proj-detail-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 48, borderTop: `1px solid ${JN.rule}`, paddingTop: 28 }}>
+          <aside className="jn-proj-aside" style={{ fontFamily: fonts.sans, fontSize: 12, color: JN.mute, letterSpacing: '0.04em', position: 'sticky', top: 96, height: 'min-content' }}>
             <div style={{ marginBottom: 24 }}>
               <div style={{ textTransform: 'uppercase', letterSpacing: '0.2em', color: JN.red, marginBottom: 8 }}>Collaborators</div>
               {(p.collaborators || []).map(a => <div key={a} style={{ color: JN.ink, marginBottom: 3 }}>{a}</div>)}
@@ -840,7 +872,7 @@ function InstructionBlueprint({ nav }) {
     <div style={{ ...BG(), color: JN.ink, fontFamily: fonts.serif, minHeight: '100%' }}>
       <TopNav fonts={fonts} nav={nav} active="instruction" />
 
-      <section style={{ padding: '72px 72px 48px', position: 'relative', overflow: 'hidden' }}>
+      <section className="jn-hero" style={{ padding: '72px 72px 48px', position: 'relative', overflow: 'hidden' }}>
         <Komorebi opacity={0.45} />
         <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute, marginBottom: 18, position: 'relative' }}>Instruction</div>
         <h1 style={{ fontFamily: fonts.serif, fontSize: 'clamp(40px, 6vw, 80px)', lineHeight: 1.05, fontWeight: 400, letterSpacing: '-0.02em', margin: 0, maxWidth: 1000, color: JN.ink, position: 'relative' }}>
@@ -853,11 +885,11 @@ function InstructionBlueprint({ nav }) {
 
       <SashikoRule color={JN.red} opacity={1} />
 
-      <section style={{ padding: '72px 72px' }}>
+      <section className="jn-section" style={{ padding: '72px 72px' }}>
         <SheetHeaderB num="01" title="Resources" subtitle="One active, more to come" fonts={fonts} />
         <div style={{ marginTop: 40 }}>
           <button onClick={() => nav('guide')} style={{ all: 'unset', cursor: 'pointer', display: 'block', width: '100%' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr 160px', gap: 48, padding: '28px 8px', borderBottom: `1px dashed ${JN.ruleSoft}`, transition: 'background 0.2s' }}
+            <div className="jn-grid-2col" style={{ display: 'grid', gridTemplateColumns: '220px 1fr 160px', gap: 48, padding: '28px 8px', borderBottom: `1px dashed ${JN.ruleSoft}`, transition: 'background 0.2s' }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(244,241,234,0.5)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
@@ -893,10 +925,10 @@ function InstructionBlueprint({ nav }) {
         <div style={{ marginTop: 48 }}>
           <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 16 }}>Table of contents</div>
           {toc.map((c, i) => (
-            <div key={c.n} style={{ display: 'grid', gridTemplateColumns: '60px 260px 1fr', padding: '16px 0', borderBottom: i < toc.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none', alignItems: 'baseline', gap: 20 }}>
+            <div key={c.n} className="jn-toc-row" style={{ display: 'grid', gridTemplateColumns: '60px 260px 1fr', padding: '16px 0', borderBottom: i < toc.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none', alignItems: 'baseline', gap: 20 }}>
               <span style={{ fontFamily: fonts.serif, fontSize: 18, color: JN.red, fontStyle: 'italic' }}>{c.n}.</span>
               <span style={{ fontFamily: fonts.serif, fontSize: 20, color: JN.ink }}>{c.title}</span>
-              <span style={{ fontFamily: fonts.serif, fontSize: 15, color: JN.inkSoft, lineHeight: 1.5 }}>{c.desc}</span>
+              <span className="jn-toc-desc" style={{ fontFamily: fonts.serif, fontSize: 15, color: JN.inkSoft, lineHeight: 1.5 }}>{c.desc}</span>
             </div>
           ))}
         </div>
@@ -904,9 +936,9 @@ function InstructionBlueprint({ nav }) {
 
       <SashikoRule color={JN.red} opacity={1} />
 
-      <section style={{ padding: '72px 72px' }}>
+      <section className="jn-section" style={{ padding: '72px 72px' }}>
         <SheetHeaderB num="02" title="Soon" subtitle="Placeholders, still drafting" fonts={fonts} />
-        <div style={{ marginTop: 40, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48 }}>
+        <div className="jn-grid-2col" style={{ marginTop: 40, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48 }}>
           {[
             { t: 'Variational inference, a working intuition', d: 'Why the ELBO looks the way it does; what the mean-field gives up.' },
             { t: 'Reading Strohmer–Vershynin', d: 'A slow pass through the paper that started my Kaczmarz curiosity.' },
@@ -946,7 +978,7 @@ function GuideBlueprint({ nav }) {
   return (
     <div style={{ ...BG(), color: JN.ink, fontFamily: fonts.serif, minHeight: '100%' }}>
       <TopNav fonts={fonts} nav={nav} active="instruction" />
-      <div ref={ref} style={{ maxWidth: 760, margin: '0 auto', padding: '80px 72px' }}>
+      <div ref={ref} className="jn-guide-content" style={{ maxWidth: 760, margin: '0 auto', padding: '80px 72px' }}>
         <div style={{ fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: JN.mute, marginBottom: 32 }}>
           <button onClick={() => nav('instruction')} style={{ all: 'unset', cursor: 'pointer', color: JN.red }}>Instruction</button>
           <span style={{ margin: '0 8px' }}>/</span>
@@ -1060,13 +1092,13 @@ function CVBlueprint({ nav }) {
       </div>
       <div>
         {rows.map((r, i) => (
-          <div key={i} style={{ display: 'grid', gridTemplateColumns: '120px 1fr 1fr', padding: '16px 0', borderBottom: i < rows.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none', alignItems: 'baseline', gap: 24 }}>
+          <div key={i} className="jn-grid-cv" style={{ display: 'grid', gridTemplateColumns: '120px 1fr 1fr', padding: '16px 0', borderBottom: i < rows.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none', alignItems: 'baseline', gap: 24 }}>
             <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 14, color: JN.mute }}>{r.year}</span>
             <div>
               <div style={{ fontFamily: fonts.serif, fontSize: 19, color: JN.ink }}>{r.title}</div>
               {r.inst && <div style={{ fontFamily: fonts.serif, fontSize: 15, color: JN.inkSoft, marginTop: 2, fontStyle: 'italic' }}>{r.inst}</div>}
             </div>
-            <div style={{ fontFamily: fonts.serif, fontSize: 15, color: JN.mute, lineHeight: 1.55 }}>{r.note || ''}</div>
+            <div className="jn-cv-note" style={{ fontFamily: fonts.serif, fontSize: 15, color: JN.mute, lineHeight: 1.55 }}>{r.note || ''}</div>
           </div>
         ))}
       </div>
@@ -1075,8 +1107,8 @@ function CVBlueprint({ nav }) {
   return (
     <div style={{ ...BG(), color: JN.ink, fontFamily: fonts.serif, minHeight: '100%' }}>
       <TopNav fonts={fonts} nav={nav} active="cv" />
-      <div style={{ maxWidth: 1080, margin: '0 auto', padding: '72px 72px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 40, alignItems: 'end', marginBottom: 48 }}>
+      <div className="jn-cv-content" style={{ maxWidth: 1080, margin: '0 auto', padding: '72px 72px' }}>
+        <div className="jn-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 40, alignItems: 'end', marginBottom: 48 }}>
           <div>
             <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute, marginBottom: 12 }}>Curriculum vitae</div>
             <h1 style={{ fontFamily: fonts.serif, fontSize: 'clamp(40px, 6vw, 72px)', lineHeight: 1, fontWeight: 400, letterSpacing: '-0.02em', margin: 0, color: JN.ink }}>
@@ -1115,7 +1147,7 @@ function CollaboratorsBlueprint({ nav }) {
   return (
     <div style={{ ...BG(), color: JN.ink, fontFamily: fonts.serif, minHeight: '100%', position: 'relative' }}>
       <TopNav fonts={fonts} nav={nav} active="collaborators" />
-      <section style={{ maxWidth: 1080, margin: '0 auto', padding: '72px 72px', position: 'relative' }}>
+      <section className="jn-collab-section" style={{ maxWidth: 1080, margin: '0 auto', padding: '72px 72px', position: 'relative' }}>
         <Komorebi opacity={0.4} />
         <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute, marginBottom: 16, position: 'relative' }}>Collaborators</div>
         <h1 style={{ fontFamily: fonts.serif, fontSize: 'clamp(40px, 6vw, 72px)', lineHeight: 1.05, fontWeight: 400, letterSpacing: '-0.02em', margin: '0 0 48px', color: JN.ink, maxWidth: 900, position: 'relative' }}>
@@ -1128,10 +1160,10 @@ function CollaboratorsBlueprint({ nav }) {
               {sec.heading}
             </div>
             {sec.members.map((c, i) => (
-              <div key={c.name} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '18px 0', borderBottom: `1px dashed ${JN.ruleSoft}`, alignItems: 'baseline', gap: 20 }}>
+              <div key={c.name} className="jn-grid-collab" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '18px 0', borderBottom: `1px dashed ${JN.ruleSoft}`, alignItems: 'baseline', gap: 20 }}>
                 <span style={{ fontFamily: fonts.serif, fontSize: 20, color: JN.ink }}>{c.name}</span>
-                <span style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute }}>{c.note}</span>
-                <span style={{ fontFamily: fonts.serif, fontSize: 15, color: JN.inkSoft }}>{c.inst}</span>
+                <span className="jn-collab-meta" style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute }}>{c.note}</span>
+                <span className="jn-collab-meta" style={{ fontFamily: fonts.serif, fontSize: 15, color: JN.inkSoft }}>{c.inst}</span>
               </div>
             ))}
           </div>
