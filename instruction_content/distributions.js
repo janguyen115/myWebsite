@@ -56,7 +56,7 @@ const DISTRIBUTIONS = [
         { symbol: 'p', description: 'probability of success' },
       ],
     },
-    pmfPdf:    'p^{k}(1-p)^{1-k}',
+    pmfPdf:    ' p^{k}(1-p)^{1-k}',
     cdf:       '',
     mean:      'p',
     variance:  'p(1-p)',

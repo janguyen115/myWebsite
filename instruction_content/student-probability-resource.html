@@ -146,62 +146,6 @@ const ACTIVE_BONUS = 80;
 // Write LaTeX directly in string fields — MathJax renders automatically.
 // Leave a field as '' to show '—'.
 // parameters: { notation: latex string, params: [{ symbol, description }] }
-const DISTRIBUTIONS = [
-  {
-    id: 'bernoulli',
-    name: 'Bernoulli',
-    parameters: {
-      notation: 'X \\sim \\operatorname{Bernoulli}(p)',
-      params: [
-        { symbol: 'p', description: 'probability of success' },
-      ],
-    },
-    pmfPdf:    '\\bernoulli{k} p^k(1-p)^{1-k}',
-    cdf:       '',
-    mean:      'p',
-    variance:  'p(1-p)',
-    mgf:       '(1-p)+pe^{t})',
-    useCases:    '',
-    history:     '',
-    example:     '',
-    relationships: '',
-    derivations: {
-      pmfPdf:   '',
-      cdf:      '',
-      mean:     '',
-      variance: '',
-      mgf:      '',
-    },
-  },
-  {
-    id: 'binomial',
-    name: 'Binomial',
-    parameters: {
-      notation: 'X \\sim \\operatorname{Binomial}(n,\\, p)',
-      params: [
-        { symbol: 'n', description: 'number of independent trials' },
-        { symbol: 'p', description: 'probability of success on each trial' },
-      ],
-    },
-    pmfPdf:    '\\binom{n}{k} p^{k}(1-p)^{n-k}',
-    cdf:       '',
-    mean:      'np',
-    variance:  'np(1-p)',
-    mgf:       '(1-p+pe^{t})^{n}',
-    useCases:    '',
-    history:     '',
-    example:     '',
-    relationships: '',
-    derivations: {
-      pmfPdf:   '',
-      cdf:      '',
-      mean:     '',
-      variance: '',
-      mgf:      '',
-    },
-  },
-];
-
 // ─── Table helpers ─────────────────────────────────────────────────────────────
 function visibleCols(expanded) {
   return expanded ? [...ALWAYS_COLS, ...TOGGLE_COLS] : ALWAYS_COLS;
@@ -227,9 +171,11 @@ function MathCell({ latex }) {
   }, [latex]);
   if (!latex) return <span style={{ color: JN.mute, fontFamily: F.serif, fontSize: 15 }}>—</span>;
   return (
-    <span ref={ref} style={{ fontFamily: F.serif, fontSize: 15 }}>
-      {`\\(${latex}\\)`}
-    </span>
+    <span
+      ref={ref}
+      style={{ fontFamily: F.serif, fontSize: 15 }}
+      dangerouslySetInnerHTML={{ __html: `\\(${latex}\\)` }}
+    />
   );
 }
 
@@ -296,8 +242,7 @@ function ExpandedRow({ dist, activeCol }) {
 }
 
 // ─── Parameter cell ───────────────────────────────────────────────────────────
-function ParamCell({ params }) {
-  const [open, setOpen] = React.useState(false);
+function ParamCell({ params, isOpen, onToggle }) {
   const [hovered, setHovered] = React.useState(false);
   const ref = React.useRef(null);
 
@@ -305,22 +250,22 @@ function ParamCell({ params }) {
     if (ref.current && window.MathJax) {
       window.MathJax.typesetPromise([ref.current]).catch(() => {});
     }
-  }, [open, params]);
+  }, [isOpen, params]);
 
   return (
     <div
       ref={ref}
-      onClick={() => setOpen(o => !o)}
+      onClick={onToggle}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
         borderRight: `1px solid ${JN.ruleSoft}`,
         cursor: 'pointer',
         userSelect: 'none',
-        background: open ? JN.redTint : hovered ? 'rgba(122,26,26,0.04)' : 'transparent',
+        background: isOpen ? JN.redTint : hovered ? 'rgba(122,26,26,0.04)' : 'transparent',
         transition: 'background 0.15s, transform 0.15s, box-shadow 0.15s',
-        transform: hovered && !open ? 'translateY(-1px)' : 'translateY(0)',
-        boxShadow: hovered && !open ? '0 2px 8px rgba(26,26,28,0.07)' : 'none',
+        transform: hovered && !isOpen ? 'translateY(-1px)' : 'translateY(0)',
+        boxShadow: hovered && !isOpen ? '0 2px 8px rgba(26,26,28,0.07)' : 'none',
         position: 'relative',
         zIndex: hovered ? 1 : 0,
       }}
@@ -330,7 +275,7 @@ function ParamCell({ params }) {
         <MathCell latex={params.notation} />
       </div>
       {/* Expanded parameter descriptions */}
-      {open && params.params && params.params.length > 0 && (
+      {isOpen && params.params && params.params.length > 0 && (
         <div style={{ padding: '0 16px 14px', borderTop: `1px dashed ${JN.ruleSoft}` }}>
           {params.params.map(({ symbol, description }, i) => (
             <div key={i} style={{
@@ -410,13 +355,16 @@ function CellClickable({ latex, isActive, onClick, borderRight }) {
 
 function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, expanded, gridTemplate }) {
   const isExpanded = expandedRow === dist.id;
+  const [paramOpen, setParamOpen] = React.useState(false);
 
   const handleNameClick = () => {
+    setParamOpen(false);
     if (isExpanded && activeCol === null) { setExpandedRow(null); }
     else { setExpandedRow(dist.id); setActiveCol(null); }
   };
 
   const handleCellClick = (colKey) => {
+    setParamOpen(false);
     if (isExpanded && activeCol === colKey) { setExpandedRow(null); setActiveCol(null); }
     else { setExpandedRow(dist.id); setActiveCol(colKey); }
   };
@@ -431,7 +379,7 @@ function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, e
         borderBottom: isExpanded ? 'none' : `1px solid ${JN.ruleSoft}`,
       }}>
         <NameCell name={dist.name} isActive={isExpanded && activeCol === null} onClick={handleNameClick} />
-        <ParamCell params={dist.parameters} />
+        <ParamCell params={dist.parameters} isOpen={paramOpen} onToggle={() => setParamOpen(o => !o)} />
         <CellClickable
           latex={dist.pmfPdf}
           isActive={isExpanded && activeCol === 'pmfPdf'}
@@ -833,8 +781,6 @@ function App() {
           </p>
         </div>
       </section>
-
-      <SashikoRule />
 
       {/* Table section */}
       <section className="jn-content" style={{ padding: '56px 72px 80px' }}>
