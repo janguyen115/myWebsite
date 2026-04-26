@@ -38,7 +38,6 @@
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
-  <script src="distributions.js"></script>
   <script type="text/babel" data-presets="env,react">
 
 // ─── Tokens ───────────────────────────────────────────────────────────────────
@@ -137,13 +136,71 @@ const ALWAYS_COLS = [
 ];
 const TOGGLE_COLS = [
   { key: 'cdf',      label: 'CDF',    width: 175 },
-  { key: 'mean',     label: 'E(X)',   width: 90  },
-  { key: 'variance', label: 'Var(X)', width: 115 },
+  { key: 'mean',     label: 'E(X)',   width: 80  },
+  { key: 'variance', label: 'Var(X)', width: 120 },
   { key: 'mgf',      label: 'MGF',    width: 175 },
 ];
 const ACTIVE_BONUS = 80;
 
-// DISTRIBUTIONS is loaded from distributions.js
+// ─── Distribution data ────────────────────────────────────────────────────────
+// Write LaTeX directly in string fields — MathJax renders automatically.
+// Leave a field as '' to show '—'.
+// parameters: { notation: latex string, params: [{ symbol, description }] }
+const DISTRIBUTIONS = [
+  {
+    id: 'bernoulli',
+    name: 'Bernoulli',
+    parameters: {
+      notation: 'X \\sim \\operatorname{Bernoulli}(p)',
+      params: [
+        { symbol: 'p', description: 'probability of success' },
+      ],
+    },
+    pmfPdf:    '\\binom{n}{k} p^{k}(1-p)^{n-k}',
+    cdf:       '',
+    mean:      'np',
+    variance:  'np(1-p)',
+    mgf:       '(1-p+pe^{t})^{n}',
+    useCases:    '',
+    history:     '',
+    example:     '',
+    relationships: '',
+    derivations: {
+      pmfPdf:   '',
+      cdf:      '',
+      mean:     '',
+      variance: '',
+      mgf:      '',
+    },
+  },
+  {
+    id: 'binomial',
+    name: 'Binomial',
+    parameters: {
+      notation: 'X \\sim \\operatorname{Binomial}(n,\\, p)',
+      params: [
+        { symbol: 'n', description: 'number of independent trials' },
+        { symbol: 'p', description: 'probability of success on each trial' },
+      ],
+    },
+    pmfPdf:    '\\binom{n}{k} p^{k}(1-p)^{n-k}',
+    cdf:       '',
+    mean:      'np',
+    variance:  'np(1-p)',
+    mgf:       '(1-p+pe^{t})^{n}',
+    useCases:    '',
+    history:     '',
+    example:     '',
+    relationships: '',
+    derivations: {
+      pmfPdf:   '',
+      cdf:      '',
+      mean:     '',
+      variance: '',
+      mgf:      '',
+    },
+  },
+];
 
 // ─── Table helpers ─────────────────────────────────────────────────────────────
 function visibleCols(expanded) {
@@ -239,63 +296,58 @@ function ExpandedRow({ dist, activeCol }) {
 }
 
 // ─── Parameter cell ───────────────────────────────────────────────────────────
-function ParamCell({ params, isOpen, onClick }) {
+function ParamCell({ params }) {
+  const [open, setOpen] = React.useState(false);
   const [hovered, setHovered] = React.useState(false);
-  return (
-    <div
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        padding: '18px 16px',
-        borderRight: `1px solid ${JN.ruleSoft}`,
-        cursor: 'pointer',
-        userSelect: 'none',
-        display: 'flex',
-        alignItems: 'center',
-        background: isOpen ? JN.redTint : hovered ? 'rgba(122,26,26,0.04)' : 'transparent',
-        transition: 'background 0.15s, transform 0.15s, box-shadow 0.15s',
-        transform: hovered && !isOpen ? 'translateY(-1px)' : 'translateY(0)',
-        boxShadow: hovered && !isOpen ? '0 2px 8px rgba(26,26,28,0.07)' : 'none',
-        position: 'relative',
-        zIndex: hovered ? 1 : 0,
-      }}
-    >
-      <MathCell latex={params.notation} />
-    </div>
-  );
-}
-
-function ParamsPanel({ params }) {
   const ref = React.useRef(null);
+
   React.useEffect(() => {
     if (ref.current && window.MathJax) {
       window.MathJax.typesetPromise([ref.current]).catch(() => {});
     }
-  }, [params]);
+  }, [open, params]);
+
   return (
-    <div ref={ref} style={{
-      borderBottom: `1px solid ${JN.rule}`,
-      background: JN.paperWarm,
-      padding: '20px 24px',
-    }}>
-      <div style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: JN.red, marginBottom: 12 }}>
-        Parameters
+    <div
+      ref={ref}
+      onClick={() => setOpen(o => !o)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        borderRight: `1px solid ${JN.ruleSoft}`,
+        cursor: 'pointer',
+        userSelect: 'none',
+        background: open ? JN.redTint : hovered ? 'rgba(122,26,26,0.04)' : 'transparent',
+        transition: 'background 0.15s, transform 0.15s, box-shadow 0.15s',
+        transform: hovered && !open ? 'translateY(-1px)' : 'translateY(0)',
+        boxShadow: hovered && !open ? '0 2px 8px rgba(26,26,28,0.07)' : 'none',
+        position: 'relative',
+        zIndex: hovered ? 1 : 0,
+      }}
+    >
+      {/* Notation row */}
+      <div style={{ padding: '18px 16px', display: 'flex', alignItems: 'center' }}>
+        <MathCell latex={params.notation} />
       </div>
-      {params.params.map(({ symbol, description }, i) => (
-        <div key={i} style={{
-          display: 'flex', alignItems: 'baseline', gap: 16,
-          padding: '8px 0',
-          borderBottom: i < params.params.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none',
-        }}>
-          <span ref={null} style={{ fontFamily: F.mono, fontSize: 14, color: JN.red, minWidth: 32, flexShrink: 0 }}>
-            {`\\(${symbol}\\)`}
-          </span>
-          <span style={{ fontFamily: F.serif, fontSize: 15, color: JN.inkSoft, lineHeight: 1.6 }}>
-            {description}
-          </span>
+      {/* Expanded parameter descriptions */}
+      {open && params.params && params.params.length > 0 && (
+        <div style={{ padding: '0 16px 14px', borderTop: `1px dashed ${JN.ruleSoft}` }}>
+          {params.params.map(({ symbol, description }, i) => (
+            <div key={i} style={{
+              display: 'flex', alignItems: 'baseline', gap: 10,
+              padding: '6px 0',
+              borderBottom: i < params.params.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none',
+            }}>
+              <span style={{ fontFamily: F.mono, fontSize: 13, color: JN.red, minWidth: 28, flexShrink: 0 }}>
+                {`\\(${symbol}\\)`}
+              </span>
+              <span style={{ fontFamily: F.serif, fontSize: 13, color: JN.inkSoft, lineHeight: 1.5 }}>
+                {description}
+              </span>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 }
@@ -316,7 +368,7 @@ function NameCell({ name, isActive, onClick }) {
         color: isActive ? JN.red : JN.ink,
         borderRight: `1px solid ${JN.ruleSoft}`,
         userSelect: 'none',
-        background: isActive ? JN.redTint : hovered ? 'rgba(122,26,26,0.04)' : 'transparent',
+        background: hovered && !isActive ? 'rgba(122,26,26,0.04)' : 'transparent',
         transition: 'color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s',
         transform: hovered && !isActive ? 'translateY(-1px)' : 'translateY(0)',
         boxShadow: hovered && !isActive ? '0 2px 8px rgba(26,26,28,0.07)' : 'none',
@@ -370,8 +422,6 @@ function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, e
   };
 
   const visibleToggleCols = expanded ? TOGGLE_COLS : [];
-  const showParamsPanel = isExpanded && activeCol === 'parameters';
-  const showExpandedRow = isExpanded && activeCol !== 'parameters';
 
   return (
     <>
@@ -381,11 +431,7 @@ function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, e
         borderBottom: isExpanded ? 'none' : `1px solid ${JN.ruleSoft}`,
       }}>
         <NameCell name={dist.name} isActive={isExpanded && activeCol === null} onClick={handleNameClick} />
-        <ParamCell
-          params={dist.parameters}
-          isOpen={showParamsPanel}
-          onClick={() => handleCellClick('parameters')}
-        />
+        <ParamCell params={dist.parameters} />
         <CellClickable
           latex={dist.pmfPdf}
           isActive={isExpanded && activeCol === 'pmfPdf'}
@@ -402,8 +448,7 @@ function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, e
           />
         ))}
       </div>
-      {showParamsPanel && <ParamsPanel params={dist.parameters} />}
-      {showExpandedRow && <ExpandedRow dist={dist} activeCol={activeCol} />}
+      {isExpanded && <ExpandedRow dist={dist} activeCol={activeCol} />}
     </>
   );
 }
