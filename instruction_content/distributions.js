@@ -75,7 +75,7 @@ const DISTRIBUTIONS = [
     id: 'binomial',
     name: 'Binomial',
     parameters: {
-      notation: 'X \\sim \\text{Binomial}(n,\\, p)',
+      notation: 'X \\sim \\ \operatorname{Binomial}(n,\\, p)',
       params: [
         { symbol: 'n', description: 'number of independent trials' },
         { symbol: 'p', description: 'probability of success on each trial' },
