@@ -601,11 +601,183 @@ function Footer() {
   );
 }
 
+// ─── Notation sidebar ─────────────────────────────────────────────────────────
+const SIDEBAR_W = 260;
+
+const NOTATION_SECTIONS = [
+  {
+    key: 'probability',
+    title: 'Probability',
+    entries: [
+      { symbol: 'P(A \\mid B)',                       meaning: 'Conditional probability of A given B' },
+      { symbol: 'X \\sim D',                          meaning: 'X is distributed as D' },
+      { symbol: 'X \\perp Y',                         meaning: 'X is independent of Y' },
+      { symbol: 'X \\perp Y \\mid Z',                 meaning: 'X conditionally independent of Y given Z' },
+      { symbol: 'X \\stackrel{\\text{iid}}{\\sim} D', meaning: 'iid draws from D' },
+    ],
+  },
+  {
+    key: 'distribution-functions',
+    title: 'Distribution Functions',
+    entries: [
+      { symbol: 'F_X(x)',        meaning: 'CDF: P(X ≤ x)' },
+      { symbol: 'f_X(x)',        meaning: 'PDF — probability density (continuous)' },
+      { symbol: 'p_X(x)',        meaning: 'PMF — probability mass (discrete)' },
+      { symbol: 'M_X(t)',        meaning: 'MGF: E[e^{tX}]' },
+      { symbol: '\\bar{F}_X(x)', meaning: 'Survival function: P(X > x)' },
+    ],
+  },
+  {
+    key: 'moments',
+    title: 'Expectation & Moments',
+    entries: [
+      { symbol: 'E[g(X)]',               meaning: 'Expected value of a function of X' },
+      { symbol: 'E[X \\mid Y = y]',      meaning: 'Conditional expectation' },
+      { symbol: '\\text{Var}(X)',         meaning: 'E[X²] − (E[X])²' },
+      { symbol: '\\text{Cov}(X,Y)',       meaning: 'E[XY] − E[X]E[Y]' },
+      { symbol: "M_X'(0)",               meaning: 'E[X] — first derivative of MGF at 0' },
+      { symbol: "M_X''(0)",              meaning: 'E[X²] — second derivative of MGF at 0' },
+    ],
+  },
+  {
+    key: 'special-functions',
+    title: 'Special Functions',
+    entries: [
+      { symbol: '\\Gamma(z)',              meaning: 'Gamma function; Γ(n) = (n−1)! for n ∈ ℕ' },
+      { symbol: '\\Gamma(z+1) = z\\,\\Gamma(z)', meaning: 'Recursion: key for Gamma/Beta derivations' },
+      { symbol: 'B(\\alpha,\\beta)',       meaning: 'Beta fn: Γ(α)Γ(β) / Γ(α+β)' },
+      { symbol: '\\binom{n}{k}',           meaning: 'Binomial coefficient: ways to choose k from n' },
+      { symbol: '\\propto',               meaning: 'Proportional to (up to a normalizing constant)' },
+    ],
+  },
+  {
+    key: 'greek',
+    title: 'Parameters & Greek',
+    entries: [
+      { symbol: '\\alpha,\\,\\beta',  meaning: 'Shape parameters — Beta, Gamma' },
+      { symbol: '\\lambda',           meaning: 'Rate parameter — Exponential, Poisson' },
+      { symbol: '\\mu',               meaning: 'Location/mean — Normal, Lognormal' },
+      { symbol: '\\sigma^2',          meaning: 'Scale/variance — Normal, Lognormal' },
+      { symbol: '\\nu',               meaning: 'Degrees of freedom — t, χ²' },
+      { symbol: '\\tau = 1/\\sigma^2', meaning: 'Precision (inverse variance)' },
+      { symbol: '\\Phi(x)',           meaning: 'Standard normal CDF; no closed form' },
+    ],
+  },
+];
+
+function NotationSidebar({ open, onToggle }) {
+  const [openSections, setOpenSections] = React.useState(
+    Object.fromEntries(NOTATION_SECTIONS.map(s => [s.key, true]))
+  );
+  const panelRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (open && panelRef.current && window.MathJax) {
+      window.MathJax.typesetPromise([panelRef.current]).catch(() => {});
+    }
+  }, [open, openSections]);
+
+  const toggleSection = (key) => setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
+
+  return (
+    <>
+      {/* Slide-in panel — left side */}
+      <div ref={panelRef} style={{
+        position: 'fixed', top: 0, left: 0, bottom: 0,
+        width: SIDEBAR_W,
+        transform: open ? 'translateX(0)' : `translateX(-${SIDEBAR_W}px)`,
+        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        zIndex: 40,
+        background: JN.paper,
+        borderRight: `1px solid ${JN.rule}`,
+        display: 'flex', flexDirection: 'column',
+        boxShadow: open ? '8px 0 32px rgba(26,26,28,0.06)' : 'none',
+      }}>
+        <div style={{
+          padding: '20px 20px 16px',
+          borderBottom: `1px solid ${JN.ruleSoft}`,
+          display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+          flexShrink: 0,
+        }}>
+          <span style={{ fontFamily: F.serif, fontSize: 15, fontStyle: 'italic', color: JN.ink }}>Notation</span>
+          <button onClick={onToggle} style={{
+            all: 'unset', cursor: 'pointer',
+            fontFamily: F.sans, fontSize: 10, letterSpacing: '0.12em',
+            textTransform: 'uppercase', color: JN.mute,
+          }}>close</button>
+        </div>
+        <div style={{ overflowY: 'auto', flex: 1, padding: '6px 0 40px' }}>
+          {NOTATION_SECTIONS.map(section => (
+            <div key={section.key} style={{ borderBottom: `1px solid ${JN.ruleSoft}` }}>
+              <button
+                onClick={() => toggleSection(section.key)}
+                style={{
+                  all: 'unset', cursor: 'pointer', display: 'flex', width: '100%',
+                  alignItems: 'center', justifyContent: 'space-between',
+                  padding: '10px 18px',
+                  fontFamily: F.sans, fontSize: 10, letterSpacing: '0.15em',
+                  textTransform: 'uppercase', color: JN.muteCool,
+                }}
+              >
+                {section.title}
+                <span style={{ fontSize: 8, color: JN.rule }}>{openSections[section.key] ? '▲' : '▼'}</span>
+              </button>
+              {openSections[section.key] && (
+                <div style={{ padding: '2px 0 10px' }}>
+                  {section.entries.map(({ symbol, meaning }, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '4px 18px' }}>
+                      <span style={{ fontFamily: F.mono, fontSize: 11, color: JN.red, minWidth: 80, flexShrink: 0, lineHeight: 1.6 }}>
+                        {`\\(${symbol}\\)`}
+                      </span>
+                      <span style={{ fontFamily: F.serif, fontSize: 11, color: JN.inkSoft, lineHeight: 1.6 }}>
+                        {meaning}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Tab — right edge of sidebar, always visible */}
+      <button
+        onClick={onToggle}
+        style={{
+          all: 'unset', cursor: 'pointer',
+          position: 'fixed',
+          left: open ? SIDEBAR_W : 0,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 41,
+          writingMode: 'vertical-rl',
+          textOrientation: 'mixed',
+          display: 'flex', alignItems: 'center',
+          padding: '14px 8px',
+          background: JN.redTint,
+          border: `1px solid ${JN.rule}`,
+          borderLeft: 'none',
+          borderRadius: '0 4px 4px 0',
+          fontFamily: F.sans, fontSize: 10, letterSpacing: '0.18em',
+          textTransform: 'uppercase', color: JN.red,
+          boxShadow: '2px 0 8px rgba(26,26,28,0.05)',
+          transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          userSelect: 'none',
+        }}
+      >
+        Notation
+      </button>
+    </>
+  );
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 function App() {
   const [expandedRow, setExpandedRow] = React.useState(null);
   const [activeCol, setActiveCol]     = React.useState(null);
   const [expanded, setExpanded]       = React.useState(false);
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   const handleSetExpanded = (id) => {
     if (id !== expandedRow) setActiveCol(null);
@@ -625,7 +797,13 @@ function App() {
   const tableWidth   = getTableWidth(expanded, activeCol);
 
   return (
-    <div style={{ ...BG, color: JN.ink, minHeight: '100vh' }}>
+    <>
+    <NotationSidebar open={sidebarOpen} onToggle={() => setSidebarOpen(o => !o)} />
+    <div style={{
+      ...BG, color: JN.ink, minHeight: '100vh',
+      marginLeft: sidebarOpen ? SIDEBAR_W : 0,
+      transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    }}>
       <TopNav />
 
       {/* Hero */}
@@ -690,6 +868,7 @@ function App() {
 
       <Footer />
     </div>
+    </>
   );
 }
 
