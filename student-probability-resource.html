@@ -7,7 +7,7 @@
   <link rel="icon" href="images/favicon.ico" type="image/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Archivo:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Libre+Caslon+Text:ital@0;1&family=Archivo:wght@400;500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
   <script>
     window.MathJax = {
       tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
@@ -24,6 +24,13 @@
   <style>
     html, body, #root { margin: 0; padding: 0; min-height: 100%; background: #f4f1ea; box-sizing: border-box; }
     *, *::before, *::after { box-sizing: inherit; }
+    @media (max-width: 768px) {
+      .jn-header  { padding: 14px 20px !important; }
+      .jn-nav     { display: none !important; }
+      .jn-hero    { padding: 40px 20px 32px !important; }
+      .jn-content { padding: 32px 20px 64px !important; }
+      .jn-footer  { padding: 24px 20px 32px !important; flex-direction: column !important; gap: 12px !important; }
+    }
   </style>
 </head>
 <body>
@@ -46,34 +53,110 @@ const JN = {
   red:       '#7a1a1a',
   redTint:   '#e8d6d0',
 };
+
 const F = {
-  serif: "'Libre Baskerville', Georgia, serif",
-  sans:  "'Archivo', sans-serif",
-  mono:  "'IBM Plex Mono', monospace",
+  serif: '"Libre Caslon Text", "Libre Baskerville", Georgia, serif',
+  sans:  '"IBM Plex Sans", system-ui, sans-serif',
+  mono:  '"IBM Plex Mono", ui-monospace, monospace',
 };
+
+// ─── Textures ─────────────────────────────────────────────────────────────────
+function graphPaper(opacity = 0.035, size = 26, color = '#8a7a60') {
+  const c = encodeURIComponent(color);
+  return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}'%3E%3Cpath d='M ${size} 0 L 0 0 0 ${size}' fill='none' stroke='${c}' stroke-width='0.5' opacity='${opacity}'/%3E%3C/svg%3E")`;
+}
+
+function sashikoRule(color = '#7a1a1a', opacity = 0.55) {
+  const c = encodeURIComponent(color);
+  const stitches = [
+    { x: 2,   len: 12, o: 0.9,  sw: 1.4, ty: 5.6, wob: 0.6,  pull: -0.3 },
+    { x: 20,  len: 9,  o: 0.7,  sw: 1.0, ty: 6.3, wob: -0.4, pull: 0.2 },
+    { x: 36,  len: 14, o: 0.95, sw: 1.6, ty: 5.7, wob: 0.8,  pull: -0.5 },
+    { x: 58,  len: 8,  o: 0.65, sw: 0.9, ty: 6.4, wob: -0.5, pull: 0.3 },
+    { x: 72,  len: 13, o: 0.88, sw: 1.3, ty: 5.9, wob: 0.5,  pull: -0.2 },
+    { x: 92,  len: 10, o: 0.75, sw: 1.1, ty: 6.1, wob: -0.6, pull: 0.4 },
+    { x: 108, len: 15, o: 0.93, sw: 1.5, ty: 5.8, wob: 0.7,  pull: -0.4 },
+    { x: 130, len: 9,  o: 0.7,  sw: 1.0, ty: 6.2, wob: -0.3, pull: 0.2 },
+    { x: 146, len: 12, o: 0.85, sw: 1.3, ty: 6.0, wob: 0.5,  pull: -0.3 },
+    { x: 164, len: 8,  o: 0.68, sw: 0.95,ty: 6.3, wob: -0.4, pull: 0.1 },
+    { x: 178, len: 13, o: 0.88, sw: 1.35,ty: 5.9, wob: 0.6,  pull: -0.3 },
+  ];
+  const strokes = stitches.map(s => {
+    const x1 = s.x, y1 = s.ty + s.pull * 0.4;
+    const x2 = s.x + s.len, y2 = s.ty - s.pull * 0.4;
+    const cx = s.x + s.len * 0.5, cy = (y1 + y2) / 2 + s.wob;
+    return `%3Cpath d='M${x1} ${y1.toFixed(2)} Q${cx.toFixed(2)} ${cy.toFixed(2)} ${x2} ${y2.toFixed(2)}' stroke='${c}' stroke-width='${s.sw}' stroke-linecap='round' fill='none' opacity='${(s.o * opacity).toFixed(2)}'/%3E`;
+  }).join('');
+  const dots = stitches.map(s => {
+    const r1 = (s.sw * 0.7).toFixed(2), r2 = (s.sw * 0.6).toFixed(2);
+    return `%3Ccircle cx='${s.x}' cy='${(s.ty + s.pull * 0.4).toFixed(2)}' r='${r1}' fill='${c}' opacity='${(s.o * opacity * 0.35).toFixed(2)}'/%3E%3Ccircle cx='${s.x + s.len}' cy='${(s.ty - s.pull * 0.4).toFixed(2)}' r='${r2}' fill='${c}' opacity='${(s.o * opacity * 0.3).toFixed(2)}'/%3E`;
+  }).join('');
+  const bloom = stitches.map(s => {
+    const x1 = s.x, y1 = s.ty + s.pull * 0.4;
+    const x2 = s.x + s.len, y2 = s.ty - s.pull * 0.4;
+    const cx = s.x + s.len * 0.5, cy = (y1 + y2) / 2 + s.wob;
+    return `%3Cpath d='M${x1} ${y1.toFixed(2)} Q${cx.toFixed(2)} ${cy.toFixed(2)} ${x2} ${y2.toFixed(2)}' stroke='${c}' stroke-width='${(s.sw * 2.4).toFixed(2)}' stroke-linecap='round' fill='none' opacity='${(s.o * opacity * 0.22).toFixed(2)}'/%3E`;
+  }).join('');
+  return `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='12' viewBox='0 0 200 12'%3E%3Cdefs%3E%3Cfilter id='b' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeGaussianBlur stdDeviation='0.7'/%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url(%23b)'%3E${bloom}%3C/g%3E${dots}${strokes}%3C/svg%3E")`;
+}
+
+const KOMOREBI_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:soft-light;opacity:0.6"><defs><filter id="komBlur"><feGaussianBlur stdDeviation="28"/></filter></defs><g filter="url(#komBlur)"><ellipse cx="180" cy="140" rx="90" ry="40" fill="#fff4c8" opacity="0.55"/><ellipse cx="320" cy="240" rx="60" ry="30" fill="#ffecb0" opacity="0.4"/><ellipse cx="540" cy="90" rx="110" ry="50" fill="#fff0c0" opacity="0.5"/><ellipse cx="850" cy="180" rx="80" ry="40" fill="#ffe8a8" opacity="0.45"/><ellipse cx="1050" cy="320" rx="100" ry="50" fill="#fff4c8" opacity="0.4"/><ellipse cx="240" cy="520" rx="70" ry="35" fill="#fff0c0" opacity="0.35"/><ellipse cx="720" cy="640" rx="120" ry="55" fill="#ffecb0" opacity="0.4"/></g></svg>';
+
+const BG = {
+  backgroundColor: JN.paper,
+  backgroundImage: graphPaper(),
+  backgroundSize: '26px 26px',
+};
+
+// ─── Primitives ────────────────────────────────────────────────────────────────
+function SashikoRule({ color = JN.red, opacity = 1 }) {
+  return (
+    <div style={{
+      width: '100%', height: 12,
+      backgroundImage: sashikoRule(color, opacity),
+      backgroundRepeat: 'repeat-x',
+      backgroundPosition: 'left center',
+      backgroundSize: '200px 12px',
+    }} />
+  );
+}
+
+function Komorebi() {
+  return (
+    <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.55, mixBlendMode: 'soft-light' }}
+      dangerouslySetInnerHTML={{ __html: KOMOREBI_SVG }} />
+  );
+}
 
 // ─── Column definitions ───────────────────────────────────────────────────────
 const ALWAYS_COLS = [
-  { key: 'name',       label: 'Distribution', width: '180px',  clickable: false },
-  { key: 'parameters', label: 'Parameters',   width: '240px',  clickable: false },
-  { key: 'pmfPdf',     label: 'PMF / PDF',    width: '1fr',    clickable: true  },
+  { key: 'name',       label: 'Distribution', width: 155 },
+  { key: 'parameters', label: 'Parameters',   width: 220 },
+  { key: 'pmfPdf',     label: 'PMF / PDF',    width: 210 },
 ];
 const TOGGLE_COLS = [
-  { key: 'cdf',      label: 'CDF',    width: '1fr',   clickable: true },
-  { key: 'mean',     label: 'E(X)',   width: '120px', clickable: true },
-  { key: 'variance', label: 'Var(X)', width: '120px', clickable: true },
-  { key: 'mgf',      label: 'MGF',   width: '1fr',   clickable: true },
+  { key: 'cdf',      label: 'CDF',    width: 175 },
+  { key: 'mean',     label: 'E(X)',   width: 90  },
+  { key: 'variance', label: 'Var(X)', width: 115 },
+  { key: 'mgf',      label: 'MGF',    width: 175 },
 ];
+const ACTIVE_BONUS = 80;
 
 // ─── Distribution data ────────────────────────────────────────────────────────
-// Add one object per distribution. LaTeX strings go inside \( \) for inline
-// or \[ \] for display — MathJax renders them automatically.
-// Leave a field as '' to show '—' in the cell.
+// Write LaTeX directly in string fields — MathJax renders automatically.
+// Leave a field as '' to show '—'.
+// parameters: { notation: latex string, params: [{ symbol, description }] }
 const DISTRIBUTIONS = [
   {
     id: 'binomial',
     name: 'Binomial',
-    parameters: 'X \\sim \\operatorname{Binomial}(n,\\, p)',
+    parameters: {
+      notation: 'X \\sim \\operatorname{Binomial}(n,\\, p)',
+      params: [
+        { symbol: 'n', description: 'number of independent trials' },
+        { symbol: 'p', description: 'probability of success on each trial' },
+      ],
+    },
     pmfPdf:    '\\binom{n}{k} p^{k}(1-p)^{n-k}',
     cdf:       '',
     mean:      'np',
@@ -93,16 +176,21 @@ const DISTRIBUTIONS = [
   },
 ];
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function getGridTemplate(visibleCols, activeCol) {
-  const cols = [
-    ...ALWAYS_COLS,
-    ...TOGGLE_COLS.filter(c => visibleCols[c.key]),
-  ];
-  return cols.map(c => {
-    if (c.key === activeCol) return 'minmax(320px, 2fr)';
-    return c.width;
-  }).join(' ');
+// ─── Table helpers ─────────────────────────────────────────────────────────────
+function visibleCols(expanded) {
+  return expanded ? [...ALWAYS_COLS, ...TOGGLE_COLS] : ALWAYS_COLS;
+}
+
+function getGridTemplate(expanded, activeCol) {
+  return visibleCols(expanded).map(c =>
+    `${c.key === activeCol ? c.width + ACTIVE_BONUS : c.width}px`
+  ).join(' ');
+}
+
+function getTableWidth(expanded, activeCol) {
+  return visibleCols(expanded).reduce((sum, c) =>
+    sum + c.width + (c.key === activeCol ? ACTIVE_BONUS : 0)
+  , 0);
 }
 
 function MathCell({ latex }) {
@@ -129,14 +217,14 @@ function ExpandedRow({ dist, activeCol }) {
   }, [dist.id, activeCol]);
 
   const sections = [
-    { key: 'useCases',     label: 'Use Cases'     },
-    { key: 'history',      label: 'History'       },
-    { key: 'example',      label: 'Example'       },
-    { key: 'relationships',label: 'Relationships' },
+    { key: 'useCases',      label: 'Use Cases'     },
+    { key: 'history',       label: 'History'       },
+    { key: 'example',       label: 'Example'       },
+    { key: 'relationships', label: 'Relationships' },
   ];
 
   const derivation = activeCol ? dist.derivations[activeCol] : null;
-  const colLabel = activeCol
+  const colLabel   = activeCol
     ? [...ALWAYS_COLS, ...TOGGLE_COLS].find(c => c.key === activeCol)?.label
     : null;
 
@@ -181,30 +269,140 @@ function ExpandedRow({ dist, activeCol }) {
   );
 }
 
+// ─── Parameter cell ───────────────────────────────────────────────────────────
+function ParamCell({ params, isOpen, onClick }) {
+  const [hovered, setHovered] = React.useState(false);
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        padding: '18px 16px',
+        borderRight: `1px solid ${JN.ruleSoft}`,
+        cursor: 'pointer',
+        userSelect: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        background: isOpen ? JN.redTint : hovered ? 'rgba(122,26,26,0.04)' : 'transparent',
+        transition: 'background 0.15s, transform 0.15s, box-shadow 0.15s',
+        transform: hovered && !isOpen ? 'translateY(-1px)' : 'translateY(0)',
+        boxShadow: hovered && !isOpen ? '0 2px 8px rgba(26,26,28,0.07)' : 'none',
+        position: 'relative',
+        zIndex: hovered ? 1 : 0,
+      }}
+    >
+      <MathCell latex={params.notation} />
+    </div>
+  );
+}
+
+function ParamsPanel({ params }) {
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    if (ref.current && window.MathJax) {
+      window.MathJax.typesetPromise([ref.current]).catch(() => {});
+    }
+  }, [params]);
+  return (
+    <div ref={ref} style={{
+      borderBottom: `1px solid ${JN.rule}`,
+      background: JN.paperWarm,
+      padding: '20px 24px',
+    }}>
+      <div style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: JN.red, marginBottom: 12 }}>
+        Parameters
+      </div>
+      {params.params.map(({ symbol, description }, i) => (
+        <div key={i} style={{
+          display: 'flex', alignItems: 'baseline', gap: 16,
+          padding: '8px 0',
+          borderBottom: i < params.params.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none',
+        }}>
+          <span ref={null} style={{ fontFamily: F.mono, fontSize: 14, color: JN.red, minWidth: 32, flexShrink: 0 }}>
+            {`\\(${symbol}\\)`}
+          </span>
+          <span style={{ fontFamily: F.serif, fontSize: 15, color: JN.inkSoft, lineHeight: 1.6 }}>
+            {description}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── Distribution row ─────────────────────────────────────────────────────────
-function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, visibleCols, gridTemplate }) {
+function NameCell({ name, isActive, onClick }) {
+  const [hovered, setHovered] = React.useState(false);
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        padding: '18px 16px',
+        cursor: 'pointer',
+        fontFamily: F.serif,
+        fontSize: 16,
+        color: isActive ? JN.red : JN.ink,
+        borderRight: `1px solid ${JN.ruleSoft}`,
+        userSelect: 'none',
+        background: isActive ? JN.redTint : hovered ? 'rgba(122,26,26,0.04)' : 'transparent',
+        transition: 'color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s',
+        transform: hovered && !isActive ? 'translateY(-1px)' : 'translateY(0)',
+        boxShadow: hovered && !isActive ? '0 2px 8px rgba(26,26,28,0.07)' : 'none',
+        position: 'relative',
+        zIndex: hovered ? 1 : 0,
+      }}
+    >
+      {name}
+    </div>
+  );
+}
+
+function CellClickable({ latex, isActive, onClick, borderRight }) {
+  const [hovered, setHovered] = React.useState(false);
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        padding: '18px 16px',
+        cursor: 'pointer',
+        background: isActive ? JN.redTint : hovered ? 'rgba(122,26,26,0.04)' : 'transparent',
+        borderRight: borderRight ? `1px solid ${JN.ruleSoft}` : 'none',
+        display: 'flex',
+        alignItems: 'center',
+        transition: 'background 0.15s, transform 0.15s, box-shadow 0.15s',
+        transform: hovered && !isActive ? 'translateY(-1px)' : 'translateY(0)',
+        boxShadow: hovered && !isActive ? `0 2px 8px rgba(26,26,28,0.07)` : 'none',
+        position: 'relative',
+        zIndex: hovered ? 1 : 0,
+        userSelect: 'none',
+      }}
+    >
+      <MathCell latex={latex} />
+    </div>
+  );
+}
+
+function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, expanded, gridTemplate }) {
   const isExpanded = expandedRow === dist.id;
 
   const handleNameClick = () => {
-    if (isExpanded && activeCol === null) {
-      setExpandedRow(null);
-    } else {
-      setExpandedRow(dist.id);
-      setActiveCol(null);
-    }
+    if (isExpanded && activeCol === null) { setExpandedRow(null); }
+    else { setExpandedRow(dist.id); setActiveCol(null); }
   };
 
   const handleCellClick = (colKey) => {
-    if (isExpanded && activeCol === colKey) {
-      setExpandedRow(null);
-      setActiveCol(null);
-    } else {
-      setExpandedRow(dist.id);
-      setActiveCol(colKey);
-    }
+    if (isExpanded && activeCol === colKey) { setExpandedRow(null); setActiveCol(null); }
+    else { setExpandedRow(dist.id); setActiveCol(colKey); }
   };
 
-  const visibleToggleCols = TOGGLE_COLS.filter(c => visibleCols[c.key]);
+  const visibleToggleCols = expanded ? TOGGLE_COLS : [];
+  const showParamsPanel = isExpanded && activeCol === 'parameters';
+  const showExpandedRow = isExpanded && activeCol !== 'parameters';
 
   return (
     <>
@@ -212,43 +410,19 @@ function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, v
         display: 'grid',
         gridTemplateColumns: gridTemplate,
         borderBottom: isExpanded ? 'none' : `1px solid ${JN.ruleSoft}`,
-        transition: 'background 0.15s',
       }}>
-        {/* Distribution name */}
-        <div
-          onClick={handleNameClick}
-          style={{
-            padding: '18px 16px',
-            cursor: 'pointer',
-            fontFamily: F.serif,
-            fontSize: 16,
-            color: isExpanded && activeCol === null ? JN.red : JN.ink,
-            borderRight: `1px solid ${JN.ruleSoft}`,
-            userSelect: 'none',
-          }}
-        >
-          {dist.name}
-        </div>
-
-        {/* Parameters (not clickable) */}
-        <div style={{
-          padding: '18px 16px',
-          borderRight: `1px solid ${JN.ruleSoft}`,
-          display: 'flex',
-          alignItems: 'center',
-        }}>
-          <MathCell latex={dist.parameters} />
-        </div>
-
-        {/* PMF/PDF */}
+        <NameCell name={dist.name} isActive={isExpanded && activeCol === null} onClick={handleNameClick} />
+        <ParamCell
+          params={dist.parameters}
+          isOpen={showParamsPanel}
+          onClick={() => handleCellClick('parameters')}
+        />
         <CellClickable
           latex={dist.pmfPdf}
           isActive={isExpanded && activeCol === 'pmfPdf'}
           onClick={() => handleCellClick('pmfPdf')}
           borderRight={visibleToggleCols.length > 0}
         />
-
-        {/* Toggleable formula columns */}
         {visibleToggleCols.map((col, i) => (
           <CellClickable
             key={col.key}
@@ -259,67 +433,49 @@ function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, v
           />
         ))}
       </div>
-
-      {isExpanded && (
-        <ExpandedRow dist={dist} activeCol={activeCol} />
-      )}
+      {showParamsPanel && <ParamsPanel params={dist.parameters} />}
+      {showExpandedRow && <ExpandedRow dist={dist} activeCol={activeCol} />}
     </>
   );
 }
 
-function CellClickable({ latex, isActive, onClick, borderRight }) {
+// ─── Expand arrow bar ─────────────────────────────────────────────────────────
+function ExpandArrowBar({ expanded, onToggle }) {
+  const [hovered, setHovered] = React.useState(false);
   return (
     <div
-      onClick={onClick}
+      onClick={onToggle}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      title={expanded ? 'Collapse columns' : 'Expand columns'}
       style={{
-        padding: '18px 16px',
-        cursor: 'pointer',
-        background: isActive ? JN.redTint : 'transparent',
-        borderRight: borderRight ? `1px solid ${JN.ruleSoft}` : 'none',
+        width: 32,
+        flexShrink: 0,
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        background: hovered ? JN.redTint : JN.paperWarm,
+        border: `1px solid ${JN.rule}`,
+        borderLeft: `1px solid ${JN.ruleSoft}`,
+        borderRadius: '0 2px 2px 0',
         transition: 'background 0.15s',
         userSelect: 'none',
       }}
     >
-      <MathCell latex={latex} />
-    </div>
-  );
-}
-
-// ─── Column toggles ───────────────────────────────────────────────────────────
-function ColumnToggles({ visibleCols, setVisibleCols, activeCol, setActiveCol, setExpandedRow }) {
-  return (
-    <div style={{ display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap' }}>
-      <span style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: JN.mute }}>
-        Show columns
-      </span>
-      {TOGGLE_COLS.map(col => (
-        <label key={col.key} style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
-          <input
-            type="checkbox"
-            checked={visibleCols[col.key]}
-            onChange={e => {
-              setVisibleCols(prev => ({ ...prev, [col.key]: e.target.checked }));
-              if (!e.target.checked && activeCol === col.key) {
-                setActiveCol(null);
-                setExpandedRow(null);
-              }
-            }}
-            style={{ accentColor: JN.red, width: 14, height: 14 }}
-          />
-          <span style={{ fontFamily: F.sans, fontSize: 13, color: JN.inkSoft }}>
-            {col.label}
-          </span>
-        </label>
-      ))}
+      <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
+        {expanded
+          ? <polyline points="7,2 2,8 7,14" stroke={hovered ? JN.red : JN.mute} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          : <polyline points="3,2 8,8 3,14" stroke={hovered ? JN.red : JN.mute} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        }
+      </svg>
     </div>
   );
 }
 
 // ─── Table header ─────────────────────────────────────────────────────────────
-function TableHeader({ visibleCols, activeCol, gridTemplate }) {
-  const visibleToggleCols = TOGGLE_COLS.filter(c => visibleCols[c.key]);
+function TableHeader({ expanded, activeCol, gridTemplate }) {
+  const cols = visibleCols(expanded);
   return (
     <div style={{
       display: 'grid',
@@ -327,7 +483,7 @@ function TableHeader({ visibleCols, activeCol, gridTemplate }) {
       borderBottom: `2px solid ${JN.rule}`,
       background: JN.paperWarm,
     }}>
-      {[...ALWAYS_COLS, ...visibleToggleCols].map((col, i, arr) => (
+      {cols.map((col, i, arr) => (
         <div key={col.key} style={{
           padding: '12px 16px',
           fontFamily: F.sans,
@@ -337,6 +493,7 @@ function TableHeader({ visibleCols, activeCol, gridTemplate }) {
           color: activeCol === col.key ? JN.red : JN.muteCool,
           borderRight: i < arr.length - 1 ? `1px solid ${JN.ruleSoft}` : 'none',
           fontWeight: activeCol === col.key ? 500 : 400,
+          transition: 'color 0.15s',
         }}>
           {col.label}
         </div>
@@ -345,85 +502,173 @@ function TableHeader({ visibleCols, activeCol, gridTemplate }) {
   );
 }
 
-// ─── Nav header ───────────────────────────────────────────────────────────────
-const navLink = {
-  textDecoration: 'none',
-  fontFamily: F.sans,
-  fontSize: 13,
-  letterSpacing: '0.08em',
-  color: JN.mute,
-};
+// ─── Nav ──────────────────────────────────────────────────────────────────────
+function TopNav() {
+  const [menuOpen, setMenuOpen] = React.useState(false);
 
-function Header() {
+  const navItems = [
+    { label: 'index',       href: 'index.html'              },
+    { label: 'about',       href: 'index.html'              },
+    { label: 'projects',    href: 'index.html'              },
+    { label: 'instruction', href: 'index.html#instruction', active: true },
+    { label: 'contact',     href: 'index.html'              },
+  ];
+  const moreItems = [
+    { label: 'CV',                                  href: 'cv.html'            },
+    { label: 'Collaborators',                       href: 'collaborators.html' },
+    { label: "A Student's Guide to Numerical Bayes", href: 'index.html#guide'  },
+  ];
+
   return (
-    <header style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '18px 48px',
+    <header className="jn-header" style={{
+      position: 'sticky', top: 0, zIndex: 20,
+      background: 'rgba(244,241,234,0.88)',
+      backdropFilter: 'blur(8px)',
       borderBottom: `1px solid ${JN.ruleSoft}`,
-      background: JN.paper,
+      padding: '18px 72px',
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     }}>
-      <a href="index.html" style={{ textDecoration: 'none', color: JN.ink, fontFamily: F.serif, fontSize: 17 }}>
-        James A. Nguyen
+      <a href="index.html" style={{ all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'baseline', gap: 6, fontFamily: F.serif, fontSize: 17, letterSpacing: '0.01em', color: JN.ink }}>
+        <span style={{ fontStyle: 'italic' }}>James A.</span><span style={{ color: JN.red }}>Nguyen</span>
       </a>
-      <nav style={{ display: 'flex', gap: 32 }}>
-        <a href="index.html#instruction" style={navLink}>Instruction</a>
-        <a href="index.html#cv"          style={navLink}>CV</a>
+      <nav className="jn-nav" style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
+        {navItems.map(({ label, href, active }) => (
+          <a key={label} href={href} style={{
+            all: 'unset', cursor: 'pointer',
+            color: active ? JN.red : JN.inkSoft,
+            fontFamily: F.sans, fontSize: 13, letterSpacing: '0.02em',
+            borderBottom: active ? `1px solid ${JN.red}` : '1px solid transparent',
+            paddingBottom: 2,
+          }}>
+            {label}
+          </a>
+        ))}
+        <div style={{ position: 'relative', marginLeft: 8 }}>
+          <button
+            onClick={() => setMenuOpen(o => !o)}
+            onBlur={() => setTimeout(() => setMenuOpen(false), 200)}
+            style={{ all: 'unset', cursor: 'pointer', color: JN.inkSoft, fontFamily: F.sans, fontSize: 13, letterSpacing: '0.02em', borderBottom: '1px solid transparent', paddingBottom: 2 }}
+          >
+            more +
+          </button>
+          {menuOpen && (
+            <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, minWidth: 300, background: JN.paper, border: `1px solid ${JN.ruleSoft}`, boxShadow: '0 10px 30px rgba(40,30,20,0.08)', zIndex: 30 }}>
+              {moreItems.map(({ label, href }, i) => (
+                <a key={label} href={href} style={{
+                  all: 'unset', cursor: 'pointer', display: 'block', width: '100%', boxSizing: 'border-box',
+                  padding: '14px 18px',
+                  borderBottom: i < moreItems.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none',
+                  fontFamily: F.serif, fontSize: 15, color: JN.inkSoft, fontStyle: 'italic',
+                }}>
+                  {label}
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
       </nav>
     </header>
   );
 }
 
+// ─── Footer ───────────────────────────────────────────────────────────────────
+function Footer() {
+  return (
+    <footer className="jn-footer" style={{
+      padding: '32px 72px 40px',
+      borderTop: `1px solid ${JN.ruleSoft}`,
+      display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+      fontFamily: F.serif, fontSize: 14, color: JN.mute,
+    }}>
+      <span style={{ fontStyle: 'italic' }}>&copy; James A. Nguyen, 2026</span>
+      <span style={{ fontSize: 12, color: JN.muteCool }}>Last updated April 2026</span>
+      <span style={{ fontStyle: 'italic' }}>Irvine, California</span>
+    </footer>
+  );
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 function App() {
-  const [expandedRow, setExpandedRow]   = React.useState(null);
-  const [activeCol, setActiveCol]       = React.useState(null);
-  const [visibleCols, setVisibleCols]   = React.useState({ cdf: false, mean: false, variance: false, mgf: false });
+  const [expandedRow, setExpandedRow] = React.useState(null);
+  const [activeCol, setActiveCol]     = React.useState(null);
+  const [expanded, setExpanded]       = React.useState(false);
 
   const handleSetExpanded = (id) => {
     if (id !== expandedRow) setActiveCol(null);
     setExpandedRow(id);
   };
 
-  const gridTemplate = getGridTemplate(visibleCols, activeCol);
+  const handleToggleExpand = () => {
+    const next = !expanded;
+    setExpanded(next);
+    if (!next && activeCol && TOGGLE_COLS.some(c => c.key === activeCol)) {
+      setActiveCol(null);
+      setExpandedRow(null);
+    }
+  };
+
+  const gridTemplate = getGridTemplate(expanded, activeCol);
+  const tableWidth   = getTableWidth(expanded, activeCol);
 
   return (
-    <div style={{ color: JN.ink, minHeight: '100vh', background: JN.paper }}>
-      <Header />
+    <div style={{ ...BG, color: JN.ink, minHeight: '100vh' }}>
+      <TopNav />
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 48px 80px' }}>
-        {/* Page heading */}
-        <div style={{ marginBottom: 40 }}>
-          <div style={{ fontFamily: F.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute, marginBottom: 12 }}>
-            Instruction
+      {/* Hero */}
+      <section className="jn-hero" style={{ padding: '72px 72px 48px', position: 'relative', overflow: 'hidden' }}>
+        <Komorebi />
+        <div style={{ position: 'relative' }}>
+          {/* Breadcrumb */}
+          <div style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: JN.mute, marginBottom: 32 }}>
+            <a href="index.html" style={{ all: 'unset', cursor: 'pointer', color: JN.mute }}>Home</a>
+            <span style={{ margin: '0 8px' }}>/</span>
+            <a href="index.html#instruction" style={{ all: 'unset', cursor: 'pointer', color: JN.red }}>Instruction</a>
+            <span style={{ margin: '0 8px' }}>/</span>
+            <span style={{ color: JN.muteCool }}>Probability Distributions</span>
           </div>
-          <h1 style={{ fontFamily: F.serif, fontSize: 'clamp(28px, 4vw, 52px)', fontWeight: 400, lineHeight: 1.1, margin: '0 0 16px', color: JN.ink }}>
+          <div style={{ fontFamily: F.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute, marginBottom: 18 }}>Reference &middot; in progress</div>
+          <h1 style={{ fontFamily: F.serif, fontSize: 'clamp(40px, 6vw, 80px)', lineHeight: 1.05, fontWeight: 400, letterSpacing: '-0.02em', margin: '0 0 24px', maxWidth: 800, color: JN.ink }}>
             Probability Distributions
           </h1>
-          <p style={{ fontFamily: F.serif, fontSize: 17, lineHeight: 1.65, color: JN.inkSoft, margin: '0 0 36px', maxWidth: 680 }}>
+          <p style={{ fontFamily: F.serif, fontSize: 20, color: JN.inkSoft, margin: 0, maxWidth: 640, lineHeight: 1.6 }}>
             A reference table for common probability distributions. Click a distribution name to expand narrative details. Click a formula cell to expand its derivation.
           </p>
-          <ColumnToggles visibleCols={visibleCols} setVisibleCols={setVisibleCols} activeCol={activeCol} setActiveCol={setActiveCol} setExpandedRow={setExpandedRow} />
         </div>
+      </section>
 
-        {/* Table */}
-        <div style={{ border: `1px solid ${JN.rule}`, borderRadius: 2, overflow: 'hidden' }}>
-          <TableHeader visibleCols={visibleCols} activeCol={activeCol} gridTemplate={gridTemplate} />
-          {DISTRIBUTIONS.map(dist => (
-            <DistRow
-              key={dist.id}
-              dist={dist}
-              expandedRow={expandedRow}
-              setExpandedRow={handleSetExpanded}
-              activeCol={activeCol}
-              setActiveCol={setActiveCol}
-              visibleCols={visibleCols}
-              gridTemplate={gridTemplate}
-            />
-          ))}
+      <SashikoRule />
+
+      {/* Table section */}
+      <section className="jn-content" style={{ padding: '56px 72px 80px' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'stretch' }}>
+          <div style={{
+            width: tableWidth,
+            transition: 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+            overflow: 'hidden',
+            border: `1px solid ${JN.rule}`,
+            borderRight: 'none',
+            borderRadius: '2px 0 0 2px',
+            flexShrink: 0,
+          }}>
+            <TableHeader expanded={expanded} activeCol={activeCol} gridTemplate={gridTemplate} />
+            {DISTRIBUTIONS.map(dist => (
+              <DistRow
+                key={dist.id}
+                dist={dist}
+                expandedRow={expandedRow}
+                setExpandedRow={handleSetExpanded}
+                activeCol={activeCol}
+                setActiveCol={setActiveCol}
+                expanded={expanded}
+                gridTemplate={gridTemplate}
+              />
+            ))}
+          </div>
+          <ExpandArrowBar expanded={expanded} onToggle={handleToggleExpand} />
         </div>
-      </div>
+      </section>
+
+      <Footer />
     </div>
   );
 }

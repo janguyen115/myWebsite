@@ -315,9 +315,6 @@ function BayesianHero({ color = '#7a1a1a', accent = '#2b3f6b', height = 220, see
       <path d={strokePath(likelihood, W, H, e2)} fill="none" stroke={accent} strokeOpacity="0.6" strokeWidth="1" strokeDasharray="3 2" />
       <path d={distPath(posterior, W, H, e3)} fill={`url(#jn-post-${seed})`} />
       <path d={strokePath(posterior, W, H, e3)} fill="none" stroke={color} strokeWidth="1.6" />
-      <g transform={`translate(0 ${H - 18}) scale(1 -0.35)`} opacity="0.18">
-        <path d={strokePath(posterior, W, H, e3)} fill="none" stroke={color} strokeWidth="1.2" />
-      </g>
     </svg>
   );
 }
@@ -402,7 +399,7 @@ const JN = window.JN_TOKENS;
 
 const BG = () => ({
   backgroundColor: JN.paper,
-  backgroundImage: window.JN_TEXTURES.graphPaper(0.035, 26, '#8a7a60'),
+  backgroundImage: window.JN_TEXTURES.graphPaper(0.07, 26, '#8a7a60'),
   backgroundSize: '26px 26px',
 });
 
@@ -644,6 +641,16 @@ function HomeBlueprint({ nav }) {
         <SheetHeaderB num="03" title="Instruction" subtitle="Notes in progress" fonts={fonts} />
         <div className="jn-grid-2col" style={{ marginTop: 40, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56 }}>
           <div>
+            <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>In progress &middot; interactive</div>
+            <h3 style={{ fontFamily: fonts.serif, fontSize: 32, fontWeight: 400, lineHeight: 1.15, margin: '0 0 16px', color: JN.ink }}>Probability <em>Distributions</em></h3>
+            <p style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 1.65, color: JN.inkSoft, margin: 0 }}>
+              An interactive reference table for common probability distributions — parameters, PMF/PDF, CDF, moments, and MGF, with derivations and worked examples I add over time.
+            </p>
+            <button onClick={() => { window.location.href = 'student-probability-resource.html'; }} style={{ all: 'unset', cursor: 'pointer', display: 'inline-block', marginTop: 20, fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 16, color: JN.red, borderBottom: `1px solid ${JN.red}`, paddingBottom: 2 }}>
+              Explore &rarr;
+            </button>
+          </div>
+          <div>
             <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>In draft</div>
             <h3 style={{ fontFamily: fonts.serif, fontSize: 32, fontWeight: 400, lineHeight: 1.15, margin: '0 0 16px', color: JN.ink }}>A Student&rsquo;s Guide to <em>Numerical Bayes</em></h3>
             <p style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 1.65, color: JN.inkSoft, margin: 0 }}>
@@ -652,22 +659,6 @@ function HomeBlueprint({ nav }) {
             <button onClick={() => nav('guide')} style={{ all: 'unset', cursor: 'pointer', display: 'inline-block', marginTop: 20, fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 16, color: JN.red, borderBottom: `1px solid ${JN.red}`, paddingBottom: 2 }}>
               Read the draft &rarr;
             </button>
-          </div>
-          <div>
-            <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>Contents</div>
-            {[
-              'Bayes, in brief',
-              'Monte Carlo & importance',
-              'Metropolis–Hastings',
-              'Gibbs sampling',
-              'Variational methods',
-              'Examples & errata',
-            ].map((c, i) => (
-              <div key={i} style={{ fontFamily: fonts.serif, padding: '10px 0', borderBottom: i < 5 ? `1px dashed ${JN.ruleSoft}` : 'none', display: 'flex', justifyContent: 'space-between', fontSize: 16, color: JN.inkSoft }}>
-                <span><span style={{ color: JN.red, fontStyle: 'italic', marginRight: 12 }}>{['I','II','III','IV','V','VI'][i]}.</span>{c}</span>
-                <span style={{ color: JN.mute, fontStyle: 'italic', fontSize: 14 }}>&sect; {i + 1}</span>
-              </div>
-            ))}
           </div>
         </div>
       </section>
