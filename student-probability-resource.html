@@ -38,6 +38,7 @@
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+  <script src="distributions.js"></script>
   <script type="text/babel" data-presets="env,react">
 
 // ─── Tokens ───────────────────────────────────────────────────────────────────
@@ -142,39 +143,7 @@ const TOGGLE_COLS = [
 ];
 const ACTIVE_BONUS = 80;
 
-// ─── Distribution data ────────────────────────────────────────────────────────
-// Write LaTeX directly in string fields — MathJax renders automatically.
-// Leave a field as '' to show '—'.
-// parameters: { notation: latex string, params: [{ symbol, description }] }
-const DISTRIBUTIONS = [
-  {
-    id: 'binomial',
-    name: 'Binomial',
-    parameters: {
-      notation: 'X \\sim \\operatorname{Binomial}(n,\\, p)',
-      params: [
-        { symbol: 'n', description: 'number of independent trials' },
-        { symbol: 'p', description: 'probability of success on each trial' },
-      ],
-    },
-    pmfPdf:    '\\binom{n}{k} p^{k}(1-p)^{n-k}',
-    cdf:       '',
-    mean:      'np',
-    variance:  'np(1-p)',
-    mgf:       '(1-p+pe^{t})^{n}',
-    useCases:    '',
-    history:     '',
-    example:     '',
-    relationships: '',
-    derivations: {
-      pmfPdf:   '',
-      cdf:      '',
-      mean:     '',
-      variance: '',
-      mgf:      '',
-    },
-  },
-];
+// DISTRIBUTIONS is loaded from distributions.js
 
 // ─── Table helpers ─────────────────────────────────────────────────────────────
 function visibleCols(expanded) {
