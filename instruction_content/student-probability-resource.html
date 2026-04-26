@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Probability Distributions — James A. Nguyen</title>
-  <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="../images/favicon.ico" type="image/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Libre+Caslon+Text:ital@0;1&family=Archivo:wght@400;500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
@@ -521,16 +521,16 @@ function TopNav() {
   const [menuOpen, setMenuOpen] = React.useState(false);
 
   const navItems = [
-    { label: 'index',       href: 'index.html'              },
-    { label: 'about',       href: 'index.html'              },
-    { label: 'projects',    href: 'index.html'              },
-    { label: 'instruction', href: 'index.html#instruction', active: true },
-    { label: 'contact',     href: 'index.html'              },
+    { label: 'index',       href: '../index.html'              },
+    { label: 'about',       href: '../index.html'              },
+    { label: 'projects',    href: '../index.html'              },
+    { label: 'instruction', href: '../index.html#instruction', active: true },
+    { label: 'contact',     href: '../index.html'              },
   ];
   const moreItems = [
-    { label: 'CV',                                  href: 'cv.html'            },
-    { label: 'Collaborators',                       href: 'collaborators.html' },
-    { label: "A Student's Guide to Numerical Bayes", href: 'index.html#guide'  },
+    { label: 'CV',                                  href: '../cv.html'            },
+    { label: 'Collaborators',                       href: '../collaborators.html' },
+    { label: "A Student's Guide to Numerical Bayes", href: '../index.html#guide'  },
   ];
 
   return (
@@ -542,7 +542,7 @@ function TopNav() {
       padding: '18px 72px',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     }}>
-      <a href="index.html" style={{ all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'baseline', gap: 6, fontFamily: F.serif, fontSize: 17, letterSpacing: '0.01em', color: JN.ink }}>
+      <a href="../index.html" style={{ all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'baseline', gap: 6, fontFamily: F.serif, fontSize: 17, letterSpacing: '0.01em', color: JN.ink }}>
         <span style={{ fontStyle: 'italic' }}>James A.</span><span style={{ color: JN.red }}>Nguyen</span>
       </a>
       <nav className="jn-nav" style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
@@ -634,9 +634,9 @@ function App() {
         <div style={{ position: 'relative' }}>
           {/* Breadcrumb */}
           <div style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: JN.mute, marginBottom: 32 }}>
-            <a href="index.html" style={{ all: 'unset', cursor: 'pointer', color: JN.mute }}>Home</a>
+            <a href="../index.html" style={{ all: 'unset', cursor: 'pointer', color: JN.mute }}>Home</a>
             <span style={{ margin: '0 8px' }}>/</span>
-            <a href="index.html#instruction" style={{ all: 'unset', cursor: 'pointer', color: JN.red }}>Instruction</a>
+            <a href="../index.html#instruction" style={{ all: 'unset', cursor: 'pointer', color: JN.red }}>Instruction</a>
             <span style={{ margin: '0 8px' }}>/</span>
             <span style={{ color: JN.muteCool }}>Probability Distributions</span>
           </div>

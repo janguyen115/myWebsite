@@ -646,7 +646,7 @@ function HomeBlueprint({ nav }) {
             <p style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 1.65, color: JN.inkSoft, margin: 0 }}>
               An interactive reference table for common probability distributions — parameters, PMF/PDF, CDF, moments, and MGF, with derivations and worked examples I add over time.
             </p>
-            <button onClick={() => { window.location.href = 'student-probability-resource.html'; }} style={{ all: 'unset', cursor: 'pointer', display: 'inline-block', marginTop: 20, fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 16, color: JN.red, borderBottom: `1px solid ${JN.red}`, paddingBottom: 2 }}>
+            <button onClick={() => { window.location.href = 'instruction_content/student-probability-resource.html'; }} style={{ all: 'unset', cursor: 'pointer', display: 'inline-block', marginTop: 20, fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 16, color: JN.red, borderBottom: `1px solid ${JN.red}`, paddingBottom: 2 }}>
               Explore &rarr;
             </button>
           </div>
@@ -879,7 +879,7 @@ function InstructionBlueprint({ nav }) {
       <section className="jn-section" style={{ padding: '72px 72px' }}>
         <SheetHeaderB num="01" title="Resources" subtitle="Two active, more to come" fonts={fonts} />
         <div style={{ marginTop: 40 }}>
-          <button onClick={() => { window.location.href = 'student-probability-resource.html'; }} style={{ all: 'unset', cursor: 'pointer', display: 'block', width: '100%' }}>
+          <button onClick={() => { window.location.href = 'instruction_content/student-probability-resource.html'; }} style={{ all: 'unset', cursor: 'pointer', display: 'block', width: '100%' }}>
             <div className="jn-grid-2col" style={{ display: 'grid', gridTemplateColumns: '220px 1fr 160px', gap: 48, padding: '28px 8px', borderBottom: `1px dashed ${JN.ruleSoft}`, transition: 'background 0.2s' }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(244,241,234,0.5)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
