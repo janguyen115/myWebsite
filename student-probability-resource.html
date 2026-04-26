@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Probability Distributions — James A. Nguyen</title>
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Archivo:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+      startup: {
+        typeset: false,
+        ready() {
+          MathJax.startup.defaultReady();
+          MathJax.startup.promise.then(() => MathJax.typesetPromise());
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
+  <style>
+    html, body, #root { margin: 0; padding: 0; min-height: 100%; background: #f4f1ea; box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: inherit; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+  <script type="text/babel" data-presets="env,react">
+
+// ─── Tokens ───────────────────────────────────────────────────────────────────
+const JN = {
+  paper:     '#f4f1ea',
+  paperWarm: '#efeadf',
+  ink:       '#1a1a1c',
+  inkSoft:   '#2c2a28',
+  mute:      '#6e655a',
+  muteCool:  '#5a5c62',
+  rule:      '#cec8bb',
+  ruleSoft:  '#e2dccf',
+  red:       '#7a1a1a',
+  redTint:   '#e8d6d0',
+};
+const F = {
+  serif: "'Libre Baskerville', Georgia, serif",
+  sans:  "'Archivo', sans-serif",
+  mono:  "'IBM Plex Mono', monospace",
+};
+
+// ─── Column definitions ───────────────────────────────────────────────────────
+const ALWAYS_COLS = [
+  { key: 'name',       label: 'Distribution', width: '180px',  clickable: false },
+  { key: 'parameters', label: 'Parameters',   width: '240px',  clickable: false },
+  { key: 'pmfPdf',     label: 'PMF / PDF',    width: '1fr',    clickable: true  },
+];
+const TOGGLE_COLS = [
+  { key: 'cdf',      label: 'CDF',    width: '1fr',   clickable: true },
+  { key: 'mean',     label: 'E(X)',   width: '120px', clickable: true },
+  { key: 'variance', label: 'Var(X)', width: '120px', clickable: true },
+  { key: 'mgf',      label: 'MGF',   width: '1fr',   clickable: true },
+];
+
+// ─── Distribution data ────────────────────────────────────────────────────────
+// Add one object per distribution. LaTeX strings go inside \( \) for inline
+// or \[ \] for display — MathJax renders them automatically.
+// Leave a field as '' to show '—' in the cell.
+const DISTRIBUTIONS = [
+  {
+    id: 'binomial',
+    name: 'Binomial',
+    parameters: 'X \\sim \\operatorname{Binomial}(n,\\, p)',
+    pmfPdf:    '\\binom{n}{k} p^{k}(1-p)^{n-k}',
+    cdf:       '',
+    mean:      'np',
+    variance:  'np(1-p)',
+    mgf:       '(1-p+pe^{t})^{n}',
+    useCases:    '',
+    history:     '',
+    example:     '',
+    relationships: '',
+    derivations: {
+      pmfPdf:   '',
+      cdf:      '',
+      mean:     '',
+      variance: '',
+      mgf:      '',
+    },
+  },
+];
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function getGridTemplate(visibleCols, activeCol) {
+  const cols = [
+    ...ALWAYS_COLS,
+    ...TOGGLE_COLS.filter(c => visibleCols[c.key]),
+  ];
+  return cols.map(c => {
+    if (c.key === activeCol) return 'minmax(320px, 2fr)';
+    return c.width;
+  }).join(' ');
+}
+
+function MathCell({ latex }) {
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    if (!latex || !ref.current || !window.MathJax) return;
+    window.MathJax.typesetPromise([ref.current]).catch(() => {});
+  }, [latex]);
+  if (!latex) return <span style={{ color: JN.mute, fontFamily: F.serif, fontSize: 15 }}>—</span>;
+  return (
+    <span ref={ref} style={{ fontFamily: F.serif, fontSize: 15 }}>
+      {`\\(${latex}\\)`}
+    </span>
+  );
+}
+
+// ─── Expanded row ─────────────────────────────────────────────────────────────
+function ExpandedRow({ dist, activeCol }) {
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    if (ref.current && window.MathJax) {
+      window.MathJax.typesetPromise([ref.current]).catch(() => {});
+    }
+  }, [dist.id, activeCol]);
+
+  const sections = [
+    { key: 'useCases',     label: 'Use Cases'     },
+    { key: 'history',      label: 'History'       },
+    { key: 'example',      label: 'Example'       },
+    { key: 'relationships',label: 'Relationships' },
+  ];
+
+  const derivation = activeCol ? dist.derivations[activeCol] : null;
+  const colLabel = activeCol
+    ? [...ALWAYS_COLS, ...TOGGLE_COLS].find(c => c.key === activeCol)?.label
+    : null;
+
+  return (
+    <div ref={ref} style={{
+      borderBottom: `1px solid ${JN.rule}`,
+      background: JN.paperWarm,
+      padding: '28px 24px',
+    }}>
+      {derivation && (
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: JN.red, marginBottom: 10 }}>
+            {colLabel} — Derivation
+          </div>
+          <div style={{ fontFamily: F.serif, fontSize: 15, lineHeight: 1.75, color: JN.ink }}
+            dangerouslySetInnerHTML={{ __html: derivation }} />
+        </div>
+      )}
+      {!derivation && activeCol && (
+        <div style={{ marginBottom: 28, fontFamily: F.serif, fontSize: 14, fontStyle: 'italic', color: JN.mute }}>
+          No derivation added yet.
+        </div>
+      )}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px 48px' }}>
+        {sections.map(({ key, label }) => {
+          const content = dist[key];
+          return (
+            <div key={key}>
+              <div style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: JN.mute, marginBottom: 8 }}>
+                {label}
+              </div>
+              {content
+                ? <div style={{ fontFamily: F.serif, fontSize: 15, lineHeight: 1.7, color: JN.inkSoft }}
+                    dangerouslySetInnerHTML={{ __html: content }} />
+                : <div style={{ fontFamily: F.serif, fontSize: 14, fontStyle: 'italic', color: JN.mute }}>—</div>
+              }
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Distribution row ─────────────────────────────────────────────────────────
+function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, visibleCols, gridTemplate }) {
+  const isExpanded = expandedRow === dist.id;
+
+  const handleNameClick = () => {
+    if (isExpanded && activeCol === null) {
+      setExpandedRow(null);
+    } else {
+      setExpandedRow(dist.id);
+      setActiveCol(null);
+    }
+  };
+
+  const handleCellClick = (colKey) => {
+    if (isExpanded && activeCol === colKey) {
+      setExpandedRow(null);
+      setActiveCol(null);
+    } else {
+      setExpandedRow(dist.id);
+      setActiveCol(colKey);
+    }
+  };
+
+  const visibleToggleCols = TOGGLE_COLS.filter(c => visibleCols[c.key]);
+
+  return (
+    <>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: gridTemplate,
+        borderBottom: isExpanded ? 'none' : `1px solid ${JN.ruleSoft}`,
+        transition: 'background 0.15s',
+      }}>
+        {/* Distribution name */}
+        <div
+          onClick={handleNameClick}
+          style={{
+            padding: '18px 16px',
+            cursor: 'pointer',
+            fontFamily: F.serif,
+            fontSize: 16,
+            color: isExpanded && activeCol === null ? JN.red : JN.ink,
+            borderRight: `1px solid ${JN.ruleSoft}`,
+            userSelect: 'none',
+          }}
+        >
+          {dist.name}
+        </div>
+
+        {/* Parameters (not clickable) */}
+        <div style={{
+          padding: '18px 16px',
+          borderRight: `1px solid ${JN.ruleSoft}`,
+          display: 'flex',
+          alignItems: 'center',
+        }}>
+          <MathCell latex={dist.parameters} />
+        </div>
+
+        {/* PMF/PDF */}
+        <CellClickable
+          latex={dist.pmfPdf}
+          isActive={isExpanded && activeCol === 'pmfPdf'}
+          onClick={() => handleCellClick('pmfPdf')}
+          borderRight={visibleToggleCols.length > 0}
+        />
+
+        {/* Toggleable formula columns */}
+        {visibleToggleCols.map((col, i) => (
+          <CellClickable
+            key={col.key}
+            latex={dist[col.key]}
+            isActive={isExpanded && activeCol === col.key}
+            onClick={() => handleCellClick(col.key)}
+            borderRight={i < visibleToggleCols.length - 1}
+          />
+        ))}
+      </div>
+
+      {isExpanded && (
+        <ExpandedRow dist={dist} activeCol={activeCol} />
+      )}
+    </>
+  );
+}
+
+function CellClickable({ latex, isActive, onClick, borderRight }) {
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        padding: '18px 16px',
+        cursor: 'pointer',
+        background: isActive ? JN.redTint : 'transparent',
+        borderRight: borderRight ? `1px solid ${JN.ruleSoft}` : 'none',
+        display: 'flex',
+        alignItems: 'center',
+        transition: 'background 0.15s',
+        userSelect: 'none',
+      }}
+    >
+      <MathCell latex={latex} />
+    </div>
+  );
+}
+
+// ─── Column toggles ───────────────────────────────────────────────────────────
+function ColumnToggles({ visibleCols, setVisibleCols, activeCol, setActiveCol, setExpandedRow }) {
+  return (
+    <div style={{ display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap' }}>
+      <span style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: JN.mute }}>
+        Show columns
+      </span>
+      {TOGGLE_COLS.map(col => (
+        <label key={col.key} style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={visibleCols[col.key]}
+            onChange={e => {
+              setVisibleCols(prev => ({ ...prev, [col.key]: e.target.checked }));
+              if (!e.target.checked && activeCol === col.key) {
+                setActiveCol(null);
+                setExpandedRow(null);
+              }
+            }}
+            style={{ accentColor: JN.red, width: 14, height: 14 }}
+          />
+          <span style={{ fontFamily: F.sans, fontSize: 13, color: JN.inkSoft }}>
+            {col.label}
+          </span>
+        </label>
+      ))}
+    </div>
+  );
+}
+
+// ─── Table header ─────────────────────────────────────────────────────────────
+function TableHeader({ visibleCols, activeCol, gridTemplate }) {
+  const visibleToggleCols = TOGGLE_COLS.filter(c => visibleCols[c.key]);
+  return (
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: gridTemplate,
+      borderBottom: `2px solid ${JN.rule}`,
+      background: JN.paperWarm,
+    }}>
+      {[...ALWAYS_COLS, ...visibleToggleCols].map((col, i, arr) => (
+        <div key={col.key} style={{
+          padding: '12px 16px',
+          fontFamily: F.sans,
+          fontSize: 11,
+          letterSpacing: '0.16em',
+          textTransform: 'uppercase',
+          color: activeCol === col.key ? JN.red : JN.muteCool,
+          borderRight: i < arr.length - 1 ? `1px solid ${JN.ruleSoft}` : 'none',
+          fontWeight: activeCol === col.key ? 500 : 400,
+        }}>
+          {col.label}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Nav header ───────────────────────────────────────────────────────────────
+const navLink = {
+  textDecoration: 'none',
+  fontFamily: F.sans,
+  fontSize: 13,
+  letterSpacing: '0.08em',
+  color: JN.mute,
+};
+
+function Header() {
+  return (
+    <header style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '18px 48px',
+      borderBottom: `1px solid ${JN.ruleSoft}`,
+      background: JN.paper,
+    }}>
+      <a href="index.html" style={{ textDecoration: 'none', color: JN.ink, fontFamily: F.serif, fontSize: 17 }}>
+        James A. Nguyen
+      </a>
+      <nav style={{ display: 'flex', gap: 32 }}>
+        <a href="index.html#instruction" style={navLink}>Instruction</a>
+        <a href="index.html#cv"          style={navLink}>CV</a>
+      </nav>
+    </header>
+  );
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────────
+function App() {
+  const [expandedRow, setExpandedRow]   = React.useState(null);
+  const [activeCol, setActiveCol]       = React.useState(null);
+  const [visibleCols, setVisibleCols]   = React.useState({ cdf: false, mean: false, variance: false, mgf: false });
+
+  const handleSetExpanded = (id) => {
+    if (id !== expandedRow) setActiveCol(null);
+    setExpandedRow(id);
+  };
+
+  const gridTemplate = getGridTemplate(visibleCols, activeCol);
+
+  return (
+    <div style={{ color: JN.ink, minHeight: '100vh', background: JN.paper }}>
+      <Header />
+
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 48px 80px' }}>
+        {/* Page heading */}
+        <div style={{ marginBottom: 40 }}>
+          <div style={{ fontFamily: F.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute, marginBottom: 12 }}>
+            Instruction
+          </div>
+          <h1 style={{ fontFamily: F.serif, fontSize: 'clamp(28px, 4vw, 52px)', fontWeight: 400, lineHeight: 1.1, margin: '0 0 16px', color: JN.ink }}>
+            Probability Distributions
+          </h1>
+          <p style={{ fontFamily: F.serif, fontSize: 17, lineHeight: 1.65, color: JN.inkSoft, margin: '0 0 36px', maxWidth: 680 }}>
+            A reference table for common probability distributions. Click a distribution name to expand narrative details. Click a formula cell to expand its derivation.
+          </p>
+          <ColumnToggles visibleCols={visibleCols} setVisibleCols={setVisibleCols} activeCol={activeCol} setActiveCol={setActiveCol} setExpandedRow={setExpandedRow} />
+        </div>
+
+        {/* Table */}
+        <div style={{ border: `1px solid ${JN.rule}`, borderRadius: 2, overflow: 'hidden' }}>
+          <TableHeader visibleCols={visibleCols} activeCol={activeCol} gridTemplate={gridTemplate} />
+          {DISTRIBUTIONS.map(dist => (
+            <DistRow
+              key={dist.id}
+              dist={dist}
+              expandedRow={expandedRow}
+              setExpandedRow={handleSetExpanded}
+              activeCol={activeCol}
+              setActiveCol={setActiveCol}
+              visibleCols={visibleCols}
+              gridTemplate={gridTemplate}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

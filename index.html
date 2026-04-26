@@ -886,8 +886,42 @@ function InstructionBlueprint({ nav }) {
       <SashikoRule color={JN.red} opacity={1} />
 
       <section className="jn-section" style={{ padding: '72px 72px' }}>
-        <SheetHeaderB num="01" title="Resources" subtitle="One active, more to come" fonts={fonts} />
+        <SheetHeaderB num="01" title="Resources" subtitle="Two active, more to come" fonts={fonts} />
         <div style={{ marginTop: 40 }}>
+          <button onClick={() => { window.location.href = 'student-probability-resource.html'; }} style={{ all: 'unset', cursor: 'pointer', display: 'block', width: '100%' }}>
+            <div className="jn-grid-2col" style={{ display: 'grid', gridTemplateColumns: '220px 1fr 160px', gap: 48, padding: '28px 8px', borderBottom: `1px dashed ${JN.ruleSoft}`, transition: 'background 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(244,241,234,0.5)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <div style={{ aspectRatio: '3/4', background: JN.paperWarm, border: `1px solid ${JN.ruleSoft}`, padding: 16 }}>
+                <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 11, color: JN.muteCool, marginBottom: 8 }}>Reference &middot; in progress</div>
+                <div style={{ fontFamily: fonts.serif, fontSize: 22, lineHeight: 1.1, fontStyle: 'italic', color: JN.ink, marginBottom: 16 }}>
+                  Probability <em style={{ color: JN.red }}>Distributions</em>
+                </div>
+                <svg viewBox="0 0 140 160" style={{ width: '100%', height: 'auto' }}>
+                  <line x1="10" y1="40" x2="130" y2="40" stroke={JN.rule} strokeWidth="0.5" />
+                  <line x1="10" y1="70" x2="130" y2="70" stroke={JN.rule} strokeWidth="0.5" />
+                  <line x1="10" y1="100" x2="130" y2="100" stroke={JN.rule} strokeWidth="0.5" />
+                  <line x1="10" y1="130" x2="130" y2="130" stroke={JN.rule} strokeWidth="0.5" />
+                  <rect x="10" y="28" width="50" height="12" fill={JN.red} opacity="0.15" rx="1" />
+                  <rect x="10" y="58" width="70" height="12" fill={JN.ruleSoft} rx="1" />
+                  <rect x="10" y="88" width="60" height="12" fill={JN.ruleSoft} rx="1" />
+                  <rect x="10" y="118" width="80" height="12" fill={JN.ruleSoft} rx="1" />
+                  <text x="10" y="38" fontFamily="serif" fontSize="7" fill={JN.red} opacity="0.9">Binomial</text>
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>In progress &middot; interactive</div>
+                <h3 style={{ fontFamily: fonts.serif, fontSize: 36, fontWeight: 400, lineHeight: 1.1, margin: '0 0 14px', color: JN.ink }}>Probability <em>Distributions</em></h3>
+                <p style={{ fontFamily: fonts.serif, fontSize: 17, lineHeight: 1.65, color: JN.inkSoft, margin: '0 0 16px', maxWidth: 620 }}>
+                  An interactive reference table for common probability distributions — parameters, PMF/PDF, CDF, moments, and MGF, with derivations and worked examples I add over time.
+                </p>
+              </div>
+              <div style={{ alignSelf: 'center', textAlign: 'right' }}>
+                <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 16, color: JN.red }}>explore &rarr;</div>
+              </div>
+            </div>
+          </button>
           <button onClick={() => nav('guide')} style={{ all: 'unset', cursor: 'pointer', display: 'block', width: '100%' }}>
             <div className="jn-grid-2col" style={{ display: 'grid', gridTemplateColumns: '220px 1fr 160px', gap: 48, padding: '28px 8px', borderBottom: `1px dashed ${JN.ruleSoft}`, transition: 'background 0.2s' }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(244,241,234,0.5)'}
