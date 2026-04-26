@@ -639,6 +639,15 @@ function HomeBlueprint({ nav }) {
       {/* Instruction teaser */}
       <section id="instruction-teaser" className="jn-section" style={{ padding: '72px 72px', scrollMarginTop: 64 }}>
         <SheetHeaderB num="03" title="Instruction" subtitle="Notes in progress" fonts={fonts} />
+        <button onClick={() => nav('instruction')} style={{ all: 'unset', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 14, fontFamily: fonts.sans, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: JN.mute }}>
+          <span style={{ color: JN.ruleSoft }}>/</span>
+          <span style={{ borderBottom: `1px solid transparent`, transition: 'color 0.15s, border-color 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.color = JN.red; e.currentTarget.style.borderColor = JN.red; }}
+            onMouseLeave={e => { e.currentTarget.style.color = ''; e.currentTarget.style.borderColor = 'transparent'; }}>
+            instruction
+          </span>
+          <span style={{ color: JN.mute, fontSize: 10 }}>→</span>
+        </button>
         <div className="jn-grid-2col" style={{ marginTop: 40, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56 }}>
           <div>
             <div style={{ fontFamily: fonts.sans, fontSize: 11, color: JN.muteCool, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>In progress &middot; interactive</div>

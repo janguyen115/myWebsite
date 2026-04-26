@@ -38,6 +38,7 @@
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+  <script src="distributions.js"></script>
   <script type="text/babel" data-presets="env,react">
 
 // ─── Tokens ───────────────────────────────────────────────────────────────────
@@ -142,65 +143,7 @@ const TOGGLE_COLS = [
 ];
 const ACTIVE_BONUS = 80;
 
-// ─── Distribution data ────────────────────────────────────────────────────────
-// Write LaTeX directly in string fields — MathJax renders automatically.
-// Leave a field as '' to show '—'.
-// parameters: { notation: latex string, params: [{ symbol, description }] }
-const DISTRIBUTIONS = [
-  {
-    id: 'bernoulli',
-    name: 'Bernoulli',
-    parameters: {
-      notation: 'X \\sim \\operatorname{Bernoulli}(p)',
-      params: [
-        { symbol: 'p', description: 'probability of success' },
-      ],
-    },
-    pmfPdf:    '\\binom{n}{k} p^{k}(1-p)^{n-k}',
-    cdf:       '',
-    mean:      'np',
-    variance:  'np(1-p)',
-    mgf:       '(1-p+pe^{t})^{n}',
-    useCases:    '',
-    history:     '',
-    example:     '',
-    relationships: '',
-    derivations: {
-      pmfPdf:   '',
-      cdf:      '',
-      mean:     '',
-      variance: '',
-      mgf:      '',
-    },
-  },
-  {
-    id: 'binomial',
-    name: 'Binomial',
-    parameters: {
-      notation: 'X \\sim \\operatorname{Binomial}(n,\\, p)',
-      params: [
-        { symbol: 'n', description: 'number of independent trials' },
-        { symbol: 'p', description: 'probability of success on each trial' },
-      ],
-    },
-    pmfPdf:    '\\binom{n}{k} p^{k}(1-p)^{n-k}',
-    cdf:       '',
-    mean:      'np',
-    variance:  'np(1-p)',
-    mgf:       '(1-p+pe^{t})^{n}',
-    useCases:    '',
-    history:     '',
-    example:     '',
-    relationships: '',
-    derivations: {
-      pmfPdf:   '',
-      cdf:      '',
-      mean:     '',
-      variance: '',
-      mgf:      '',
-    },
-  },
-];
+// DISTRIBUTIONS is loaded from distributions.js
 
 // ─── Table helpers ─────────────────────────────────────────────────────────────
 function visibleCols(expanded) {
@@ -242,112 +185,123 @@ function ExpandedRow({ dist, activeCol }) {
     }
   }, [dist.id, activeCol]);
 
-  const sections = [
-    { key: 'useCases',      label: 'Use Cases'     },
-    { key: 'history',       label: 'History'       },
-    { key: 'example',       label: 'Example'       },
-    { key: 'relationships', label: 'Relationships' },
-  ];
+  const panelStyle = {
+    borderBottom: `1px solid ${JN.rule}`,
+    background: JN.paperWarm,
+    padding: '28px 24px',
+  };
 
-  const derivation = activeCol ? dist.derivations[activeCol] : null;
-  const colLabel   = activeCol
-    ? [...ALWAYS_COLS, ...TOGGLE_COLS].find(c => c.key === activeCol)?.label
-    : null;
-
-  return (
-    <div ref={ref} style={{
-      borderBottom: `1px solid ${JN.rule}`,
-      background: JN.paperWarm,
-      padding: '28px 24px',
-    }}>
-      {derivation && (
-        <div style={{ marginBottom: 28 }}>
-          <div style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: JN.red, marginBottom: 10 }}>
-            {colLabel} — Derivation
-          </div>
-          <div style={{ fontFamily: F.serif, fontSize: 15, lineHeight: 1.75, color: JN.ink }}
-            dangerouslySetInnerHTML={{ __html: derivation }} />
-        </div>
-      )}
-      {!derivation && activeCol && (
-        <div style={{ marginBottom: 28, fontFamily: F.serif, fontSize: 14, fontStyle: 'italic', color: JN.mute }}>
-          No derivation added yet.
-        </div>
-      )}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px 48px' }}>
-        {sections.map(({ key, label }) => {
-          const content = dist[key];
-          return (
-            <div key={key}>
-              <div style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: JN.mute, marginBottom: 8 }}>
-                {label}
+  // Distribution name cell: show description and example
+  if (!activeCol) {
+    const sections = [
+      { key: 'description', label: 'Description' },
+      { key: 'example',     label: 'Example'     },
+    ];
+    return (
+      <div ref={ref} style={panelStyle}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {sections.map(({ key, label }) => {
+            const content = dist[key];
+            return (
+              <div key={key}>
+                <div style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: JN.mute, marginBottom: 8 }}>
+                  {label}
+                </div>
+                {content
+                  ? <div style={{ fontFamily: F.serif, fontSize: 15, lineHeight: 1.7, color: JN.inkSoft }}
+                      dangerouslySetInnerHTML={{ __html: content }} />
+                  : <div style={{ fontFamily: F.serif, fontSize: 14, fontStyle: 'italic', color: JN.mute }}>—</div>
+                }
               </div>
-              {content
-                ? <div style={{ fontFamily: F.serif, fontSize: 15, lineHeight: 1.7, color: JN.inkSoft }}
-                    dangerouslySetInnerHTML={{ __html: content }} />
-                : <div style={{ fontFamily: F.serif, fontSize: 14, fontStyle: 'italic', color: JN.mute }}>—</div>
-              }
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
+    );
+  }
+
+  // Other columns: show derivation only
+  const derivation = dist.derivations[activeCol];
+  const colLabel   = [...ALWAYS_COLS, ...TOGGLE_COLS].find(c => c.key === activeCol)?.label;
+  return (
+    <div ref={ref} style={panelStyle}>
+      {derivation
+        ? (
+          <>
+            <div style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: JN.red, marginBottom: 10 }}>
+              {colLabel} — Derivation
+            </div>
+            <div style={{ fontFamily: F.serif, fontSize: 15, lineHeight: 1.75, color: JN.ink }}
+              dangerouslySetInnerHTML={{ __html: derivation }} />
+          </>
+        )
+        : (
+          <div style={{ fontFamily: F.serif, fontSize: 14, fontStyle: 'italic', color: JN.mute }}>
+            No derivation added yet.
+          </div>
+        )
+      }
     </div>
   );
 }
 
 // ─── Parameter cell ───────────────────────────────────────────────────────────
-function ParamCell({ params }) {
-  const [open, setOpen] = React.useState(false);
+function ParamCell({ params, isOpen, onClick }) {
   const [hovered, setHovered] = React.useState(false);
-  const ref = React.useRef(null);
-
-  React.useEffect(() => {
-    if (ref.current && window.MathJax) {
-      window.MathJax.typesetPromise([ref.current]).catch(() => {});
-    }
-  }, [open, params]);
-
   return (
     <div
-      ref={ref}
-      onClick={() => setOpen(o => !o)}
+      onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
+        padding: '18px 16px',
+        display: 'flex', alignItems: 'center',
         borderRight: `1px solid ${JN.ruleSoft}`,
         cursor: 'pointer',
         userSelect: 'none',
-        background: open ? JN.redTint : hovered ? 'rgba(122,26,26,0.04)' : 'transparent',
+        background: isOpen ? JN.redTint : hovered ? 'rgba(122,26,26,0.04)' : 'transparent',
         transition: 'background 0.15s, transform 0.15s, box-shadow 0.15s',
-        transform: hovered && !open ? 'translateY(-1px)' : 'translateY(0)',
-        boxShadow: hovered && !open ? '0 2px 8px rgba(26,26,28,0.07)' : 'none',
+        transform: hovered && !isOpen ? 'translateY(-1px)' : 'translateY(0)',
+        boxShadow: hovered && !isOpen ? '0 2px 8px rgba(26,26,28,0.07)' : 'none',
         position: 'relative',
         zIndex: hovered ? 1 : 0,
       }}
     >
-      {/* Notation row */}
-      <div style={{ padding: '18px 16px', display: 'flex', alignItems: 'center' }}>
-        <MathCell latex={params.notation} />
+      <MathCell latex={params.notation} />
+    </div>
+  );
+}
+
+function ParamsPanel({ params }) {
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    if (ref.current && window.MathJax) {
+      window.MathJax.typesetPromise([ref.current]).catch(() => {});
+    }
+  }, [params]);
+  return (
+    <div ref={ref} style={{
+      borderBottom: `1px solid ${JN.rule}`,
+      background: JN.paperWarm,
+      padding: '24px 24px',
+    }}>
+      <div style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: JN.red, marginBottom: 12 }}>
+        Parameters
       </div>
-      {/* Expanded parameter descriptions */}
-      {open && params.params && params.params.length > 0 && (
-        <div style={{ padding: '0 16px 14px', borderTop: `1px dashed ${JN.ruleSoft}` }}>
-          {params.params.map(({ symbol, description }, i) => (
-            <div key={i} style={{
-              display: 'flex', alignItems: 'baseline', gap: 10,
-              padding: '6px 0',
-              borderBottom: i < params.params.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none',
-            }}>
-              <span style={{ fontFamily: F.mono, fontSize: 13, color: JN.red, minWidth: 28, flexShrink: 0 }}>
-                {`\\(${symbol}\\)`}
-              </span>
-              <span style={{ fontFamily: F.serif, fontSize: 13, color: JN.inkSoft, lineHeight: 1.5 }}>
-                {description}
-              </span>
-            </div>
-          ))}
+      {params.params.map(({ symbol, description }, i) => (
+        <div key={i} style={{
+          display: 'flex', alignItems: 'baseline', gap: 16,
+          padding: '8px 0',
+          borderBottom: i < params.params.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none',
+        }}>
+          <span style={{ fontFamily: F.mono, fontSize: 14, color: JN.red, minWidth: 32, flexShrink: 0 }}>
+            {`\\(${symbol}\\)`}
+          </span>
+          <span style={{ fontFamily: F.serif, fontSize: 15, color: JN.inkSoft, lineHeight: 1.6 }}>
+            {description}
+          </span>
         </div>
-      )}
+      ))}
     </div>
   );
 }
@@ -390,11 +344,10 @@ function CellClickable({ latex, isActive, onClick, borderRight }) {
       onMouseLeave={() => setHovered(false)}
       style={{
         padding: '18px 16px',
+        display: 'flex', alignItems: 'center',
         cursor: 'pointer',
         background: isActive ? JN.redTint : hovered ? 'rgba(122,26,26,0.04)' : 'transparent',
         borderRight: borderRight ? `1px solid ${JN.ruleSoft}` : 'none',
-        display: 'flex',
-        alignItems: 'center',
         transition: 'background 0.15s, transform 0.15s, box-shadow 0.15s',
         transform: hovered && !isActive ? 'translateY(-1px)' : 'translateY(0)',
         boxShadow: hovered && !isActive ? `0 2px 8px rgba(26,26,28,0.07)` : 'none',
@@ -428,10 +381,16 @@ function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, e
       <div style={{
         display: 'grid',
         gridTemplateColumns: gridTemplate,
-        borderBottom: isExpanded ? 'none' : `1px solid ${JN.ruleSoft}`,
+        borderBottom: isExpanded && activeCol !== 'parameters'
+          ? `1px solid rgba(206,200,187,0.35)`
+          : `1px solid ${JN.ruleSoft}`,
       }}>
         <NameCell name={dist.name} isActive={isExpanded && activeCol === null} onClick={handleNameClick} />
-        <ParamCell params={dist.parameters} />
+        <ParamCell
+          params={dist.parameters}
+          isOpen={isExpanded && activeCol === 'parameters'}
+          onClick={() => handleCellClick('parameters')}
+        />
         <CellClickable
           latex={dist.pmfPdf}
           isActive={isExpanded && activeCol === 'pmfPdf'}
@@ -448,7 +407,8 @@ function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, e
           />
         ))}
       </div>
-      {isExpanded && <ExpandedRow dist={dist} activeCol={activeCol} />}
+      {isExpanded && activeCol === 'parameters' && <ParamsPanel params={dist.parameters} />}
+      {isExpanded && activeCol !== 'parameters' && <ExpandedRow dist={dist} activeCol={activeCol} />}
     </>
   );
 }
@@ -601,11 +561,191 @@ function Footer() {
   );
 }
 
+// ─── Notation sidebar ─────────────────────────────────────────────────────────
+const SIDEBAR_W = 260;
+
+const NOTATION_SECTIONS = [
+  {
+    key: 'probability',
+    title: 'Probability',
+    entries: [
+      { symbol: 'P(A \\mid B)',                       meaning: 'Conditional probability of A given B' },
+      { symbol: 'X \\sim D',                          meaning: 'X is distributed as D' },
+      { symbol: 'X \\perp Y',                         meaning: 'X is independent of Y' },
+      { symbol: 'X \\perp Y \\mid Z',                 meaning: 'X conditionally independent of Y given Z' },
+      { symbol: 'X \\stackrel{\\text{iid}}{\\sim} D', meaning: 'iid draws from D' },
+    ],
+  },
+  {
+    key: 'distribution-functions',
+    title: 'Distribution Functions',
+    entries: [
+      { symbol: 'F_X(x)',        meaning: 'CDF: P(X ≤ x)' },
+      { symbol: 'f_X(x)',        meaning: 'PDF — probability density (continuous)' },
+      { symbol: 'p_X(x)',        meaning: 'PMF — probability mass (discrete)' },
+      { symbol: 'M_X(t)',        meaning: 'MGF: E[e^{tX}]' },
+    ],
+  },
+  {
+    key: 'moments',
+    title: 'Expectation & Moments',
+    entries: [
+      { symbol: 'E[g(X)]',               meaning: 'Expected value of a function of X' },
+      { symbol: 'E[X \\mid Y = y]',      meaning: 'Conditional expectation' },
+      { symbol: '\\text{Var}(X)',         meaning: 'E[X²] − (E[X])²' },
+      { symbol: '\\text{Cov}(X,Y)',       meaning: 'E[XY] − E[X]E[Y]' },
+      { symbol: "M_X'(0)",               meaning: 'E[X] — first derivative of MGF at 0' },
+      { symbol: "M_X''(0)",              meaning: 'E[X²] — second derivative of MGF at 0' },
+    ],
+  },
+  {
+    key: 'special-functions',
+    title: 'Special Functions',
+    entries: [
+      { symbol: '\\Gamma(z)',              meaning: 'Gamma function; Γ(n) = (n−1)! for n ∈ ℕ' },
+      { symbol: 'B(\\alpha,\\beta)',       meaning: 'Beta fn: Γ(α)Γ(β) / Γ(α+β)' },
+      { symbol: '\\propto',               meaning: 'Proportional to (up to a normalizing constant)' },
+    ],
+  },
+  {
+    key: 'greek',
+    title: 'Parameters & Greek',
+    entries: [
+      { symbol: '\\alpha,\\,\\beta',  meaning: 'Shape parameters — Beta, Gamma' },
+      { symbol: '\\lambda',           meaning: 'Rate parameter — Exponential, Poisson' },
+      { symbol: '\\mu',               meaning: 'Location/mean — Normal, Lognormal' },
+      { symbol: '\\sigma^2',          meaning: 'Scale/variance — Normal, Lognormal' },
+      { symbol: '\\nu',               meaning: 'Degrees of freedom — t, χ²' },
+      { symbol: '\\Phi(x)',           meaning: 'Standard normal CDF; no closed form' },
+    ],
+  },
+];
+
+function NotationSidebar({ open, onToggle }) {
+  const [openSections, setOpenSections] = React.useState(
+    Object.fromEntries(NOTATION_SECTIONS.map(s => [s.key, true]))
+  );
+  const panelRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (open && panelRef.current && window.MathJax) {
+      window.MathJax.typesetPromise([panelRef.current]).catch(() => {});
+    }
+  }, [open, openSections]);
+
+  const toggleSection = (key) => setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
+
+  return (
+    <>
+      {/* Slide-in panel — left side */}
+      <div ref={panelRef} style={{
+        position: 'fixed', top: 0, left: 0, bottom: 0,
+        width: SIDEBAR_W,
+        transform: open ? 'translateX(0)' : `translateX(-${SIDEBAR_W}px)`,
+        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        zIndex: 40,
+        background: JN.paper,
+        borderRight: `1px solid ${JN.rule}`,
+        display: 'flex', flexDirection: 'column',
+        boxShadow: open ? '8px 0 32px rgba(26,26,28,0.06)' : 'none',
+      }}>
+        <div style={{
+          padding: '20px 20px 16px',
+          borderBottom: `1px solid ${JN.ruleSoft}`,
+          display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+          flexShrink: 0,
+        }}>
+          <span style={{ fontFamily: F.serif, fontSize: 15, fontStyle: 'italic', color: JN.ink }}>Notation</span>
+          <button onClick={onToggle} style={{
+            all: 'unset', cursor: 'pointer',
+            fontFamily: F.sans, fontSize: 10, letterSpacing: '0.12em',
+            textTransform: 'uppercase', color: JN.mute,
+          }}>close</button>
+        </div>
+        <div style={{ overflowY: 'auto', flex: 1, padding: '6px 0 40px' }}>
+          {NOTATION_SECTIONS.map(section => (
+            <div key={section.key} style={{ borderBottom: `1px solid ${JN.ruleSoft}` }}>
+              <button
+                onClick={() => toggleSection(section.key)}
+                style={{
+                  all: 'unset', cursor: 'pointer', display: 'flex', width: '100%',
+                  alignItems: 'center', justifyContent: 'space-between',
+                  padding: '10px 18px',
+                  fontFamily: F.sans, fontSize: 10, letterSpacing: '0.15em',
+                  textTransform: 'uppercase', color: JN.muteCool,
+                }}
+              >
+                {section.title}
+                <span style={{ fontSize: 8, color: JN.rule }}>{openSections[section.key] ? '▲' : '▼'}</span>
+              </button>
+              {openSections[section.key] && (
+                <div style={{ padding: '2px 0 10px' }}>
+                  {section.entries.map(({ symbol, meaning }, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '4px 18px' }}>
+                      <span style={{ fontFamily: F.mono, fontSize: 11, color: JN.red, minWidth: 80, flexShrink: 0, lineHeight: 1.6 }}>
+                        {`\\(${symbol}\\)`}
+                      </span>
+                      <span style={{ fontFamily: F.serif, fontSize: 11, color: JN.inkSoft, lineHeight: 1.6 }}>
+                        {meaning}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Tab — right edge of sidebar, always visible */}
+      <button
+        onClick={onToggle}
+        style={{
+          all: 'unset', cursor: 'pointer',
+          position: 'fixed',
+          left: open ? SIDEBAR_W : 0,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          zIndex: 41,
+          writingMode: 'vertical-rl',
+          textOrientation: 'mixed',
+          display: 'flex', alignItems: 'center',
+          padding: '14px 8px',
+          background: JN.redTint,
+          border: `1px solid ${JN.rule}`,
+          borderLeft: 'none',
+          borderRadius: '0 4px 4px 0',
+          fontFamily: F.sans, fontSize: 10, letterSpacing: '0.18em',
+          textTransform: 'uppercase', color: JN.red,
+          boxShadow: '2px 0 8px rgba(26,26,28,0.05)',
+          transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          userSelect: 'none',
+        }}
+      >
+        Notation
+      </button>
+    </>
+  );
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 function App() {
   const [expandedRow, setExpandedRow] = React.useState(null);
   const [activeCol, setActiveCol]     = React.useState(null);
   const [expanded, setExpanded]       = React.useState(false);
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const tableRef = React.useRef(null);
+
+  React.useEffect(() => {
+    function handleOutsideClick(e) {
+      if (tableRef.current && !tableRef.current.contains(e.target)) {
+        setExpandedRow(null);
+        setActiveCol(null);
+      }
+    }
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
 
   const handleSetExpanded = (id) => {
     if (id !== expandedRow) setActiveCol(null);
@@ -625,7 +765,13 @@ function App() {
   const tableWidth   = getTableWidth(expanded, activeCol);
 
   return (
-    <div style={{ ...BG, color: JN.ink, minHeight: '100vh' }}>
+    <>
+    <NotationSidebar open={sidebarOpen} onToggle={() => setSidebarOpen(o => !o)} />
+    <div style={{
+      ...BG, color: JN.ink, minHeight: '100vh',
+      marginLeft: sidebarOpen ? SIDEBAR_W : 0,
+      transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    }}>
       <TopNav />
 
       {/* Hero */}
@@ -644,17 +790,21 @@ function App() {
           <h1 style={{ fontFamily: F.serif, fontSize: 'clamp(40px, 6vw, 80px)', lineHeight: 1.05, fontWeight: 400, letterSpacing: '-0.02em', margin: '0 0 24px', maxWidth: 800, color: JN.ink }}>
             Probability Distributions
           </h1>
-          <p style={{ fontFamily: F.serif, fontSize: 20, color: JN.inkSoft, margin: 0, maxWidth: 640, lineHeight: 1.6 }}>
-            A reference table for common probability distributions. Click a distribution name to expand narrative details. Click a formula cell to expand its derivation.
+          <p style={{ fontFamily: F.serif, fontSize: 20, color: JN.inkSoft, margin: '0 0 8px', maxWidth: 640, lineHeight: 1.6 }}>
+            A reference table for common probability distributions and their properties.
+          </p>
+          <p style={{ fontFamily: F.sans, fontSize: 13, color: JN.mute, margin: '0 0 3px', maxWidth: 640, lineHeight: 1.6 }}>
+            Expand columns to view CDF, E[x], Var[x], MGF.
+          </p>
+          <p style={{ fontFamily: F.sans, fontSize: 13, color: JN.mute, margin: 0, maxWidth: 640, lineHeight: 1.6 }}>
+            Click any cell to view relevant derivations and other useful descriptions.
           </p>
         </div>
       </section>
 
-      <SashikoRule />
-
       {/* Table section */}
-      <section className="jn-content" style={{ padding: '56px 72px 80px' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'stretch' }}>
+      <section className="jn-content" style={{ padding: '24px 72px 80px' }}>
+        <div ref={tableRef} style={{ display: 'inline-flex', alignItems: 'stretch' }}>
           <div style={{
             width: tableWidth,
             transition: 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -684,6 +834,7 @@ function App() {
 
       <Footer />
     </div>
+    </>
   );
 }
 
