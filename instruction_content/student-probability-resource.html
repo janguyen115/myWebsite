@@ -536,7 +536,12 @@ function TopNav({ sidebarOpen }) {
 }
 
 // ─── Footer ───────────────────────────────────────────────────────────────────
-function Footer() {
+function Footer({ sidebarOpen }) {
+  const counterShift = {
+    transform: sidebarOpen ? `translateX(-${SIDEBAR_W}px)` : 'translateX(0)',
+    transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+    willChange: 'transform',
+  };
   return (
     <footer className="jn-footer" style={{
       padding: '32px 72px 40px',
@@ -545,8 +550,8 @@ function Footer() {
       fontFamily: F.serif, fontSize: 14, color: JN.mute,
     }}>
       <span style={{ fontStyle: 'italic' }}>&copy; James A. Nguyen, 2026</span>
-      <span style={{ fontSize: 12, color: JN.muteCool }}>Last updated April 2026</span>
-      <span style={{ fontStyle: 'italic' }}>Irvine, California</span>
+      <span style={{ fontSize: 12, color: JN.muteCool, ...counterShift }}>Last updated April 2026</span>
+      <span style={{ fontStyle: 'italic', ...counterShift }}>Irvine, California</span>
     </footer>
   );
 }
@@ -728,7 +733,7 @@ function NotationSidebar({ open, onToggle }) {
 function App() {
   const [expandedRow, setExpandedRow] = React.useState(null);
   const [activeCol, setActiveCol]     = React.useState(null);
-  const [expanded, setExpanded]       = React.useState(false);
+  const [expanded, setExpanded]       = React.useState(true);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   const handleSetExpanded = (id) => {
@@ -817,7 +822,7 @@ function App() {
         </div>
       </section>
 
-      <Footer />
+      <Footer sidebarOpen={sidebarOpen} />
     </div>
     </>
   );
