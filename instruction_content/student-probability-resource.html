@@ -192,8 +192,8 @@ function ExpandedRow({ dist, activeCol }) {
     { key: 'relationships', label: 'Relationships' },
   ];
 
-  const derivation = activeCol ? dist.derivations[activeCol] : null;
-  const colLabel   = activeCol
+  const derivation  = activeCol ? dist.derivations[activeCol] : null;
+  const colLabel    = activeCol
     ? [...ALWAYS_COLS, ...TOGGLE_COLS].find(c => c.key === activeCol)?.label
     : null;
 
@@ -323,20 +323,26 @@ function NameCell({ name, isActive, onClick }) {
   );
 }
 
-function CellClickable({ latex, isActive, onClick, borderRight }) {
+function CellClickable({ latex, isActive, onClick, borderRight, support }) {
   const [hovered, setHovered] = React.useState(false);
+  const ref = React.useRef(null);
+
+  React.useEffect(() => {
+    if (support && isActive && ref.current && window.MathJax) {
+      window.MathJax.typesetPromise([ref.current]).catch(() => {});
+    }
+  }, [isActive, support]);
+
   return (
     <div
+      ref={ref}
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        padding: '18px 16px',
         cursor: 'pointer',
         background: isActive ? JN.redTint : hovered ? 'rgba(122,26,26,0.04)' : 'transparent',
         borderRight: borderRight ? `1px solid ${JN.ruleSoft}` : 'none',
-        display: 'flex',
-        alignItems: 'center',
         transition: 'background 0.15s, transform 0.15s, box-shadow 0.15s',
         transform: hovered && !isActive ? 'translateY(-1px)' : 'translateY(0)',
         boxShadow: hovered && !isActive ? `0 2px 8px rgba(26,26,28,0.07)` : 'none',
@@ -345,7 +351,18 @@ function CellClickable({ latex, isActive, onClick, borderRight }) {
         userSelect: 'none',
       }}
     >
-      <MathCell latex={latex} />
+      <div style={{ padding: '18px 16px', display: 'flex', alignItems: 'center' }}>
+        <MathCell latex={latex} />
+      </div>
+      {isActive && support && (
+        <div style={{ padding: '0 16px 14px', borderTop: `1px dashed ${JN.ruleSoft}` }}>
+          <div style={{ fontFamily: F.sans, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: JN.mute, marginBottom: 4 }}>
+            support
+          </div>
+          <div style={{ fontFamily: F.serif, fontSize: 13, color: JN.inkSoft }}
+            dangerouslySetInnerHTML={{ __html: `\\(${support}\\)` }} />
+        </div>
+      )}
     </div>
   );
 }
@@ -366,6 +383,11 @@ function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, e
     else { setExpandedRow(dist.id); setActiveCol(colKey); }
   };
 
+  const handleParamToggle = () => {
+    if (!paramOpen) { setActiveCol(null); setExpandedRow(null); }
+    setParamOpen(o => !o);
+  };
+
   const visibleToggleCols = expanded ? TOGGLE_COLS : [];
 
   return (
@@ -376,12 +398,13 @@ function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, e
         borderBottom: isExpanded ? 'none' : `1px solid ${JN.ruleSoft}`,
       }}>
         <NameCell name={dist.name} isActive={isExpanded && activeCol === null} onClick={handleNameClick} />
-        <ParamCell params={dist.parameters} isOpen={paramOpen} onToggle={() => setParamOpen(o => !o)} />
+        <ParamCell params={dist.parameters} isOpen={paramOpen} onToggle={handleParamToggle} />
         <CellClickable
           latex={dist.pmfPdf}
           isActive={isExpanded && activeCol === 'pmfPdf'}
           onClick={() => handleCellClick('pmfPdf')}
           borderRight={visibleToggleCols.length > 0}
+          support={dist.support}
         />
         {visibleToggleCols.map((col, i) => (
           <CellClickable
@@ -390,6 +413,7 @@ function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, e
             isActive={isExpanded && activeCol === col.key}
             onClick={() => handleCellClick(col.key)}
             borderRight={i < visibleToggleCols.length - 1}
+            support={col.key === 'cdf' ? dist.support : undefined}
           />
         ))}
       </div>
@@ -780,14 +804,17 @@ function App() {
           <h1 style={{ fontFamily: F.serif, fontSize: 'clamp(40px, 6vw, 80px)', lineHeight: 1.05, fontWeight: 400, letterSpacing: '-0.02em', margin: '0 0 24px', maxWidth: 800, color: JN.ink }}>
             Probability Distributions
           </h1>
-          <p style={{ fontFamily: F.serif, fontSize: 20, color: JN.inkSoft, margin: '0 0 14px', maxWidth: 640, lineHeight: 1.6 }}>
-            A reference table for common probability distributions and their properties.
+          <p style={{ fontFamily: F.serif, fontSize: 20, color: JN.inkSoft, margin: '0 0 14px', maxWidth: 640, lineHeight: 1.6, textAlign: 'right' }}>
+            A reference table for common probability <br /> distributions and their properties.
           </p>
           <p style={{ fontFamily: F.sans, fontSize: 13, color: JN.mute, margin: '0 0 6px', maxWidth: 640, lineHeight: 1.6 }}>
-            Expand columns to view CDF, E(x), Var(x), MGF.
+            Collapse columns to hide CDF, E(x), Var(x), MGF.
           </p>
-          <p style={{ fontFamily: F.sans, fontSize: 13, color: JN.mute, margin: 0, maxWidth: 640, lineHeight: 1.6 }}>
+          <p style={{ fontFamily: F.sans, fontSize: 13, color: JN.mute, margin: '0 0 6px', maxWidth: 640, lineHeight: 1.6 }}>
             Click any cell to view relevant derivations and other useful descriptions.
+          </p>
+          <p style={{ fontFamily: F.sans, fontSize: 13, color: JN.mute, margin: '0 0 6px', maxWidth: 640, lineHeight: 1.6 }}>
+            Notation key available in the sidebar on the left.
           </p>
         </div>
       </section>
