@@ -44,6 +44,7 @@
       .jn-guide-content  { padding: 48px 20px 64px !important; }
       .jn-collab-section { padding: 48px 20px !important; }
       .jn-cv-content     { padding: 48px 20px !important; }
+      .jn-instr-thumb    { display: none !important; }
     }
   </style>
 </head>
@@ -133,7 +134,7 @@ window.JN_DATA = {
       desc: 'Aiming to address inefficiencies in the standard random sampling distribution for Randomized Kaczmarz and related algorithms, we explore alternatives that promote faster, more reliable convergence on ill-conditioned, overdetermined systems of linear inequalities.',
       arxiv: 'https://arxiv.org/abs/2407.00000',
       pdf: 'files/read_between_the_hyperplanes.pdf',
-      collaborators: ['Dr. E. Sudderth', 'Dr. S. Mandt'],
+      collaborators: ['Dr. A. Ma', 'O. Presnyakov', 'A. Radhakrishnan'],
       status: 'preprint · under review',
       keywords: ['Randomized Kaczmarz', 'spectral sampling', 'ill-conditioned systems', 'convergence rates'],
     },
@@ -147,7 +148,7 @@ window.JN_DATA = {
       desc: 'An epidemiological study on the impact of public health policy in Gaborone, Botswana in response to the high prevalence of HIV and its effect on tuberculosis treatment outcomes, adjusted for universal access to antiretroviral therapy.',
       arxiv: null,
       pdf: 'files/hiv_tb.pdf',
-      collaborators: ['Botswana Ministry of Health (data)', 'Dr. M. Mbulaiteye'],
+      collaborators: ['Dr. V. Minin', 'Dr. S. Shin', 'J. Sebastian', 'A. Baniasad', 'E. Tian', 'S. Chao'],
       status: 'report · 2024',
       keywords: ['causal inference', 'public health', 'ART', 'Botswana'],
     },
@@ -161,7 +162,7 @@ window.JN_DATA = {
       desc: 'An exploratory analysis on the neuronal decoding of odor presentations in the hippocampus, a look into the brain and how understanding it could inform the treatment and identification of cognitive diseases related to working memory.',
       arxiv: null,
       pdf: 'files/hippocampal_ensembles.pdf',
-      collaborators: ['Dr. N. Fortin lab, UCI CNLM'],
+      collaborators: ['Dr. B. Shahbaba', 'Dr. N. Fortin', 'Z. Yang', 'Y. Chavez', 'K. Varela', 'E. Vo', 'A. Young', 'J. Ye'],
       status: 'published · Nature Communications',
       publication: 'files/nature_communications.pdf',
       keywords: ['hippocampus', 'replay', 'neural decoding', 'working memory'],
@@ -893,7 +894,7 @@ function InstructionBlueprint({ nav }) {
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(244,241,234,0.5)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <div style={{ aspectRatio: '3/4', background: JN.paperWarm, border: `1px solid ${JN.ruleSoft}`, padding: 16 }}>
+              <div className="jn-instr-thumb" style={{ aspectRatio: '3/4', background: JN.paperWarm, border: `1px solid ${JN.ruleSoft}`, padding: 16 }}>
                 <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 11, color: JN.muteCool, marginBottom: 8 }}>Reference &middot; in progress</div>
                 <div style={{ fontFamily: fonts.serif, fontSize: 22, lineHeight: 1.1, fontStyle: 'italic', color: JN.ink, marginBottom: 16 }}>
                   Probability <em style={{ color: JN.red }}>Distributions</em>
@@ -927,7 +928,7 @@ function InstructionBlueprint({ nav }) {
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(244,241,234,0.5)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <div style={{ aspectRatio: '3/4', background: JN.paperWarm, border: `1px solid ${JN.ruleSoft}`, padding: 16 }}>
+              <div className="jn-instr-thumb" style={{ aspectRatio: '3/4', background: JN.paperWarm, border: `1px solid ${JN.ruleSoft}`, padding: 16 }}>
                 <div style={{ fontFamily: fonts.serif, fontStyle: 'italic', fontSize: 11, color: JN.muteCool, marginBottom: 8 }}>Volume I &middot; draft</div>
                 <div style={{ fontFamily: fonts.serif, fontSize: 22, lineHeight: 1.1, fontStyle: 'italic', color: JN.ink, marginBottom: 16 }}>
                   A Student&rsquo;s Guide to <em style={{ color: JN.red }}>Numerical Bayes</em>
