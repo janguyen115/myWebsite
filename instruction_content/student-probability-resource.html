@@ -38,6 +38,7 @@
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+  <script src="distributions.js"></script>
   <script type="text/babel" data-presets="env,react">
 
 // ─── Tokens ───────────────────────────────────────────────────────────────────
@@ -142,10 +143,6 @@ const TOGGLE_COLS = [
 ];
 const ACTIVE_BONUS = 80;
 
-// ─── Distribution data ────────────────────────────────────────────────────────
-// Write LaTeX directly in string fields — MathJax renders automatically.
-// Leave a field as '' to show '—'.
-// parameters: { notation: latex string, params: [{ symbol, description }] }
 // ─── Table helpers ─────────────────────────────────────────────────────────────
 function visibleCols(expanded) {
   return expanded ? [...ALWAYS_COLS, ...TOGGLE_COLS] : ALWAYS_COLS;
@@ -465,7 +462,7 @@ function TableHeader({ expanded, activeCol, gridTemplate }) {
 }
 
 // ─── Nav ──────────────────────────────────────────────────────────────────────
-function TopNav() {
+function TopNav({ sidebarOpen }) {
   const [menuOpen, setMenuOpen] = React.useState(false);
 
   const navItems = [
@@ -493,7 +490,12 @@ function TopNav() {
       <a href="../index.html" style={{ all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'baseline', gap: 6, fontFamily: F.serif, fontSize: 17, letterSpacing: '0.01em', color: JN.ink }}>
         <span style={{ fontStyle: 'italic' }}>James A.</span><span style={{ color: JN.red }}>Nguyen</span>
       </a>
-      <nav className="jn-nav" style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
+      <nav className="jn-nav" style={{
+        display: 'flex', gap: 28, alignItems: 'center',
+        transform: sidebarOpen ? `translateX(-${SIDEBAR_W}px)` : 'translateX(0)',
+        transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+        willChange: 'transform',
+      }}>
         {navItems.map(({ label, href, active }) => (
           <a key={label} href={href} style={{
             all: 'unset', cursor: 'pointer',
@@ -634,12 +636,13 @@ function NotationSidebar({ open, onToggle }) {
         position: 'fixed', top: 0, left: 0, bottom: 0,
         width: SIDEBAR_W,
         transform: open ? 'translateX(0)' : `translateX(-${SIDEBAR_W}px)`,
-        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+        willChange: 'transform',
         zIndex: 40,
         background: JN.paper,
         borderRight: `1px solid ${JN.rule}`,
         display: 'flex', flexDirection: 'column',
-        boxShadow: open ? '8px 0 32px rgba(26,26,28,0.06)' : 'none',
+        boxShadow: '8px 0 32px rgba(26,26,28,0.06)',
       }}>
         <div style={{
           padding: '20px 20px 16px',
@@ -695,9 +698,10 @@ function NotationSidebar({ open, onToggle }) {
         style={{
           all: 'unset', cursor: 'pointer',
           position: 'fixed',
-          left: open ? SIDEBAR_W : 0,
+          left: 0,
           top: '50%',
-          transform: 'translateY(-50%)',
+          transform: open ? `translateX(${SIDEBAR_W}px) translateY(-50%)` : 'translateX(0) translateY(-50%)',
+          willChange: 'transform',
           zIndex: 41,
           writingMode: 'vertical-rl',
           textOrientation: 'mixed',
@@ -710,7 +714,7 @@ function NotationSidebar({ open, onToggle }) {
           fontFamily: F.sans, fontSize: 10, letterSpacing: '0.18em',
           textTransform: 'uppercase', color: JN.red,
           boxShadow: '2px 0 8px rgba(26,26,28,0.05)',
-          transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
           userSelect: 'none',
         }}
       >
@@ -749,10 +753,11 @@ function App() {
     <NotationSidebar open={sidebarOpen} onToggle={() => setSidebarOpen(o => !o)} />
     <div style={{
       ...BG, color: JN.ink, minHeight: '100vh',
-      marginLeft: sidebarOpen ? SIDEBAR_W : 0,
-      transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      transform: sidebarOpen ? `translateX(${SIDEBAR_W}px)` : 'translateX(0)',
+      transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+      willChange: 'transform',
     }}>
-      <TopNav />
+      <TopNav sidebarOpen={sidebarOpen} />
 
       {/* Hero */}
       <section className="jn-hero" style={{ padding: '72px 72px 48px', position: 'relative', overflow: 'hidden' }}>
