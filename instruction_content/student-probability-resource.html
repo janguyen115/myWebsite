@@ -779,7 +779,7 @@ function PillGroup({ options, value, onChange }) {
               textTransform: 'uppercase',
               color: isActive ? JN.red : JN.mute,
               background: isActive ? JN.redTint : isHovered ? 'rgba(122,26,26,0.04)' : 'transparent',
-              border: `1px solid ${JN.ruleSoft}`,
+              border: `1px solid ${isActive ? JN.rule : JN.ruleSoft}`,
               borderRadius: isFirst ? '2px 0 0 2px' : isLast ? '0 2px 2px 0' : '0',
               marginLeft: i > 0 ? -1 : 0,
               position: 'relative',
