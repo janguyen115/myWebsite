@@ -753,6 +753,75 @@ function NotationSidebar({ open, onToggle }) {
   );
 }
 
+// ─── Table controls ───────────────────────────────────────────────────────────
+function PillGroup({ options, value, onChange }) {
+  return (
+    <div style={{ display: 'flex' }}>
+      {options.map(({ label, val }, i) => {
+        const isActive = value === val;
+        const isFirst  = i === 0;
+        const isLast   = i === options.length - 1;
+        return (
+          <button
+            key={val}
+            onClick={() => onChange(val)}
+            style={{
+              all: 'unset',
+              cursor: 'pointer',
+              padding: '5px 12px',
+              fontFamily: F.sans,
+              fontSize: 11,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: isActive ? JN.red : JN.mute,
+              background: isActive ? JN.redTint : 'transparent',
+              border: `1px solid ${isActive ? JN.rule : JN.ruleSoft}`,
+              borderRadius: isFirst ? '2px 0 0 2px' : isLast ? '0 2px 2px 0' : '0',
+              marginLeft: i > 0 ? -1 : 0,
+              position: 'relative',
+              zIndex: isActive ? 1 : 0,
+              transition: 'background 0.15s, color 0.15s',
+            }}
+            onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(122,26,26,0.04)'; }}
+            onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
+          >
+            {label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function TableControls({ sortOrder, setSortOrder, typeFilter, setTypeFilter }) {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: 16,
+      marginBottom: 20,
+    }}>
+      <PillGroup
+        options={[
+          { label: 'Default', val: 'default' },
+          { label: 'A–Z',     val: 'alpha'   },
+        ]}
+        value={sortOrder}
+        onChange={setSortOrder}
+      />
+      <PillGroup
+        options={[
+          { label: 'All',        val: 'all'        },
+          { label: 'Discrete',   val: 'discrete'   },
+          { label: 'Continuous', val: 'continuous' },
+        ]}
+        value={typeFilter}
+        onChange={setTypeFilter}
+      />
+    </div>
+  );
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 function App() {
   const [expandedRow, setExpandedRow] = React.useState(null);
