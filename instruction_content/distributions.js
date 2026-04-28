@@ -50,6 +50,7 @@
 var DISTRIBUTIONS = [
  {
     id: 'uniform-discrete',
+    type: 'discrete',
     name: 'Uniform (Discrete)',
     parameters: {
       notation: 'X \\sim \\operatorname{Uniform}(a, b)',
@@ -76,6 +77,7 @@ var DISTRIBUTIONS = [
   },
   {
     id: 'uniform-continuous',
+    type: 'continuous',
     name: 'Uniform (Continuous)',
     parameters: {
       notation: 'X \\sim \\operatorname{Uniform}(a, b)',
@@ -102,6 +104,7 @@ var DISTRIBUTIONS = [
   },
   {
     id: 'bernoulli',
+    type: 'discrete',
     name: 'Bernoulli',
     parameters: {
       notation: 'X \\sim \\operatorname{Bernoulli}(p)',
@@ -127,6 +130,7 @@ var DISTRIBUTIONS = [
   },
   {
     id: 'binomial',
+    type: 'discrete',
     name: 'Binomial',
     parameters: {
       notation: 'X \\sim \\operatorname{Binomial}(n,\\, p)',
@@ -153,6 +157,7 @@ var DISTRIBUTIONS = [
   },
   {
     id: 'exponential',
+    type: 'continuous',
     name: 'Exponential',
     parameters: {
       notation: 'X \\sim \\operatorname{Exponential}(\\lambda)',
@@ -178,6 +183,7 @@ var DISTRIBUTIONS = [
   },
   {
     id: 'gamma',
+    type: 'continuous',
     name: 'Gamma',
     parameters: {
       notation: 'X \\sim \\operatorname{Gamma}(\\alpha, \\beta)',
@@ -204,6 +210,7 @@ var DISTRIBUTIONS = [
   },
   {
     id: 'poisson',
+    type: 'discrete',
     name: 'Poisson',
     parameters: {
       notation: 'X \\sim \\operatorname{Poisson}(\\lambda)',
@@ -229,6 +236,7 @@ var DISTRIBUTIONS = [
   },
   {
     id: 'geometric',
+    type: 'discrete',
     name: 'Geometric',
     parameters: {
       notation: 'X \\sim \\operatorname{Geom}(p)',
@@ -254,6 +262,7 @@ var DISTRIBUTIONS = [
   },
   {
     id: 'negative binomial',
+    type: 'discrete',
     name: 'Negative Binomial',
     parameters: {
       notation: 'X \\sim \\operatorname{NegBinom}(r, p)',
@@ -280,6 +289,7 @@ var DISTRIBUTIONS = [
   },
   {
     id: 'hypergeometric',
+    type: 'discrete',
     name: 'Hypergeometric',
     parameters: {
       notation: 'X \\sim \\operatorname{HyperGeom}(N, K, n)',
@@ -307,6 +317,7 @@ var DISTRIBUTIONS = [
   },
   {
     id: 'normal',
+    type: 'continuous',
     name: 'Normal (Gaussian)',
     parameters: {
       notation: 'X \\sim \\operatorname{Norm}(\\mu, \\sigma^2)',
@@ -333,6 +344,7 @@ var DISTRIBUTIONS = [
   },
   {
     id: 'chi-square',
+    type: 'continuous',
     name: 'Chi-Square',
     parameters: {
       notation: 'X \\sim \\chi^2(k)',
@@ -358,6 +370,7 @@ var DISTRIBUTIONS = [
   },
   {
     id: 'beta',
+    type: 'continuous',
     name: 'Beta',
     parameters: {
       notation: 'X \\sim \\operatorname{Beta}(\\alpha, \\beta)',
