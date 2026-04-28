@@ -4,6 +4,7 @@
 //
 // Field reference:
 //   id          — unique string key (lowercase, no spaces)
+//   type        — 'discrete' | 'continuous'
 //   name        — display name shown in the table
 //   parameters  — { notation: LaTeX string, params: [{ symbol, description }] }
 //   pmfPdf      — LaTeX string for the PMF (discrete) or PDF (continuous)
@@ -23,6 +24,7 @@
 //
 // {
 //   id: '',
+//   type: '',
 //   name: '',
 //   parameters: {
 //     notation: '',
@@ -48,7 +50,7 @@
 // },
 
 var DISTRIBUTIONS = [
- {
+  {
     id: 'uniform-discrete',
     type: 'discrete',
     name: 'Uniform (Discrete)',
