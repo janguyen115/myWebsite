@@ -31,9 +31,14 @@
     @media (max-width: 768px) {
       .jn-header  { padding: 14px 20px !important; }
       .jn-nav     { display: none !important; }
-      .jn-hero    { padding: 40px 20px 32px !important; }
-      .jn-content { padding: 32px 20px 64px !important; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .jn-hero    { padding: 40px 20px 24px !important; }
+      .jn-content { padding: 24px 20px 64px !important; overflow-x: auto; -webkit-overflow-scrolling: touch; }
       .jn-footer  { padding: 24px 20px 32px !important; flex-direction: column !important; gap: 12px !important; }
+      .jn-hero-flex  { flex-direction: column !important; gap: 28px !important; }
+      .jn-hero-left  { max-width: 100% !important; }
+      .jn-viz-col    { width: 100% !important; margin-left: 0 !important; margin-top: 0 !important; overflow-x: auto; }
+      .jn-dist-viz-body { flex-direction: column !important; }
+      .jn-h1-br { display: inline !important; }
     }
   </style>
 </head>
@@ -1385,7 +1390,7 @@ function DistributionViz({ dist, onDistChange, vizParams, setVizParams, selected
       </div>
 
       {/* Main body: plot+sliders left, stats right */}
-      <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+      <div className="jn-dist-viz-body" style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
 
         {/* Left column: plot + sliders */}
         <div style={{ flexShrink: 0 }}>
@@ -1911,7 +1916,7 @@ function TableControls({ sortOrder, setSortOrder, typeFilter, setTypeFilter }) {
 function App() {
   const [expandedRow, setExpandedRow] = React.useState(null);
   const [activeCol, setActiveCol]     = React.useState(null);
-  const [expanded, setExpanded]       = React.useState(true);
+  const [expanded, setExpanded]       = React.useState(window.innerWidth > 768);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [paramOpenRow, setParamOpenRow] = React.useState(null);
   const [sortOrder,   setSortOrder]   = React.useState('default'); // 'default' | 'alpha'
@@ -2036,9 +2041,9 @@ function App() {
       {/* Hero */}
       <section className="jn-hero" style={{ padding: '72px 72px 16px', position: 'relative', overflow: 'hidden' }}>
         <Komorebi />
-        <div style={{ position: 'relative', display: 'flex', gap: 56, alignItems: 'flex-start' }}>
+        <div className="jn-hero-flex" style={{ position: 'relative', display: 'flex', gap: 56, alignItems: 'flex-start' }}>
           {/* Left: title + description */}
-          <div style={{ flex: '0 0 auto', maxWidth: 500 }}>
+          <div className="jn-hero-left" style={{ flex: '0 0 auto', maxWidth: 500 }}>
             {/* Breadcrumb */}
             <div style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: JN.mute, marginBottom: 32 }}>
               <a href="../index.html" style={{ all: 'unset', cursor: 'pointer', color: JN.mute }}>Home</a>
@@ -2049,7 +2054,7 @@ function App() {
             </div>
             <div style={{ fontFamily: F.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute, marginBottom: 18 }}>Reference &middot; in progress</div>
             <h1 style={{ fontFamily: F.serif, fontSize: 'clamp(36px, 5vw, 72px)', lineHeight: 1.05, fontWeight: 400, letterSpacing: '-0.02em', margin: '0 0 24px', color: JN.ink }}>
-              Probability Distributions
+              Probability<br className="jn-h1-br" style={{ display: 'none' }} /> Distributions
             </h1>
             <p style={{ fontFamily: F.serif, fontSize: 18, color: JN.inkSoft, margin: '0 0 22px', lineHeight: 1.6, textAlign: 'right' }}>
               A reference table for common probability<br/>distributions and their properties.
@@ -2062,7 +2067,7 @@ function App() {
           </div>
 
           {/* Right: visualizer */}
-          <div style={{ flex: '0 0 auto', width: 520, marginTop: 36, marginLeft: 48 }}>
+          <div className="jn-viz-col" style={{ flex: '0 0 auto', width: 520, marginTop: 36, marginLeft: 48 }}>
             <DistributionViz
               dist={currentVizDist}
               onDistChange={handleVizDistChange}
