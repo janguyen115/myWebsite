@@ -759,6 +759,25 @@ function App() {
   const [activeCol, setActiveCol]     = React.useState(null);
   const [expanded, setExpanded]       = React.useState(true);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [sortOrder,   setSortOrder]   = React.useState('default'); // 'default' | 'alpha'
+  const [typeFilter,  setTypeFilter]  = React.useState('all');     // 'all' | 'discrete' | 'continuous'
+
+  const displayedDists = React.useMemo(() => {
+    let list = typeFilter === 'all'
+      ? DISTRIBUTIONS
+      : DISTRIBUTIONS.filter(d => d.type === typeFilter);
+    if (sortOrder === 'alpha') {
+      list = [...list].sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return list;
+  }, [sortOrder, typeFilter]);
+
+  React.useEffect(() => {
+    if (expandedRow && !displayedDists.some(d => d.id === expandedRow)) {
+      setExpandedRow(null);
+      setActiveCol(null);
+    }
+  }, [displayedDists, expandedRow]);
 
   const handleSetExpanded = (id) => {
     if (id !== expandedRow) setActiveCol(null);
@@ -832,7 +851,7 @@ function App() {
             flexShrink: 0,
           }}>
             <TableHeader expanded={expanded} activeCol={activeCol} gridTemplate={gridTemplate} />
-            {DISTRIBUTIONS.map(dist => (
+            {displayedDists.map(dist => (
               <DistRow
                 key={dist.id}
                 dist={dist}
