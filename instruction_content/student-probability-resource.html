@@ -911,6 +911,12 @@ function App() {
 
       {/* Table section */}
       <section className="jn-content" style={{ padding: '56px 72px 80px' }}>
+        <TableControls
+          sortOrder={sortOrder}
+          setSortOrder={setSortOrder}
+          typeFilter={typeFilter}
+          setTypeFilter={setTypeFilter}
+        />
         <div style={{ display: 'inline-flex', alignItems: 'stretch' }}>
           <div style={{
             width: tableWidth,
