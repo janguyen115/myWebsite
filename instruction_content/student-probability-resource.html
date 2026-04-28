@@ -24,6 +24,10 @@
   <style>
     html, body, #root { margin: 0; padding: 0; min-height: 100%; background: #f4f1ea; box-sizing: border-box; }
     *, *::before, *::after { box-sizing: inherit; }
+    @keyframes jn-row-expand {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
     @media (max-width: 768px) {
       .jn-header  { padding: 14px 20px !important; }
       .jn-nav     { display: none !important; }
@@ -143,6 +147,286 @@ const TOGGLE_COLS = [
 ];
 const ACTIVE_BONUS = 80;
 
+// ─── Math utilities ───────────────────────────────────────────────────────────
+function lnGamma(z) {
+  // Lanczos approximation
+  const C = [
+    0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+    771.32342877765313,  -176.61502916214059, 12.507343278686905,
+    -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7,
+  ];
+  if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - lnGamma(1 - z);
+  z -= 1;
+  let x = C[0];
+  for (let i = 1; i < 9; i++) x += C[i] / (z + i);
+  const t = z + 7.5;
+  return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+}
+
+function gammaFn(z) { return Math.exp(lnGamma(z)); }
+
+// Abramowitz & Stegun 7-term rational erfc
+function erfc(x) {
+  const t = 1 / (1 + 0.3275911 * Math.abs(x));
+  const y = (((((1.061405429*t - 1.453152027)*t + 1.421413741)*t
+               - 0.284496736)*t + 0.254829592)*t) * Math.exp(-x*x);
+  return x >= 0 ? y : 2 - y;
+}
+
+function normalCDF(z) { return 0.5 * erfc(-z / Math.SQRT2); }
+
+function logBinom(n, k) {
+  if (k < 0 || k > n) return -Infinity;
+  return lnGamma(n + 1) - lnGamma(k + 1) - lnGamma(n - k + 1);
+}
+
+// Simpson's rule — used for CDFs with no closed form
+function simpsonCDF(pdfFn, xMin, xVal, steps = 400) {
+  if (xVal <= xMin) return 0;
+  const n = steps % 2 === 0 ? steps : steps + 1;
+  const h = (xVal - xMin) / n;
+  let s = pdfFn(xMin) + pdfFn(xVal);
+  for (let i = 1; i < n; i++) s += (i % 2 === 0 ? 2 : 4) * pdfFn(xMin + i * h);
+  return Math.max(0, Math.min(1, (h / 3) * s));
+}
+
+// ─── Distribution math config ─────────────────────────────────────────────────
+const DIST_MATH = {
+  'uniform-discrete': {
+    continuous: false,
+    paramConfig: [
+      { key: 'a', label: 'a', min: -10, max: 10, step: 1, defaultVal: 0 },
+      { key: 'b', label: 'b', min: -9,  max: 20, step: 1, defaultVal: 5 },
+    ],
+    xRange: p => [p.a - 0.5, p.b + 0.5],
+    pdf:    (k, p) => (k >= p.a && k <= p.b && Number.isInteger(k)) ? 1 / (p.b - p.a + 1) : 0,
+    cdf:    (x, p) => x < p.a ? 0 : x >= p.b ? 1 : (Math.floor(x) - p.a + 1) / (p.b - p.a + 1),
+    mean:   p => (p.a + p.b) / 2,
+    std:    p => Math.sqrt(((p.b - p.a + 1) ** 2 - 1) / 12),
+  },
+
+  'uniform-continuous': {
+    continuous: true,
+    paramConfig: [
+      { key: 'a', label: 'a', min: -10, max: 9,  step: 0.1, defaultVal: 0 },
+      { key: 'b', label: 'b', min: -9,  max: 10, step: 0.1, defaultVal: 1 },
+    ],
+    xRange: p => [p.a - (p.b - p.a) * 0.1, p.b + (p.b - p.a) * 0.1],
+    pdf:    (x, p) => (x >= p.a && x <= p.b && p.b > p.a) ? 1 / (p.b - p.a) : 0,
+    cdf:    (x, p) => x <= p.a ? 0 : x >= p.b ? 1 : (x - p.a) / (p.b - p.a),
+    mean:   p => (p.a + p.b) / 2,
+    std:    p => (p.b - p.a) / Math.sqrt(12),
+  },
+
+  'bernoulli': {
+    continuous: false,
+    paramConfig: [
+      { key: 'p', label: 'p', min: 0.01, max: 0.99, step: 0.01, defaultVal: 0.5 },
+    ],
+    xRange: _ => [-0.5, 1.5],
+    pdf:    (k, p) => k === 0 ? (1 - p.p) : k === 1 ? p.p : 0,
+    cdf:    (x, p) => x < 0 ? 0 : x < 1 ? (1 - p.p) : 1,
+    mean:   p => p.p,
+    std:    p => Math.sqrt(p.p * (1 - p.p)),
+  },
+
+  'binomial': {
+    continuous: false,
+    paramConfig: [
+      { key: 'n', label: 'n', min: 1,    max: 50,   step: 1,    defaultVal: 10  },
+      { key: 'p', label: 'p', min: 0.01, max: 0.99, step: 0.01, defaultVal: 0.5 },
+    ],
+    xRange: p => [-0.5, p.n + 0.5],
+    pdf: (k, p) => {
+      if (k < 0 || k > p.n || !Number.isInteger(k)) return 0;
+      return Math.exp(logBinom(p.n, k) + k * Math.log(p.p) + (p.n - k) * Math.log(1 - p.p));
+    },
+    cdf: (x, p) => {
+      let s = 0;
+      for (let k = 0; k <= Math.floor(x) && k <= p.n; k++) {
+        s += Math.exp(logBinom(p.n, k) + k * Math.log(p.p) + (p.n - k) * Math.log(1 - p.p));
+      }
+      return Math.min(1, s);
+    },
+    mean: p => p.n * p.p,
+    std:  p => Math.sqrt(p.n * p.p * (1 - p.p)),
+  },
+
+  'exponential': {
+    continuous: true,
+    paramConfig: [
+      { key: 'lambda', label: 'λ', min: 0.1, max: 5, step: 0.1, defaultVal: 1 },
+    ],
+    xRange: p => [0, 5 / p.lambda],
+    pdf:    (x, p) => x < 0 ? 0 : p.lambda * Math.exp(-p.lambda * x),
+    cdf:    (x, p) => x < 0 ? 0 : 1 - Math.exp(-p.lambda * x),
+    mean:   p => 1 / p.lambda,
+    std:    p => 1 / p.lambda,
+  },
+
+  'gamma': {
+    continuous: true,
+    paramConfig: [
+      { key: 'alpha', label: 'α', min: 0.5, max: 10, step: 0.5, defaultVal: 2 },
+      { key: 'beta',  label: 'β', min: 0.1, max: 5,  step: 0.1, defaultVal: 1 },
+    ],
+    xRange: p => [0, p.alpha * p.beta + 5 * Math.sqrt(p.alpha) * p.beta],
+    pdf: (x, p) => {
+      if (x <= 0) return 0;
+      return Math.exp((p.alpha - 1) * Math.log(x) - x / p.beta
+        - p.alpha * Math.log(p.beta) - lnGamma(p.alpha));
+    },
+    cdf: (x, p) => {
+      if (x <= 0) return 0;
+      const pdfFn = t => t <= 0 ? 0 : Math.exp((p.alpha - 1) * Math.log(t) - t / p.beta
+        - p.alpha * Math.log(p.beta) - lnGamma(p.alpha));
+      return simpsonCDF(pdfFn, 0, x);
+    },
+    mean: p => p.alpha * p.beta,
+    std:  p => Math.sqrt(p.alpha) * p.beta,
+  },
+
+  'poisson': {
+    continuous: false,
+    paramConfig: [
+      { key: 'lambda', label: 'λ', min: 0.5, max: 20, step: 0.5, defaultVal: 3 },
+    ],
+    xRange: p => [-0.5, Math.max(15, p.lambda + 5 * Math.sqrt(p.lambda)) + 0.5],
+    pdf: (k, p) => {
+      if (k < 0 || !Number.isInteger(k)) return 0;
+      return Math.exp(k * Math.log(p.lambda) - p.lambda - lnGamma(k + 1));
+    },
+    cdf: (x, p) => {
+      let s = 0;
+      for (let k = 0; k <= Math.floor(x); k++) {
+        s += Math.exp(k * Math.log(p.lambda) - p.lambda - lnGamma(k + 1));
+      }
+      return Math.min(1, s);
+    },
+    mean: p => p.lambda,
+    std:  p => Math.sqrt(p.lambda),
+  },
+
+  'geometric': {
+    continuous: false,
+    paramConfig: [
+      { key: 'p', label: 'p', min: 0.05, max: 0.95, step: 0.05, defaultVal: 0.3 },
+    ],
+    xRange: p => [0.5, Math.ceil(Math.log(0.001) / Math.log(1 - p.p)) + 0.5],
+    pdf:    (k, p) => (k >= 1 && Number.isInteger(k)) ? Math.pow(1 - p.p, k - 1) * p.p : 0,
+    cdf:    (x, p) => x < 1 ? 0 : 1 - Math.pow(1 - p.p, Math.floor(x)),
+    mean:   p => 1 / p.p,
+    std:    p => Math.sqrt((1 - p.p) / (p.p ** 2)),
+  },
+
+  'negative binomial': {
+    continuous: false,
+    paramConfig: [
+      { key: 'r', label: 'r', min: 1,    max: 20,   step: 1,    defaultVal: 3   },
+      { key: 'p', label: 'p', min: 0.05, max: 0.95, step: 0.05, defaultVal: 0.5 },
+    ],
+    xRange: p => [-0.5, Math.ceil(p.r * (1 - p.p) / p.p + 5 * Math.sqrt(p.r * (1 - p.p)) / p.p) + 0.5],
+    pdf: (k, p) => {
+      if (k < 0 || !Number.isInteger(k)) return 0;
+      return Math.exp(logBinom(k + p.r - 1, k) + k * Math.log(1 - p.p) + p.r * Math.log(p.p));
+    },
+    cdf: (x, p) => {
+      let s = 0;
+      for (let k = 0; k <= Math.floor(x); k++) {
+        s += Math.exp(logBinom(k + p.r - 1, k) + k * Math.log(1 - p.p) + p.r * Math.log(p.p));
+      }
+      return Math.min(1, s);
+    },
+    mean: p => p.r * (1 - p.p) / p.p,
+    std:  p => Math.sqrt(p.r * (1 - p.p) / (p.p ** 2)),
+  },
+
+  'hypergeometric': {
+    continuous: false,
+    paramConfig: [
+      { key: 'N', label: 'N', min: 10, max: 100, step: 1, defaultVal: 50 },
+      { key: 'K', label: 'K', min: 1,  max: 50,  step: 1, defaultVal: 20 },
+      { key: 'n', label: 'n', min: 1,  max: 40,  step: 1, defaultVal: 15 },
+    ],
+    xRange: p => [
+      Math.max(0, p.n + p.K - p.N) - 0.5,
+      Math.min(p.n, p.K) + 0.5,
+    ],
+    pdf: (k, p) => {
+      if (!Number.isInteger(k) || k < Math.max(0, p.n + p.K - p.N) || k > Math.min(p.n, p.K)) return 0;
+      return Math.exp(logBinom(p.K, k) + logBinom(p.N - p.K, p.n - k) - logBinom(p.N, p.n));
+    },
+    cdf: (x, p) => {
+      let s = 0;
+      const kMin = Math.max(0, p.n + p.K - p.N);
+      for (let k = kMin; k <= Math.min(Math.floor(x), p.n, p.K); k++) {
+        s += Math.exp(logBinom(p.K, k) + logBinom(p.N - p.K, p.n - k) - logBinom(p.N, p.n));
+      }
+      return Math.min(1, s);
+    },
+    mean: p => p.n * p.K / p.N,
+    std:  p => Math.sqrt(p.n * (p.K / p.N) * (1 - p.K / p.N) * (p.N - p.n) / (p.N - 1)),
+  },
+
+  'normal': {
+    continuous: true,
+    paramConfig: [
+      { key: 'mu',    label: 'μ',  min: -10, max: 10, step: 0.1, defaultVal: 0 },
+      { key: 'sigma', label: 'σ²', min: 0.1, max: 5,  step: 0.1, defaultVal: 1 },
+    ],
+    xRange: _ => [-10, 10],
+    pdf:    (x, p) => Math.exp(-0.5 * ((x - p.mu) / p.sigma) ** 2) / (p.sigma * Math.sqrt(2 * Math.PI)),
+    cdf:    (x, p) => normalCDF((x - p.mu) / p.sigma),
+    mean:   p => p.mu,
+    std:    p => p.sigma,
+  },
+
+  'chi-square': {
+    continuous: true,
+    paramConfig: [
+      { key: 'k', label: 'k', min: 1, max: 30, step: 1, defaultVal: 3 },
+    ],
+    xRange: p => [0, p.k + 5 * Math.sqrt(2 * p.k)],
+    pdf: (x, p) => {
+      if (x <= 0) return 0;
+      const k = p.k;
+      return Math.exp((k / 2 - 1) * Math.log(x) - x / 2 - (k / 2) * Math.log(2) - lnGamma(k / 2));
+    },
+    cdf: (x, p) => {
+      if (x <= 0) return 0;
+      const pdfFn = t => t <= 0 ? 0 : Math.exp((p.k / 2 - 1) * Math.log(t) - t / 2
+        - (p.k / 2) * Math.log(2) - lnGamma(p.k / 2));
+      return simpsonCDF(pdfFn, 0, x);
+    },
+    mean: p => p.k,
+    std:  p => Math.sqrt(2 * p.k),
+  },
+
+  'beta': {
+    continuous: true,
+    paramConfig: [
+      { key: 'alpha', label: 'α', min: 0.5, max: 10, step: 0.5, defaultVal: 2 },
+      { key: 'beta',  label: 'β', min: 0.5, max: 10, step: 0.5, defaultVal: 2 },
+    ],
+    xRange: _ => [0, 1],
+    pdf: (x, p) => {
+      if (x <= 0 || x >= 1) return 0;
+      const lnB = lnGamma(p.alpha) + lnGamma(p.beta) - lnGamma(p.alpha + p.beta);
+      return Math.exp((p.alpha - 1) * Math.log(x) + (p.beta - 1) * Math.log(1 - x) - lnB);
+    },
+    cdf: (x, p) => {
+      if (x <= 0) return 0;
+      if (x >= 1) return 1;
+      const lnB = lnGamma(p.alpha) + lnGamma(p.beta) - lnGamma(p.alpha + p.beta);
+      const pdfFn = t => t <= 0 || t >= 1 ? 0
+        : Math.exp((p.alpha - 1) * Math.log(t) + (p.beta - 1) * Math.log(1 - t) - lnB);
+      return simpsonCDF(pdfFn, 0, x);
+    },
+    mean: p => p.alpha / (p.alpha + p.beta),
+    std:  p => Math.sqrt(p.alpha * p.beta / ((p.alpha + p.beta) ** 2 * (p.alpha + p.beta + 1))),
+  },
+};
+
 // ─── Table helpers ─────────────────────────────────────────────────────────────
 function visibleCols(expanded) {
   return expanded ? [...ALWAYS_COLS, ...TOGGLE_COLS] : ALWAYS_COLS;
@@ -178,12 +462,43 @@ function MathCell({ latex }) {
 
 // ─── Expanded row ─────────────────────────────────────────────────────────────
 function ExpandedRow({ dist, activeCol }) {
-  const ref = React.useRef(null);
+  const wrapRef    = React.useRef(null);
+  const snapHeight = React.useRef(null); // height captured before last render
+  const mounted    = React.useRef(false);
+
+  // MathJax typeset
   React.useEffect(() => {
-    if (ref.current && window.MathJax) {
-      window.MathJax.typesetPromise([ref.current]).catch(() => {});
+    if (wrapRef.current && window.MathJax) {
+      window.MathJax.typesetPromise([wrapRef.current]).catch(() => {});
     }
   }, [dist.id, activeCol]);
+
+  // FLIP height animation — declared first so it runs before the capture effect below
+  React.useLayoutEffect(() => {
+    if (!mounted.current) { mounted.current = true; return; }
+    const el = wrapRef.current;
+    if (!el || snapHeight.current === null) return;
+
+    const from = snapHeight.current;
+    const to   = el.scrollHeight;
+    if (Math.abs(from - to) < 2) return;
+
+    el.style.height   = `${from}px`;
+    el.style.overflow = 'hidden';
+
+    const raf = requestAnimationFrame(() => {
+      el.style.transition = 'height 0.38s cubic-bezier(0.4,0,0.2,1)';
+      el.style.height     = `${to}px`;
+    });
+    const done = () => { el.style.height = el.style.overflow = el.style.transition = ''; };
+    el.addEventListener('transitionend', done, { once: true });
+    return () => { cancelAnimationFrame(raf); el.removeEventListener('transitionend', done); };
+  }, [activeCol]);
+
+  // Capture scrollHeight after every render (runs after the animation effect)
+  React.useLayoutEffect(() => {
+    if (wrapRef.current) snapHeight.current = wrapRef.current.scrollHeight;
+  });
 
   const sections = [
     { key: 'useCases',      label: 'Use Cases'     },
@@ -192,47 +507,50 @@ function ExpandedRow({ dist, activeCol }) {
     { key: 'relationships', label: 'Relationships' },
   ];
 
-  const derivation  = activeCol ? dist.derivations[activeCol] : null;
-  const colLabel    = activeCol
+  const derivation = activeCol ? dist.derivations[activeCol] : null;
+  const colLabel   = activeCol
     ? [...ALWAYS_COLS, ...TOGGLE_COLS].find(c => c.key === activeCol)?.label
     : null;
 
   return (
-    <div ref={ref} style={{
+    <div ref={wrapRef} style={{
       borderBottom: `1px solid ${JN.rule}`,
       background: JN.paperWarm,
       padding: '28px 24px',
     }}>
-      {derivation && (
-        <div style={{ marginBottom: 28 }}>
-          <div style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: JN.red, marginBottom: 10 }}>
-            {colLabel} — Derivation
-          </div>
-          <div style={{ fontFamily: F.serif, fontSize: 15, lineHeight: 1.75, color: JN.ink }}
-            dangerouslySetInnerHTML={{ __html: derivation }} />
-        </div>
-      )}
-      {!derivation && activeCol && (
-        <div style={{ marginBottom: 28, fontFamily: F.serif, fontSize: 14, fontStyle: 'italic', color: JN.mute }}>
-          No derivation added yet.
-        </div>
-      )}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px 48px' }}>
-        {sections.map(({ key, label }) => {
-          const content = dist[key];
-          return (
-            <div key={key}>
-              <div style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: JN.mute, marginBottom: 8 }}>
-                {label}
-              </div>
-              {content
-                ? <div style={{ fontFamily: F.serif, fontSize: 15, lineHeight: 1.7, color: JN.inkSoft }}
-                    dangerouslySetInnerHTML={{ __html: content }} />
-                : <div style={{ fontFamily: F.serif, fontSize: 14, fontStyle: 'italic', color: JN.mute }}>—</div>
-              }
+      {/* key forces a fade-in whenever the active column changes */}
+      <div key={activeCol} style={{ animation: 'jn-row-expand 0.32s cubic-bezier(0.4,0,0.2,1)' }}>
+        {derivation && (
+          <div style={{ marginBottom: 28 }}>
+            <div style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: JN.red, marginBottom: 10 }}>
+              {colLabel} — Derivation
             </div>
-          );
-        })}
+            <div style={{ fontFamily: F.serif, fontSize: 15, lineHeight: 1.75, color: JN.ink }}
+              dangerouslySetInnerHTML={{ __html: derivation }} />
+          </div>
+        )}
+        {!derivation && activeCol && (
+          <div style={{ marginBottom: 28, fontFamily: F.serif, fontSize: 14, fontStyle: 'italic', color: JN.mute }}>
+            No derivation added yet.
+          </div>
+        )}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px 48px' }}>
+          {sections.map(({ key, label }) => {
+            const content = dist[key];
+            return (
+              <div key={key}>
+                <div style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: JN.mute, marginBottom: 8 }}>
+                  {label}
+                </div>
+                {content
+                  ? <div style={{ fontFamily: F.serif, fontSize: 15, lineHeight: 1.7, color: JN.inkSoft }}
+                      dangerouslySetInnerHTML={{ __html: content }} />
+                  : <div style={{ fontFamily: F.serif, fontSize: 14, fontStyle: 'italic', color: JN.mute }}>—</div>
+                }
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -272,22 +590,31 @@ function ParamCell({ params, isOpen, onToggle }) {
         <MathCell latex={params.notation} />
       </div>
       {/* Expanded parameter descriptions */}
-      {isOpen && params.params && params.params.length > 0 && (
-        <div style={{ padding: '0 16px 14px', borderTop: `1px dashed ${JN.ruleSoft}` }}>
-          {params.params.map(({ symbol, description }, i) => (
-            <div key={i} style={{
-              display: 'flex', alignItems: 'baseline', gap: 10,
-              padding: '6px 0',
-              borderBottom: i < params.params.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none',
-            }}>
-              <span style={{ fontFamily: F.mono, fontSize: 13, color: JN.red, minWidth: 28, flexShrink: 0 }}>
-                {`\\(${symbol}\\)`}
-              </span>
-              <span style={{ fontFamily: F.serif, fontSize: 13, color: JN.inkSoft, lineHeight: 1.5 }}>
-                {description}
-              </span>
+      {params.params && params.params.length > 0 && (
+        <div style={{
+          display: 'grid',
+          gridTemplateRows: isOpen ? '1fr' : '0fr',
+          opacity: isOpen ? 1 : 0,
+          transition: 'grid-template-rows 0.38s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease',
+        }}>
+          <div style={{ overflow: 'hidden', minHeight: 0 }}>
+            <div style={{ padding: '0 16px 14px', borderTop: `1px dashed ${JN.ruleSoft}` }}>
+              {params.params.map(({ symbol, description }, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'baseline', gap: 10,
+                  padding: '6px 0',
+                  borderBottom: i < params.params.length - 1 ? `1px dashed ${JN.ruleSoft}` : 'none',
+                }}>
+                  <span style={{ fontFamily: F.mono, fontSize: 13, color: JN.red, minWidth: 28, flexShrink: 0 }}>
+                    {`\\(${symbol}\\)`}
+                  </span>
+                  <span style={{ fontFamily: F.serif, fontSize: 13, color: JN.inkSoft, lineHeight: 1.5 }}>
+                    {description}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       )}
     </div>
@@ -354,48 +681,90 @@ function CellClickable({ latex, isActive, onClick, borderRight, support }) {
       <div style={{ padding: '18px 16px', display: 'flex', alignItems: 'center' }}>
         <MathCell latex={latex} />
       </div>
-      {isActive && support && (
-        <div style={{ padding: '0 16px 14px', borderTop: `1px dashed ${JN.ruleSoft}` }}>
-          <div style={{ fontFamily: F.sans, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: JN.mute, marginBottom: 4 }}>
-            support
+      {support && (
+        <div style={{
+          display: 'grid',
+          gridTemplateRows: isActive ? '1fr' : '0fr',
+          opacity: isActive ? 1 : 0,
+          transition: 'grid-template-rows 0.38s cubic-bezier(0.4,0,0.2,1), opacity 0.28s ease',
+        }}>
+          <div style={{ overflow: 'hidden', minHeight: 0 }}>
+            <div style={{ padding: '0 16px 14px', borderTop: `1px dashed ${JN.ruleSoft}` }}>
+              <div style={{ fontFamily: F.sans, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: JN.mute, marginBottom: 4 }}>
+                support
+              </div>
+              <div style={{ fontFamily: F.serif, fontSize: 13, color: JN.inkSoft }}
+                dangerouslySetInnerHTML={{ __html: `\\(${support}\\)` }} />
+            </div>
           </div>
-          <div style={{ fontFamily: F.serif, fontSize: 13, color: JN.inkSoft }}
-            dangerouslySetInnerHTML={{ __html: `\\(${support}\\)` }} />
         </div>
       )}
     </div>
   );
 }
 
-function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, expanded, gridTemplate }) {
+function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, expanded, gridTemplate, paramOpenRow, setParamOpenRow }) {
   const isExpanded = expandedRow === dist.id;
-  const [paramOpen, setParamOpen] = React.useState(false);
+  const paramOpen  = paramOpenRow === dist.id;
+
+  // Lazy-mount ExpandedRow on first expand so all 13 rows don't render it upfront
+  const everExpanded = React.useRef(false);
+  if (isExpanded) everExpanded.current = true;
+
+  // FLIP height animation — owns the row height so cell-level expand/collapse never dips
+  const rowRef  = React.useRef(null);
+  const snapH   = React.useRef(null);
+  const rowMntd = React.useRef(false);
+
+  React.useLayoutEffect(() => {
+    if (!rowMntd.current) { rowMntd.current = true; return; }
+    const el = rowRef.current;
+    if (!el || snapH.current === null) return;
+    const from = snapH.current;
+    const to   = el.scrollHeight;
+    if (Math.abs(from - to) < 2) return;
+    el.style.height   = `${from}px`;
+    el.style.overflow = 'hidden';
+    const raf = requestAnimationFrame(() => {
+      el.style.transition = 'height 0.38s cubic-bezier(0.4,0,0.2,1)';
+      el.style.height     = `${to}px`;
+    });
+    const done = () => { el.style.height = el.style.overflow = el.style.transition = ''; };
+    el.addEventListener('transitionend', done, { once: true });
+    return () => { cancelAnimationFrame(raf); el.removeEventListener('transitionend', done); };
+  }, [activeCol, paramOpen]);
+
+  React.useLayoutEffect(() => {
+    if (rowRef.current) snapH.current = rowRef.current.scrollHeight;
+  });
 
   const handleNameClick = () => {
-    setParamOpen(false);
+    setParamOpenRow(null);
     if (isExpanded && activeCol === null) { setExpandedRow(null); }
     else { setExpandedRow(dist.id); setActiveCol(null); }
   };
 
   const handleCellClick = (colKey) => {
-    setParamOpen(false);
+    setParamOpenRow(null);
     if (isExpanded && activeCol === colKey) { setExpandedRow(null); setActiveCol(null); }
     else { setExpandedRow(dist.id); setActiveCol(colKey); }
   };
 
   const handleParamToggle = () => {
-    if (!paramOpen) { setActiveCol(null); setExpandedRow(null); }
-    setParamOpen(o => !o);
+    if (!paramOpen) { setActiveCol(null); setExpandedRow(null); setParamOpenRow(dist.id); }
+    else { setParamOpenRow(null); }
   };
 
   const visibleToggleCols = expanded ? TOGGLE_COLS : [];
 
   return (
     <>
+      <div ref={rowRef}>
       <div style={{
         display: 'grid',
         gridTemplateColumns: gridTemplate,
         borderBottom: isExpanded ? 'none' : `1px solid ${JN.ruleSoft}`,
+        transition: 'grid-template-columns 0.35s cubic-bezier(0.4,0,0.2,1)',
       }}>
         <NameCell name={dist.name} isActive={isExpanded && activeCol === null} onClick={handleNameClick} />
         <ParamCell params={dist.parameters} isOpen={paramOpen} onToggle={handleParamToggle} />
@@ -417,8 +786,721 @@ function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, e
           />
         ))}
       </div>
-      {isExpanded && <ExpandedRow dist={dist} activeCol={activeCol} />}
+      </div>
+      <div style={{
+        display: 'grid',
+        gridTemplateRows: isExpanded ? '1fr' : '0fr',
+        opacity: isExpanded ? 1 : 0,
+        transition: 'grid-template-rows 0.38s cubic-bezier(0.4,0,0.2,1), opacity 0.28s ease',
+      }}>
+        <div style={{ overflow: 'hidden', minHeight: 0 }}>
+          {everExpanded.current && <ExpandedRow dist={dist} activeCol={activeCol} />}
+        </div>
+      </div>
     </>
+  );
+}
+
+// ─── Distribution visualizer ──────────────────────────────────────────────────
+const PLOT_W = 480, PLOT_H = 260;
+const MARGIN = { top: 16, right: 16, bottom: 36, left: 44 };
+const PW = PLOT_W - MARGIN.left - MARGIN.right;  // 420
+const PH = PLOT_H - MARGIN.top  - MARGIN.bottom; // 208
+
+function toSvgX(x, xMin, xMax) { return MARGIN.left + ((x - xMin) / (xMax - xMin)) * PW; }
+function toSvgY(y, yMax)        { return MARGIN.top  + (1 - y / yMax) * PH; }
+
+function DotTooltip({ svgX, svgY, label, xMin, xMax }) {
+  const pad = 5, h = 16, w = 68;
+  const tx = Math.max(MARGIN.left + pad, Math.min(MARGIN.left + PW - w - pad, svgX - w / 2));
+  const ty = svgY - h - 6;
+  return (
+    <g pointerEvents="none">
+      <rect x={tx} y={ty} width={w} height={h} rx={2} fill={JN.ink} fillOpacity={0.82} />
+      <text x={tx + w / 2} y={ty + h - 4}
+        fontFamily={F.mono} fontSize={9} fill={JN.paper} textAnchor="middle">
+        {label}
+      </text>
+    </g>
+  );
+}
+
+function DistPlot({ math, params, showCDF, showZScore, selectedX, selectedXLo, onSelectX }) {
+  const [xMin, xMax] = math.xRange(params);
+  const mu  = math.mean(params);
+  const sig = math.std(params);
+  const [hoveredDot, setHoveredDot] = React.useState(null); // 'hi' | 'lo' | null
+
+  // Build plot points
+  const points = [];
+  const N = math.continuous ? 300 : Math.min(Math.round(xMax - xMin) + 1, 120);
+
+  if (math.continuous) {
+    for (let i = 0; i <= N; i++) {
+      const x = xMin + (i / N) * (xMax - xMin);
+      points.push({ x, y: math.pdf(x, params) });
+    }
+  } else {
+    for (let k = Math.ceil(xMin); k <= Math.floor(xMax); k++) {
+      points.push({ x: k, y: math.pdf(k, params) });
+    }
+  }
+
+  const yMax = Math.max(...points.map(p => p.y)) * 1.18 || 1;
+
+  // Axes
+  const yTicks = [0, 0.25, 0.5, 0.75, 1].map(f => f * yMax).filter(v => v <= yMax);
+  const xTickCount = 6;
+  const xTicks = Array.from({ length: xTickCount + 1 }, (_, i) =>
+    xMin + (i / xTickCount) * (xMax - xMin));
+
+  // Interval shading path (continuous)
+  let shadePath = '';
+  if (showCDF && math.continuous) {
+    const lo = Math.min(selectedXLo, selectedX);
+    const hi = Math.max(selectedXLo, selectedX);
+    const shadePts = points.filter(p => p.x >= lo && p.x <= hi);
+    if (shadePts.length > 1) {
+      const lineCoords = shadePts.map(p =>
+        `${toSvgX(p.x, xMin, xMax).toFixed(1)},${toSvgY(p.y, yMax).toFixed(1)}`).join(' ');
+      const bL = toSvgX(shadePts[0].x, xMin, xMax).toFixed(1);
+      const bR = toSvgX(shadePts[shadePts.length - 1].x, xMin, xMax).toFixed(1);
+      const bY = (MARGIN.top + PH).toFixed(1);
+      shadePath = `M${bL},${bY} L${lineCoords} L${bR},${bY} Z`;
+    }
+  }
+
+  // Drag handler
+  const svgRef = React.useRef(null);
+  const dragging = React.useRef(false);
+  const resolveX = (clientX) => {
+    const rect = svgRef.current.getBoundingClientRect();
+    const ratio = (clientX - rect.left - MARGIN.left) / PW;
+    return Math.max(xMin, Math.min(xMax, xMin + ratio * (xMax - xMin)));
+  };
+  const onMouseDown = (e) => { dragging.current = true; onSelectX(resolveX(e.clientX)); e.preventDefault(); };
+  const onMouseMove = (e) => { if (dragging.current) onSelectX(resolveX(e.clientX)); };
+  const onMouseUp   = ()  => { dragging.current = false; };
+
+  const barWidth   = math.continuous ? 0 : Math.max(2, PW / (points.length + 1) * 0.65);
+
+  const dotProps = (x) => {
+    const pdfY = math.continuous ? math.pdf(x, params) : math.pdf(Math.round(x), params);
+    return {
+      svgX: toSvgX(x, xMin, xMax),
+      svgY: toSvgY(Math.min(pdfY, yMax), yMax),
+      cdf:  math.cdf(x, params),
+    };
+  };
+  const hi = dotProps(selectedX);
+  const lo = dotProps(selectedXLo);
+
+  return (
+    <svg
+      ref={svgRef}
+      width={PLOT_W} height={PLOT_H}
+      style={{ display: 'block', cursor: 'crosshair', userSelect: 'none' }}
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+      onMouseUp={onMouseUp}
+      onMouseLeave={onMouseUp}
+    >
+      {/* CDF / interval shading (continuous) */}
+      {showCDF && shadePath && (
+        <path d={shadePath} fill={JN.redTint} fillOpacity={0.7} stroke="none" />
+      )}
+
+      {/* PDF curve (continuous) */}
+      {math.continuous && points.length > 1 && (
+        <polyline
+          points={points.map(p => `${toSvgX(p.x, xMin, xMax).toFixed(1)},${toSvgY(p.y, yMax).toFixed(1)}`).join(' ')}
+          fill="none"
+          stroke={JN.red}
+          strokeWidth={1.8}
+          strokeLinejoin="round"
+        />
+      )}
+
+      {/* PMF bars (discrete) */}
+      {!math.continuous && points.map(({ x, y }) => {
+        const bx = toSvgX(x, xMin, xMax) - barWidth / 2;
+        const by = toSvgY(y, yMax);
+        const bh = MARGIN.top + PH - by;
+        const inShade = showCDF && x >= Math.min(selectedXLo, selectedX) && x <= Math.max(selectedXLo, selectedX);
+        return (
+          <rect
+            key={x}
+            x={bx.toFixed(1)} y={by.toFixed(1)}
+            width={barWidth.toFixed(1)} height={Math.max(0, bh).toFixed(1)}
+            fill={inShade ? JN.red : JN.redTint}
+            fillOpacity={inShade ? 0.75 : 0.5}
+            stroke={JN.red}
+            strokeWidth={0.8}
+          />
+        );
+      })}
+
+      {/* Lower-bound indicator */}
+      <line
+        x1={lo.svgX.toFixed(1)} y1={MARGIN.top}
+        x2={lo.svgX.toFixed(1)} y2={MARGIN.top + PH}
+        stroke={JN.ink} strokeWidth={1} strokeDasharray="3 3"
+      />
+      <circle
+        cx={lo.svgX.toFixed(1)} cy={lo.svgY.toFixed(1)} r={4}
+        fill="white" stroke={JN.ink} strokeWidth="1.5" style={{ cursor: 'default' }}
+        onMouseEnter={() => setHoveredDot('lo')}
+        onMouseLeave={() => setHoveredDot(null)}
+      />
+      {hoveredDot === 'lo' && (
+        <DotTooltip svgX={lo.svgX} svgY={lo.svgY}
+          label={`F(x)=${lo.cdf.toFixed(3)}`} />
+      )}
+
+      {/* Upper-bound indicator */}
+      <line
+        x1={hi.svgX.toFixed(1)} y1={MARGIN.top}
+        x2={hi.svgX.toFixed(1)} y2={MARGIN.top + PH}
+        stroke={JN.ink} strokeWidth={1} strokeDasharray="3 3"
+      />
+      <circle
+        cx={hi.svgX.toFixed(1)} cy={hi.svgY.toFixed(1)} r={4}
+        fill="white" stroke={JN.ink} strokeWidth="1.5" style={{ cursor: 'default' }}
+        onMouseEnter={() => setHoveredDot('hi')}
+        onMouseLeave={() => setHoveredDot(null)}
+      />
+      {hoveredDot === 'hi' && (
+        <DotTooltip svgX={hi.svgX} svgY={hi.svgY}
+          label={`F(x)=${hi.cdf.toFixed(3)}`} />
+      )}
+
+      {/* Z-score mean/sigma markers */}
+      {showZScore && sig > 0 && [-2, -1, 1, 2].map(n => {
+        const mx = toSvgX(mu + n * sig, xMin, xMax);
+        if (mx < MARGIN.left || mx > MARGIN.left + PW) return null;
+        return (
+          <g key={n}>
+            <line x1={mx} y1={MARGIN.top} x2={mx} y2={MARGIN.top + PH}
+              stroke={JN.mute} strokeWidth={0.8} strokeDasharray="2 4" />
+            <text x={mx} y={MARGIN.top + PH + 12}
+              fontFamily={F.sans} fontSize={8} fill={JN.mute}
+              textAnchor="middle">{n > 0 ? '+' : ''}{n}σ</text>
+          </g>
+        );
+      })}
+
+      {/* Axes */}
+      <line x1={MARGIN.left} y1={MARGIN.top} x2={MARGIN.left} y2={MARGIN.top + PH}
+        stroke={JN.rule} strokeWidth={1} />
+      <line x1={MARGIN.left} y1={MARGIN.top + PH} x2={MARGIN.left + PW} y2={MARGIN.top + PH}
+        stroke={JN.rule} strokeWidth={1} />
+
+      {/* x-axis ticks */}
+      {xTicks.map((v, i) => {
+        const sx = toSvgX(v, xMin, xMax);
+        const label = Math.abs(v) < 0.001 ? '0' : v % 1 === 0 ? v.toFixed(0) : v.toFixed(1);
+        return (
+          <g key={i}>
+            <line x1={sx} y1={MARGIN.top + PH} x2={sx} y2={MARGIN.top + PH + 4}
+              stroke={JN.rule} strokeWidth={1} />
+            <text x={sx} y={MARGIN.top + PH + 14}
+              fontFamily={F.sans} fontSize={9} fill={JN.mute} textAnchor="middle">
+              {label}
+            </text>
+          </g>
+        );
+      })}
+
+      {/* y-axis ticks */}
+      {yTicks.map((v, i) => {
+        const sy = toSvgY(v, yMax);
+        const label = v.toFixed(v < 0.1 ? 3 : 2);
+        return (
+          <g key={i}>
+            <line x1={MARGIN.left - 4} y1={sy} x2={MARGIN.left} y2={sy}
+              stroke={JN.rule} strokeWidth={1} />
+            <text x={MARGIN.left - 7} y={sy + 3}
+              fontFamily={F.sans} fontSize={9} fill={JN.mute} textAnchor="end">
+              {label}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function XBoundValue({ val, xMin, xMax, step, onCommit, align }) {
+  const [editing, setEditing] = React.useState(false);
+  const [draft,   setDraft]   = React.useState('');
+  const inputRef = React.useRef(null);
+
+  const isNegInf = val <= xMin;
+  const isPosInf = val >= xMax;
+  const display  = isNegInf ? '-∞' : isPosInf ? '+∞'
+    : (val % 1 === 0 ? val.toFixed(0) : val.toFixed(2));
+
+  const startEdit = () => {
+    setDraft(isNegInf || isPosInf ? '' : display);
+    setEditing(true);
+  };
+
+  React.useEffect(() => {
+    if (editing && inputRef.current) inputRef.current.select();
+  }, [editing]);
+
+  const commit = () => {
+    const s = draft.trim().toLowerCase();
+    if (s === '' || s === '-inf' || s === '-∞') {
+      onCommit(xMin);
+    } else if (s === 'inf' || s === '+inf' || s === '+∞' || s === '∞') {
+      onCommit(xMax);
+    } else {
+      const parsed = parseFloat(s);
+      if (!isNaN(parsed)) {
+        const snapped = Math.round((Math.max(xMin, Math.min(xMax, parsed)) - xMin) / step) * step + xMin;
+        onCommit(parseFloat(snapped.toFixed(10)));
+      }
+    }
+    setEditing(false);
+  };
+
+  const onKeyDown = (e) => {
+    if (e.key === 'Enter')  { e.preventDefault(); commit(); }
+    if (e.key === 'Escape') setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        type="text"
+        value={draft}
+        onChange={e => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={onKeyDown}
+        placeholder="±∞"
+        style={{
+          fontFamily: F.mono, fontSize: 11, color: JN.ink,
+          width: 44, textAlign: align || 'right',
+          border: 'none', borderBottom: `1px solid ${JN.red}`,
+          outline: 'none', background: 'transparent', padding: '0 0 1px',
+        }}
+      />
+    );
+  }
+
+  return (
+    <span
+      onClick={startEdit}
+      title="Click to edit"
+      style={{
+        fontFamily: F.mono, fontSize: 11,
+        color: (isNegInf || isPosInf) ? JN.mute : JN.ink,
+        fontStyle: (isNegInf || isPosInf) ? 'italic' : 'normal',
+        minWidth: 36, textAlign: align || 'right',
+        cursor: 'text',
+        borderBottom: `1px dashed ${JN.rule}`,
+        paddingBottom: 1,
+        flexShrink: 0,
+      }}
+    >
+      {display}
+    </span>
+  );
+}
+
+function DualRangeSlider({ xMin, xMax, lo, hi, step, onChangeLo, onChangeHi }) {
+  const trackRef = React.useRef(null);
+  const dragging = React.useRef(null);
+
+  const toRatio  = v => (Math.max(xMin, Math.min(xMax, v)) - xMin) / (xMax - xMin);
+  const snapVal  = v => {
+    const snapped = Math.round((v - xMin) / step) * step + xMin;
+    return parseFloat(Math.max(xMin, Math.min(xMax, snapped)).toFixed(10));
+  };
+
+  React.useEffect(() => {
+    const onMove = (e) => {
+      if (!dragging.current || !trackRef.current) return;
+      const rect  = trackRef.current.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      const val   = snapVal(xMin + ratio * (xMax - xMin));
+      if (dragging.current === 'lo') onChangeLo(Math.min(val, hi));
+      else                           onChangeHi(Math.max(val, lo));
+    };
+    const onUp = () => { dragging.current = null; };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup',   onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup',   onUp);
+    };
+  }, [lo, hi, xMin, xMax, step, onChangeLo, onChangeHi]);
+
+  const loR = toRatio(lo);
+  const hiR = toRatio(hi);
+  const TH  = 12;
+
+  return (
+    <div ref={trackRef} style={{ position: 'relative', height: 20, width: PW, flexShrink: 0 }}>
+      <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 4, transform: 'translateY(-50%)', background: JN.ruleSoft, borderRadius: 2 }} />
+      <div style={{ position: 'absolute', top: '50%', left: `${loR * 100}%`, width: `${(hiR - loR) * 100}%`, height: 4, transform: 'translateY(-50%)', background: JN.red, borderRadius: 2 }} />
+      {[{ which: 'lo', r: loR }, { which: 'hi', r: hiR }].map(({ which, r }) => (
+        <div key={which}
+          onMouseDown={e => { dragging.current = which; e.preventDefault(); }}
+          style={{
+            position: 'absolute', top: '50%', left: `${r * 100}%`,
+            width: TH, height: TH, borderRadius: '50%',
+            background: '#fff', border: `1.5px solid ${JN.rule}`,
+            transform: 'translate(-50%, -50%)',
+            cursor: 'grab', userSelect: 'none',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.18)',
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function SingleRangeSlider({ min, max, value, step, onChange }) {
+  const trackRef = React.useRef(null);
+  const dragging = React.useRef(false);
+
+  const toRatio = v => (Math.max(min, Math.min(max, v)) - min) / (max - min);
+  const snapVal = v => {
+    const snapped = Math.round((v - min) / step) * step + min;
+    return parseFloat(Math.max(min, Math.min(max, snapped)).toFixed(10));
+  };
+
+  React.useEffect(() => {
+    const onMove = (e) => {
+      if (!dragging.current || !trackRef.current) return;
+      const rect  = trackRef.current.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      onChange(snapVal(min + ratio * (max - min)));
+    };
+    const onUp = () => { dragging.current = false; };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup',   onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup',   onUp);
+    };
+  }, [min, max, step, onChange]);
+
+  const r  = toRatio(value);
+  const TH = 12;
+
+  return (
+    <div ref={trackRef} style={{ position: 'relative', height: 20, width: PW, flexShrink: 0 }}>
+      <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 4, transform: 'translateY(-50%)', background: JN.ruleSoft, borderRadius: 2 }} />
+      <div style={{ position: 'absolute', top: '50%', left: 0, width: `${r * 100}%`, height: 4, transform: 'translateY(-50%)', background: JN.red, borderRadius: 2 }} />
+      <div
+        onMouseDown={e => { dragging.current = true; e.preventDefault(); }}
+        style={{
+          position: 'absolute', top: '50%', left: `${r * 100}%`,
+          width: TH, height: TH, borderRadius: '50%',
+          background: '#fff', border: `1.5px solid ${JN.rule}`,
+          transform: 'translate(-50%, -50%)',
+          cursor: 'grab', userSelect: 'none',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.18)',
+        }}
+      />
+    </div>
+  );
+}
+
+function ParamValueInput({ pc, val, onCommit }) {
+  const [editing, setEditing] = React.useState(false);
+  const [draft,   setDraft]   = React.useState('');
+  const inputRef = React.useRef(null);
+
+  const startEdit = () => {
+    setDraft(val % 1 === 0 ? val.toFixed(0) : val.toFixed(2));
+    setEditing(true);
+  };
+
+  React.useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.select();
+    }
+  }, [editing]);
+
+  const commit = () => {
+    const parsed = parseFloat(draft);
+    if (!isNaN(parsed)) {
+      const clamped = Math.max(pc.min, Math.min(pc.max, parsed));
+      const snapped = Math.round((clamped - pc.min) / pc.step) * pc.step + pc.min;
+      onCommit(parseFloat(snapped.toFixed(10)));
+    } else {
+      onCommit(val); // revert to current
+    }
+    setEditing(false);
+  };
+
+  const onDraftChange = (e) => {
+    setDraft(e.target.value);
+    const parsed = parseFloat(e.target.value);
+    if (!isNaN(parsed)) {
+      const clamped = Math.max(pc.min, Math.min(pc.max, parsed));
+      onCommit(clamped);
+    }
+  };
+
+  const onKeyDown = (e) => {
+    if (e.key === 'Enter')  { e.preventDefault(); commit(); }
+    if (e.key === 'Escape') { setEditing(false); }
+  };
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        type="text"
+        value={draft}
+        onChange={onDraftChange}
+        onBlur={commit}
+        onKeyDown={onKeyDown}
+        style={{
+          fontFamily: F.mono, fontSize: 11, color: JN.ink,
+          width: 48, textAlign: 'right',
+          border: 'none', borderBottom: `1px solid ${JN.red}`,
+          outline: 'none', background: 'transparent',
+          padding: '0 0 1px',
+        }}
+      />
+    );
+  }
+
+  return (
+    <span
+      onClick={startEdit}
+      title="Click to edit"
+      style={{
+        fontFamily: F.mono, fontSize: 11, color: JN.ink,
+        minWidth: 36, textAlign: 'right',
+        cursor: 'text',
+        borderBottom: `1px dashed ${JN.rule}`,
+        paddingBottom: 1,
+      }}
+    >
+      {val % 1 === 0 ? val.toFixed(0) : val.toFixed(2)}
+    </span>
+  );
+}
+
+function DistributionViz({ dist, onDistChange, vizParams, setVizParams, selectedX, setSelectedX, selectedXLo, setSelectedXLo, showCDF, setShowCDF, showZScore, setShowZScore }) {
+  if (!dist) {
+    return (
+      <div style={{ fontFamily: F.sans }}>
+        <div style={{ marginBottom: 12, position: 'relative', display: 'inline-flex', alignItems: 'baseline', gap: 4, borderBottom: `1px solid ${JN.rule}` }}>
+          <select
+            value=""
+            onChange={e => e.target.value && onDistChange(e.target.value)}
+            style={{
+              all: 'unset', cursor: 'pointer',
+              fontFamily: F.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute,
+              paddingBottom: 2,
+            }}
+          >
+            <option value="" disabled>Select a distribution…</option>
+            {DISTRIBUTIONS.map(d => (
+              <option key={d.id} value={d.id}>{d.name}</option>
+            ))}
+          </select>
+          <svg width="10" height="10" viewBox="0 0 10 10" style={{ pointerEvents: 'none', flexShrink: 0, marginBottom: 3 }}>
+            <polyline points="1,3 5,7 9,3" fill="none" stroke={JN.mute} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          height: 300, color: JN.mute, fontFamily: F.serif, fontStyle: 'italic', fontSize: 14,
+        }}>
+          Click any row or use the dropdown to visualize a distribution.
+        </div>
+      </div>
+    );
+  }
+
+  const math = DIST_MATH[dist.id];
+  if (!math) return null;
+
+  // Build current params from vizParams state (falling back to defaults)
+  const params = {};
+  math.paramConfig.forEach(pc => {
+    params[pc.key] = vizParams[dist.id]?.[pc.key] ?? pc.defaultVal;
+  });
+
+  const [xMin, xMax] = math.xRange(params);
+  const mu   = math.mean(params);
+  const sig  = math.std(params);
+  const cdfVal = math.cdf(selectedX, params);
+  const zVal   = sig > 0 ? (selectedX - mu) / sig : 0;
+
+  const updateParam = (key, val) => {
+    setVizParams(prev => ({
+      ...prev,
+      [dist.id]: { ...prev[dist.id], [key]: val },
+    }));
+  };
+
+  const toggleStyle = (active) => ({
+    all: 'unset', cursor: 'pointer',
+    padding: '3px 10px',
+    fontFamily: F.sans, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase',
+    color: active ? JN.red : JN.mute,
+    background: active ? JN.redTint : 'transparent',
+    border: `1px solid ${active ? JN.rule : JN.ruleSoft}`,
+    borderRadius: 2,
+    transition: 'background 0.15s, color 0.15s',
+  });
+
+  return (
+    <div style={{ fontFamily: F.sans }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 4, borderBottom: `1px solid ${JN.rule}` }}>
+          <select
+            value={dist.id}
+            onChange={e => onDistChange(e.target.value)}
+            style={{
+              all: 'unset', cursor: 'pointer',
+              fontFamily: F.serif, fontStyle: 'italic', fontSize: 15, color: JN.ink,
+              paddingBottom: 2,
+            }}
+          >
+            {DISTRIBUTIONS.map(d => (
+              <option key={d.id} value={d.id}>{d.name}</option>
+            ))}
+          </select>
+          <svg width="10" height="10" viewBox="0 0 10 10" style={{ pointerEvents: 'none', flexShrink: 0, marginBottom: 3 }}>
+            <polyline points="1,3 5,7 9,3" fill="none" stroke={JN.ink} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button style={toggleStyle(showCDF)}    onClick={() => setShowCDF(v => !v)}>CDF</button>
+          <button style={toggleStyle(showZScore)} onClick={() => setShowZScore(v => !v)}>z-score</button>
+        </div>
+      </div>
+
+      {/* Main body: plot+sliders left, stats right */}
+      <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+
+        {/* Left column: plot + sliders */}
+        <div style={{ flexShrink: 0 }}>
+          {/* Plot */}
+          <div style={{ position: 'relative', border: `1px solid ${JN.ruleSoft}`, borderRadius: 2, overflow: 'hidden', background: JN.paper }}>
+            <DistPlot
+              math={math}
+              params={params}
+              showCDF={showCDF}
+              showZScore={showZScore}
+              selectedX={selectedX}
+              selectedXLo={selectedXLo}
+              onSelectX={setSelectedX}
+            />
+            <button
+              title="Reset to defaults"
+              onClick={() => {
+                const defaults = {};
+                math.paramConfig.forEach(pc => { defaults[pc.key] = pc.defaultVal; });
+                setVizParams(prev => ({ ...prev, [dist.id]: defaults }));
+                const [newXMin, newXMax] = math.xRange(defaults);
+                setSelectedXLo(newXMin);
+                setSelectedX(newXMax);
+              }}
+              style={{
+                all: 'unset', position: 'absolute', top: 10, right: 10,
+                cursor: 'pointer', color: JN.mute, lineHeight: 1,
+                opacity: 0.5, transition: 'opacity 0.15s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity = 1}
+              onMouseLeave={e => e.currentTarget.style.opacity = 0.5}
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12.5 2.5A6 6 0 1 0 13 7" />
+                <polyline points="9,0 13,3 9.5,6.5" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Dual x slider */}
+          {(() => {
+            const step = math.continuous ? 0.01 : 1;
+            const lo   = Math.max(xMin, Math.min(xMax, selectedXLo));
+            const hi   = Math.max(xMin, Math.min(xMax, selectedX));
+            return (
+              <div style={{ marginTop: 6, display: 'flex', alignItems: 'center' }}>
+                <div style={{ width: MARGIN.left + 1, flexShrink: 0, textAlign: 'right', paddingRight: 6 }}>
+                  <XBoundValue val={lo} xMin={xMin} xMax={xMax} step={step} onCommit={setSelectedXLo} align="right" />
+                </div>
+                <DualRangeSlider
+                  xMin={xMin} xMax={xMax} lo={lo} hi={hi} step={step}
+                  onChangeLo={setSelectedXLo} onChangeHi={setSelectedX}
+                />
+                <div style={{ flexShrink: 0, textAlign: 'left', paddingLeft: 6 }}>
+                  <XBoundValue val={hi} xMin={xMin} xMax={xMax} step={step} onCommit={setSelectedX} align="left" />
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Parameter sliders */}
+          <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {math.paramConfig.map(pc => {
+              const val = params[pc.key];
+              return (
+                <div key={pc.key} style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ width: MARGIN.left + 1, flexShrink: 0, fontSize: 10, letterSpacing: '0.04em', color: JN.mute, textAlign: 'right', paddingRight: 6 }}>{pc.label}</span>
+                  <SingleRangeSlider
+                    min={pc.min} max={pc.max} step={pc.step}
+                    value={val}
+                    onChange={v => updateParam(pc.key, v)}
+                  />
+                  <ParamValueInput pc={pc} val={val} onCommit={v => updateParam(pc.key, v)} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Right column: stats */}
+        {(() => {
+          const lo  = Math.min(selectedXLo, selectedX);
+          const hi  = Math.max(selectedXLo, selectedX);
+          const cLo = math.cdf(lo, params);
+          const cHi = math.cdf(hi, params);
+          const prob = cHi - cLo;
+          const loIsInf = selectedXLo <= xMin;
+          const fmtX = v => v <= xMin ? '-∞' : v >= xMax ? '+∞'
+            : (v % 1 === 0 ? v.toFixed(0) : v.toFixed(3));
+          const items = [
+            { label: 'x₁',          value: fmtX(selectedXLo) },
+            { label: 'x₂',          value: fmtX(selectedX) },
+            { label: 'F(x₁)',       value: loIsInf ? '0' : cLo.toFixed(4) },
+            { label: 'P(x₁≤X≤x₂)', value: prob.toFixed(4) },
+            { label: 'E[X]',        value: Number.isFinite(mu)  ? mu.toFixed(3)  : '—' },
+            { label: 'σ',           value: Number.isFinite(sig) ? sig.toFixed(3) : '—' },
+          ];
+          return (
+            <div style={{
+              display: 'flex', flexDirection: 'column',
+              gap: 10, padding: '10px 14px',
+              background: JN.paperWarm, border: `1px solid ${JN.ruleSoft}`, borderRadius: 2,
+              alignSelf: 'flex-start', marginTop: 1,
+            }}>
+              {items.map(({ label, value }) => (
+                <div key={label}>
+                  <div style={{ fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: JN.mute, marginBottom: 3 }}>{label}</div>
+                  <div style={{ fontFamily: F.mono, fontSize: 13, color: JN.inkSoft }}>{value}</div>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+      </div>
+    </div>
   );
 }
 
@@ -465,6 +1547,7 @@ function TableHeader({ expanded, activeCol, gridTemplate }) {
       gridTemplateColumns: gridTemplate,
       borderBottom: `2px solid ${JN.rule}`,
       background: JN.paperWarm,
+      transition: 'grid-template-columns 0.35s cubic-bezier(0.4,0,0.2,1)',
     }}>
       {cols.map((col, i, arr) => (
         <div key={col.key} style={{
@@ -830,8 +1913,16 @@ function App() {
   const [activeCol, setActiveCol]     = React.useState(null);
   const [expanded, setExpanded]       = React.useState(true);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [paramOpenRow, setParamOpenRow] = React.useState(null);
   const [sortOrder,   setSortOrder]   = React.useState('default'); // 'default' | 'alpha'
   const [typeFilter,  setTypeFilter]  = React.useState('all');     // 'all' | 'discrete' | 'continuous'
+  const [vizDistId,    setVizDistId]    = React.useState('normal');
+  const [vizParams,     setVizParams]     = React.useState({ normal: { mu: -10, sigma: 5 } });
+  const [vizSelectedX,  setVizSelectedX]  = React.useState(10);
+  const [vizSelectedXLo, setVizSelectedXLo] = React.useState(-10);
+  const [vizShowCDF,    setVizShowCDF]    = React.useState(true);
+  const [vizShowZScore, setVizShowZScore] = React.useState(false);
+  const introAnimating = React.useRef(true);
 
   const displayedDists = React.useMemo(() => {
     let list = typeFilter === 'all'
@@ -850,18 +1941,82 @@ function App() {
     }
   }, [displayedDists, expandedRow]);
 
+  // Sync vizDistId when the table row selection changes
+  React.useEffect(() => {
+    if (expandedRow) setVizDistId(expandedRow);
+  }, [expandedRow]);
+
+  // Reset x-slider to mean whenever the visualized distribution changes (skipped during intro)
+  React.useEffect(() => {
+    if (!vizDistId || introAnimating.current) return;
+    const dist = DISTRIBUTIONS.find(d => d.id === vizDistId);
+    if (!dist) return;
+    const math = DIST_MATH[dist.id];
+    if (!math) return;
+    const params = {};
+    math.paramConfig.forEach(p => { params[p.key] = vizParams[vizDistId]?.[p.key] ?? p.defaultVal; });
+    setVizSelectedX(math.mean(params));
+  }, [vizDistId]);
+
+  // Intro animation: μ -10→0, σ 5→1, then x -30→1.96
+  React.useEffect(() => {
+    const ease = t => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+    let raf;
+
+    const phase1Duration = 1800;
+    const phase1Start = performance.now();
+
+    const animPhase1 = (now) => {
+      const t = Math.min((now - phase1Start) / phase1Duration, 1);
+      const e = ease(t);
+      setVizParams({ normal: { mu: -10 + e * 10, sigma: 5 - e * 4 } });
+      if (t < 1) {
+        raf = requestAnimationFrame(animPhase1);
+      } else {
+        const phase2Duration = 1500;
+        const phase2Start = performance.now();
+        const animPhase2 = (now) => {
+          const t = Math.min((now - phase2Start) / phase2Duration, 1);
+          const e = ease(t);
+          setVizSelectedXLo(-10 + e * 8.04);  // -10 → -1.96
+          setVizSelectedX(10 - e * 8.04);     // 10 → 1.96
+          if (t < 1) {
+            raf = requestAnimationFrame(animPhase2);
+          } else {
+            introAnimating.current = false;
+          }
+        };
+        raf = requestAnimationFrame(animPhase2);
+      }
+    };
+
+    raf = requestAnimationFrame(animPhase1);
+    return () => { cancelAnimationFrame(raf); introAnimating.current = false; };
+  }, []);
+
   const handleSetExpanded = (id) => {
     if (id !== expandedRow) setActiveCol(null);
     setExpandedRow(id);
+    setParamOpenRow(null);
   };
 
   const handleToggleExpand = () => {
     const next = !expanded;
     setExpanded(next);
+    setParamOpenRow(null);
     if (!next && activeCol && TOGGLE_COLS.some(c => c.key === activeCol)) {
       setActiveCol(null);
       setExpandedRow(null);
     }
+  };
+
+  const currentVizDist = vizDistId ? DISTRIBUTIONS.find(d => d.id === vizDistId) : null;
+
+  const handleVizDistChange = (id) => {
+    setVizDistId(id);
+    setExpandedRow(id);
+    setActiveCol('pmfPdf');
+    setParamOpenRow(null);
   };
 
   const gridTemplate = getGridTemplate(expanded, activeCol);
@@ -879,38 +2034,55 @@ function App() {
       <TopNav sidebarOpen={sidebarOpen} />
 
       {/* Hero */}
-      <section className="jn-hero" style={{ padding: '72px 72px 48px', position: 'relative', overflow: 'hidden' }}>
+      <section className="jn-hero" style={{ padding: '72px 72px 16px', position: 'relative', overflow: 'hidden' }}>
         <Komorebi />
-        <div style={{ position: 'relative' }}>
-          {/* Breadcrumb */}
-          <div style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: JN.mute, marginBottom: 32 }}>
-            <a href="../index.html" style={{ all: 'unset', cursor: 'pointer', color: JN.mute }}>Home</a>
-            <span style={{ margin: '0 8px' }}>/</span>
-            <a href="../index.html#instruction" style={{ all: 'unset', cursor: 'pointer', color: JN.red }}>Instruction</a>
-            <span style={{ margin: '0 8px' }}>/</span>
-            <span style={{ color: JN.muteCool }}>Probability Distributions</span>
+        <div style={{ position: 'relative', display: 'flex', gap: 56, alignItems: 'flex-start' }}>
+          {/* Left: title + description */}
+          <div style={{ flex: '0 0 auto', maxWidth: 500 }}>
+            {/* Breadcrumb */}
+            <div style={{ fontFamily: F.sans, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: JN.mute, marginBottom: 32 }}>
+              <a href="../index.html" style={{ all: 'unset', cursor: 'pointer', color: JN.mute }}>Home</a>
+              <span style={{ margin: '0 8px' }}>/</span>
+              <a href="../index.html#instruction" style={{ all: 'unset', cursor: 'pointer', color: JN.red }}>Instruction</a>
+              <span style={{ margin: '0 8px' }}>/</span>
+              <span style={{ color: JN.muteCool }}>Probability Distributions</span>
+            </div>
+            <div style={{ fontFamily: F.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute, marginBottom: 18 }}>Reference &middot; in progress</div>
+            <h1 style={{ fontFamily: F.serif, fontSize: 'clamp(36px, 5vw, 72px)', lineHeight: 1.05, fontWeight: 400, letterSpacing: '-0.02em', margin: '0 0 24px', color: JN.ink }}>
+              Probability Distributions
+            </h1>
+            <p style={{ fontFamily: F.serif, fontSize: 18, color: JN.inkSoft, margin: '0 0 22px', lineHeight: 1.6, textAlign: 'right' }}>
+              A reference table for common probability<br/>distributions and their properties.
+            </p>
+            <p style={{ fontFamily: F.sans, fontSize: 13, color: JN.mute, margin: 0, lineHeight: 1.35 }}>
+              Collapse columns to hide CDF, E(x), Var(x), MGF.<br/>
+              Click any cell to view relevant derivations and other useful descriptions.<br/>
+              Notation key available in the sidebar on the left.
+            </p>
           </div>
-          <div style={{ fontFamily: F.serif, fontStyle: 'italic', fontSize: 15, color: JN.mute, marginBottom: 18 }}>Reference &middot; in progress</div>
-          <h1 style={{ fontFamily: F.serif, fontSize: 'clamp(40px, 6vw, 80px)', lineHeight: 1.05, fontWeight: 400, letterSpacing: '-0.02em', margin: '0 0 24px', maxWidth: 800, color: JN.ink }}>
-            Probability Distributions
-          </h1>
-          <p style={{ fontFamily: F.serif, fontSize: 20, color: JN.inkSoft, margin: '0 0 14px', maxWidth: 640, lineHeight: 1.6, textAlign: 'right' }}>
-            A reference table for common probability <br /> distributions and their properties.
-          </p>
-          <p style={{ fontFamily: F.sans, fontSize: 13, color: JN.mute, margin: '0 0 6px', maxWidth: 640, lineHeight: 1.6 }}>
-            Collapse columns to hide CDF, E(x), Var(x), MGF.
-          </p>
-          <p style={{ fontFamily: F.sans, fontSize: 13, color: JN.mute, margin: '0 0 6px', maxWidth: 640, lineHeight: 1.6 }}>
-            Click any cell to view relevant derivations and other useful descriptions.
-          </p>
-          <p style={{ fontFamily: F.sans, fontSize: 13, color: JN.mute, margin: '0 0 6px', maxWidth: 640, lineHeight: 1.6 }}>
-            Notation key available in the sidebar on the left.
-          </p>
+
+          {/* Right: visualizer */}
+          <div style={{ flex: '0 0 auto', width: 520, marginTop: 36, marginLeft: 48 }}>
+            <DistributionViz
+              dist={currentVizDist}
+              onDistChange={handleVizDistChange}
+              vizParams={vizParams}
+              setVizParams={setVizParams}
+              selectedX={vizSelectedX}
+              setSelectedX={setVizSelectedX}
+              selectedXLo={vizSelectedXLo}
+              setSelectedXLo={setVizSelectedXLo}
+              showCDF={vizShowCDF}
+              setShowCDF={setVizShowCDF}
+              showZScore={vizShowZScore}
+              setShowZScore={setVizShowZScore}
+            />
+          </div>
         </div>
       </section>
 
       {/* Table section */}
-      <section className="jn-content" style={{ padding: '56px 72px 80px' }}>
+      <section className="jn-content" style={{ padding: '24px 72px 80px' }}>
         <TableControls
           sortOrder={sortOrder}
           setSortOrder={setSortOrder}
@@ -938,6 +2110,8 @@ function App() {
                 setActiveCol={setActiveCol}
                 expanded={expanded}
                 gridTemplate={gridTemplate}
+                paramOpenRow={paramOpenRow}
+                setParamOpenRow={setParamOpenRow}
               />
             ))}
           </div>

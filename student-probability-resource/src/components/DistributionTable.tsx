@@ -40,20 +40,22 @@ export function DistributionTable() {
     }));
   }, []);
 
-  // Toggle details panel for a distribution
+  // Toggle details panel for a distribution — accordion: only one open at a time
   const handleToggleDetails = useCallback((distributionId: string) => {
-    setExpandedState((prev) => ({
-      ...prev,
-      [distributionId]: {
-        ...prev[distributionId],
-        detailsOpen: !prev[distributionId]?.detailsOpen,
-      },
-    }));
+    setActiveDerivation(null);
+    setExpandedState((prev) => {
+      const isCurrentlyOpen = prev[distributionId]?.detailsOpen;
+      const reset: ExpandedState = {};
+      return isCurrentlyOpen
+        ? reset
+        : { [distributionId]: { detailsOpen: true } };
+    });
   }, []);
 
-  // Open derivation panel for a specific column
+  // Open derivation panel for a specific column — close any open details panel
   const handleOpenDerivation = useCallback(
     (distributionId: string, column: string) => {
+      setExpandedState({});
       setActiveDerivation({ distributionId, column });
     },
     []
