@@ -39,6 +39,7 @@
       .jn-viz-col    { width: 100% !important; margin-left: 0 !important; margin-top: 0 !important; overflow-x: auto; }
       .jn-dist-viz-body { flex-direction: column !important; }
       .jn-h1-br { display: inline !important; }
+      .jn-viz-stats { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 8px 16px !important; align-self: stretch !important; }
     }
   </style>
 </head>
@@ -1489,7 +1490,7 @@ function DistributionViz({ dist, onDistChange, vizParams, setVizParams, selected
             { label: 'σ',           value: Number.isFinite(sig) ? sig.toFixed(3) : '—' },
           ];
           return (
-            <div style={{
+            <div className="jn-viz-stats" style={{
               display: 'flex', flexDirection: 'column',
               gap: 10, padding: '10px 14px',
               background: JN.paperWarm, border: `1px solid ${JN.ruleSoft}`, borderRadius: 2,
