@@ -116,7 +116,7 @@ var DISTRIBUTIONS = [
     },
     support:   'k \\in \\{0,\\, 1\\}',
     pmfPdf:    'f(k) = p^{k}(1-p)^{1-k}',
-    cdf:       ' F(k) = \\begin{cases} 0, & k < 0 \\\\ (1-p), & k \\in [0,1) \\\\ p, & k \\geq 1 \\in (\\end{cases}',
+    cdf:       ' F(k) = \\begin{cases} 0, & k < 0 \\\\ (1-p), & k \\in [0,1) \\\\ p, & k \\geq 1 \\end{cases}',
     mean:      'p',
     variance:  'p(1-p)',
     mgf:       '1-p+pe^{t}',
