@@ -157,7 +157,7 @@ var DISTRIBUTIONS = [
     derivations: {
       pmfPdf:   '',
       cdf:      '',
-      mean:     '\\mathbb{E}[X] = \\sum_{k \\in [0,n]} \\nchoosek{n}{k}p^k (1-p)^{n-k} k',
+      mean:     '\\begin{align*} \\mathbb{E}[X] &= \\sum_{k = 0}^n k \\nchoosek{n}{k}p^k (1-p)^{n-k} \\\\ &= \sum_{k=1}^n k [\\frac{n!}{(n-k)!k!}] p^k (1-p)^{n-k} \\\\ &= 0 + \\sum_{k=1}^n [\\frac{\\frac{n!n}{n}}{(n-k+1-1)!(\\frac{k!}{k})}] p^{k -1}p(1-p)^{n-k+1-1} \\\\ &= \\sum{k=1}^n np[\\frac{(n-1)!}{(n-1 - (k-1))!(k-1)!}]p^{k-1}(1-p)^{n-1-(k-1)} \\\\ &= np \\sum_{k=0}^n[\\frac{(n-1)!}{(n-1-k)!k!}}]p^k(1-p)^{n-1-k} \\\\ &= np[p + (1-p)]^{n-1} \\quad \\text{by Binomial Theorem}\\\\ &= np(1)^{n-1} \\\\ &= np \\end{align*}',
       variance: '',
       mgf:      '',
     },
@@ -334,7 +334,7 @@ var DISTRIBUTIONS = [
       ],
     },
     support:   'x \\in \\mathbb R',
-    pmfPdf:    'f(x) \\frac{1}{\\sqrt{2\\pi\\sigma^2}}e^-\\frac{(x-\\mu)^2}{2\\sigma^2}',
+    pmfPdf:    'f(x) = \\frac{1}{\\sqrt{2\\pi\\sigma^2}}e^-\\frac{(x-\\mu)^2}{2\\sigma^2}',
     cdf:       '',
     mean:      '',
     variance:  '',
