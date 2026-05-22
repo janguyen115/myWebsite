@@ -593,6 +593,8 @@ function ParamCell({ params, isOpen, onToggle }) {
           gridTemplateRows: isOpen ? '1fr' : '0fr',
           opacity: isOpen ? 1 : 0,
           transition: 'grid-template-rows 0.38s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease',
+          contain: 'inline-size',
+          width: '100%',
         }}>
           <div style={{ overflow: 'hidden', minHeight: 0 }}>
             <div style={{ padding: '0 16px 14px', borderTop: `1px dashed ${JN.ruleSoft}` }}>
@@ -647,19 +649,11 @@ function NameCell({ name, isActive, onClick }) {
   );
 }
 
-function CellClickable({ latex, isActive, onClick, borderRight, support }) {
+function CellClickable({ latex, isActive, onClick, borderRight }) {
   const [hovered, setHovered] = React.useState(false);
-  const ref = React.useRef(null);
-
-  React.useEffect(() => {
-    if (support && isActive && ref.current && window.MathJax) {
-      window.MathJax.typesetPromise([ref.current]).catch(() => {});
-    }
-  }, [isActive, support]);
 
   return (
     <div
-      ref={ref}
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -678,24 +672,6 @@ function CellClickable({ latex, isActive, onClick, borderRight, support }) {
       <div style={{ padding: '18px 16px', display: 'flex', alignItems: 'center' }}>
         <MathCell latex={latex} />
       </div>
-      {support && (
-        <div style={{
-          display: 'grid',
-          gridTemplateRows: isActive ? '1fr' : '0fr',
-          opacity: isActive ? 1 : 0,
-          transition: 'grid-template-rows 0.38s cubic-bezier(0.4,0,0.2,1), opacity 0.28s ease',
-        }}>
-          <div style={{ overflow: 'hidden', minHeight: 0 }}>
-            <div style={{ padding: '0 16px 14px', borderTop: `1px dashed ${JN.ruleSoft}` }}>
-              <div style={{ fontFamily: F.sans, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: JN.mute, marginBottom: 4 }}>
-                support
-              </div>
-              <div style={{ fontFamily: F.serif, fontSize: 13, color: JN.inkSoft }}
-                dangerouslySetInnerHTML={{ __html: `\\(${support}\\)` }} />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -769,7 +745,6 @@ function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, e
           isActive={isExpanded && activeCol === 'pmfPdf'}
           onClick={() => handleCellClick('pmfPdf')}
           borderRight={visibleToggleCols.length > 0}
-          support={dist.support}
         />
         {visibleToggleCols.map((col, i) => (
           <CellClickable
@@ -778,7 +753,6 @@ function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, e
             isActive={isExpanded && activeCol === col.key}
             onClick={() => handleCellClick(col.key)}
             borderRight={i < visibleToggleCols.length - 1}
-            support={col.key === 'cdf' ? dist.support : undefined}
           />
         ))}
       </div>
