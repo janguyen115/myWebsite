@@ -131,7 +131,7 @@ var DISTRIBUTIONS = [
   &= 0(1-p) + 1(p) \\\\
   &= p
 \\end{align*}\\]`,
-      variance: '',
+      variance: '\\begin{align*} \\text{Var}[X] & = \\mathbb{E}[X^2] - \\mathbb{E}^2[X] \\\\ &= [\\sum_k k^2P(X=k)] - (\\mathbb{E}[x])^2 \\\\ &= [0^2(1-p) + 1^2(p)] - p^2 \\\\ &= p-p^2 \\end{align*}',
       mgf:      '',
     },
   },
