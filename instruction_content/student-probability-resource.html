@@ -498,10 +498,8 @@ function ExpandedRow({ dist, activeCol }) {
   });
 
   const sections = [
-    { key: 'useCases',      label: 'Use Cases'     },
-    { key: 'history',       label: 'History'       },
-    { key: 'example',       label: 'Example'       },
-    { key: 'relationships', label: 'Relationships' },
+    { key: 'description', label: 'Description' },
+    { key: 'example',     label: 'Example'     },
   ];
 
   const derivation = activeCol ? dist.derivations[activeCol] : null;
@@ -531,7 +529,7 @@ function ExpandedRow({ dist, activeCol }) {
             No derivation added yet.
           </div>
         )}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px 48px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           {sections.map(({ key, label }) => {
             const content = dist[key];
             return (
