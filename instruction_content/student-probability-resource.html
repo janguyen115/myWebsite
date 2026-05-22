@@ -152,8 +152,6 @@ const TOGGLE_COLS = [
   { key: 'variance', label: 'Var(X)', width: 120 },
   { key: 'mgf',      label: 'MGF',    width: 175 },
 ];
-const ACTIVE_BONUS = 80;
-
 // ─── Math utilities ───────────────────────────────────────────────────────────
 function lnGamma(z) {
   // Lanczos approximation
@@ -439,17 +437,8 @@ function visibleCols(expanded) {
   return expanded ? [...ALWAYS_COLS, ...TOGGLE_COLS] : ALWAYS_COLS;
 }
 
-function getGridTemplate(expanded, activeCol) {
-  return visibleCols(expanded).map(c => {
-    const min = c.key === activeCol ? c.width + ACTIVE_BONUS : c.width;
-    return `minmax(${min}px, auto)`;
-  }).join(' ');
-}
-
-function getTableWidth(expanded, activeCol) {
-  return visibleCols(expanded).reduce((sum, c) =>
-    sum + c.width + (c.key === activeCol ? ACTIVE_BONUS : 0)
-  , 0);
+function getGridTemplate(expanded) {
+  return visibleCols(expanded).map(() => 'max-content').join(' ');
 }
 
 function MathCell({ latex }) {
@@ -711,7 +700,7 @@ function CellClickable({ latex, isActive, onClick, borderRight, support }) {
   );
 }
 
-function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, expanded, gridTemplate, paramOpenRow, setParamOpenRow }) {
+function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, expanded, paramOpenRow, setParamOpenRow }) {
   const isExpanded = expandedRow === dist.id;
   const paramOpen  = paramOpenRow === dist.id;
 
@@ -767,12 +756,11 @@ function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, e
 
   return (
     <>
-      <div ref={rowRef}>
-      <div style={{
+      <div ref={rowRef} style={{
         display: 'grid',
-        gridTemplateColumns: gridTemplate,
+        gridColumn: '1 / -1',
+        gridTemplateColumns: 'subgrid',
         borderBottom: isExpanded ? 'none' : `1px solid ${JN.ruleSoft}`,
-        transition: 'grid-template-columns 0.35s cubic-bezier(0.4,0,0.2,1)',
       }}>
         <NameCell name={dist.name} isActive={isExpanded && activeCol === null} onClick={handleNameClick} />
         <ParamCell params={dist.parameters} isOpen={paramOpen} onToggle={handleParamToggle} />
@@ -794,8 +782,8 @@ function DistRow({ dist, expandedRow, setExpandedRow, activeCol, setActiveCol, e
           />
         ))}
       </div>
-      </div>
       <div style={{
+        gridColumn: '1 / -1',
         display: 'grid',
         gridTemplateRows: isExpanded ? '1fr' : '0fr',
         opacity: isExpanded ? 1 : 0,
@@ -1547,15 +1535,15 @@ function ExpandArrowBar({ expanded, onToggle }) {
 }
 
 // ─── Table header ─────────────────────────────────────────────────────────────
-function TableHeader({ expanded, activeCol, gridTemplate }) {
+function TableHeader({ expanded, activeCol }) {
   const cols = visibleCols(expanded);
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: gridTemplate,
+      gridColumn: '1 / -1',
+      gridTemplateColumns: 'subgrid',
       borderBottom: `2px solid ${JN.rule}`,
       background: JN.paperWarm,
-      transition: 'grid-template-columns 0.35s cubic-bezier(0.4,0,0.2,1)',
     }}>
       {cols.map((col, i, arr) => (
         <div key={col.key} style={{
@@ -2027,8 +2015,7 @@ function App() {
     setParamOpenRow(null);
   };
 
-  const gridTemplate = getGridTemplate(expanded, activeCol);
-  const tableWidth   = getTableWidth(expanded, activeCol);
+  const gridTemplate = getGridTemplate(expanded);
 
   return (
     <>
@@ -2099,16 +2086,14 @@ function App() {
         />
         <div style={{ display: 'inline-flex', alignItems: 'stretch' }}>
           <div style={{
-            minWidth: tableWidth,
-            width: '100%',
-            transition: 'min-width 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
-            overflow: 'hidden',
+            display: 'grid',
+            gridTemplateColumns: gridTemplate,
+            width: 'max-content',
             border: `1px solid ${JN.rule}`,
             borderRight: 'none',
             borderRadius: '2px 0 0 2px',
-            flexShrink: 0,
           }}>
-            <TableHeader expanded={expanded} activeCol={activeCol} gridTemplate={gridTemplate} />
+            <TableHeader expanded={expanded} activeCol={activeCol} />
             {displayedDists.map(dist => (
               <DistRow
                 key={dist.id}
@@ -2118,7 +2103,6 @@ function App() {
                 activeCol={activeCol}
                 setActiveCol={setActiveCol}
                 expanded={expanded}
-                gridTemplate={gridTemplate}
                 paramOpenRow={paramOpenRow}
                 setParamOpenRow={setParamOpenRow}
               />
