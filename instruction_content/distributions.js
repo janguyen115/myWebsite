@@ -125,7 +125,12 @@ var DISTRIBUTIONS = [
     derivations: {
       pmfPdf:   '',
       cdf:      '',
-      mean:     ' \\mathbb{E} [X] \\sum_k k P(X=k) ',
+      mean: `\\[\\begin{align*}
+  \\mathbb{E}[X] &= \\sum_k k \\cdot P(X=k) \\\\
+  &= 0 \\cdot p^0(1-p)^{1-0} + 1 \\cdot p^1(1-p)^{1-1} \\\\
+  &= 0(1-p) + 1(p) \\\\
+  &= p
+\\end{align*}\\]`,
       variance: '',
       mgf:      '',
     },
