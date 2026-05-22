@@ -125,7 +125,7 @@ var DISTRIBUTIONS = [
     derivations: {
       pmfPdf:   '',
       cdf:      '',
-      mean:     '\\mathbb{E}[X] \\sum_k kP(X=k)',
+      mean:     ' \\mathbb{E} [X] \\sum_k k P(X=k) ',
       variance: '',
       mgf:      '',
     },
