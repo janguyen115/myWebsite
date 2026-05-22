@@ -125,7 +125,7 @@ var DISTRIBUTIONS = [
     derivations: {
       pmfPdf:   '',
       cdf:      '',
-      mean:     '',
+      mean:     '\\mathbb{E}[X] \\sum_k kP(X=k)',
       variance: '',
       mgf:      '',
     },
@@ -152,7 +152,7 @@ var DISTRIBUTIONS = [
     derivations: {
       pmfPdf:   '',
       cdf:      '',
-      mean:     '',
+      mean:     '\\mathbb{E}[X] = \\sum_{k \\in [0,n]} \\nchoosek{n}{k}p^k (1-p)^{n-k} k',
       variance: '',
       mgf:      '',
     },
