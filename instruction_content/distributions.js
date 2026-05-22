@@ -132,7 +132,7 @@ var DISTRIBUTIONS = [
   &= p
 \\end{align*}\\]`,
       variance: '\\begin{align*} \\text{Var}[X] & = \\mathbb{E}[X^2] - \\mathbb{E}^2[X] \\\\ &= [\\sum_{k=0}^1 k^2P(X=k)] - (\\mathbb{E}[x])^2 \\\\ &= [0^2(1-p) + 1^2(p)] - p^2 \\\\ &= p-p^2  \\\\ &= p(1-p) \\end{align*}',
-      mgf:      '\\begin{align*} M_X(t) &= \\mathbb{E}[e^{tX}] \\\\ &= \\sum_{k=0}^1 e^{tk} P(X=k) \\\\ &= e^{t(0)}P(X=0) + e^{t(1)}P(X=1) \\\\ &= (1-p) + pe^t \\end{align*} \\begin{align*} & \\implies M_X`(t) = pe^t, \\hspace{1em} M_X``(t) = pe^t \\\\ & \\implies M_X`(0) = p, \\hspace{1em} M_X``(0) = p \\end{align*}',
+      mgf:      '\\begin{align*} M_X(t) &= \\mathbb{E}[e^{tX}] \\\\ &= \\sum_{k=0}^1 e^{tk} P(X=k) \\\\ &= e^{t(0)}P(X=0) + e^{t(1)}P(X=1) \\\\ &= (1-p) + pe^t \\end{align*} \\begin{align*} & \\implies M_X\'(t) = pe^t, \\hspace{1em} M_X\'\'(t) = pe^t \\\\ & \\implies M_X\'(0) = p, \\hspace{1em} M_X\'\'(0) = p \\end{align*}',
     },
   },
   {
