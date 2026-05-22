@@ -440,9 +440,10 @@ function visibleCols(expanded) {
 }
 
 function getGridTemplate(expanded, activeCol) {
-  return visibleCols(expanded).map(c =>
-    `${c.key === activeCol ? c.width + ACTIVE_BONUS : c.width}px`
-  ).join(' ');
+  return visibleCols(expanded).map(c => {
+    const min = c.key === activeCol ? c.width + ACTIVE_BONUS : c.width;
+    return `minmax(${min}px, auto)`;
+  }).join(' ');
 }
 
 function getTableWidth(expanded, activeCol) {
@@ -2098,8 +2099,9 @@ function App() {
         />
         <div style={{ display: 'inline-flex', alignItems: 'stretch' }}>
           <div style={{
-            width: tableWidth,
-            transition: 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+            minWidth: tableWidth,
+            width: '100%',
+            transition: 'min-width 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
             overflow: 'hidden',
             border: `1px solid ${JN.rule}`,
             borderRight: 'none',
