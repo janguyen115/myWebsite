@@ -157,7 +157,7 @@ var DISTRIBUTIONS = [
     derivations: {
       pmfPdf:   '',
       cdf:      '',
-      mean:     '\\begin{align*} \\mathbb{E}[X] &= \\sum_{k = 0}^n k \\nchoosek{n}{k}p^k (1-p)^{n-k} \\\\ &= \sum_{k=1}^n k [\\frac{n!}{(n-k)!k!}] p^k (1-p)^{n-k} \\\\ &= 0 + \\sum_{k=1}^n [\\frac{\\frac{n!n}{n}}{(n-k+1-1)!(\\frac{k!}{k})}] p^{k -1}p(1-p)^{n-k+1-1} \\\\ &= \\sum{k=1}^n np[\\frac{(n-1)!}{(n-1 - (k-1))!(k-1)!}]p^{k-1}(1-p)^{n-1-(k-1)} \\\\ &= np \\sum_{k=0}^n[\\frac{(n-1)!}{(n-1-k)!k!}}]p^k(1-p)^{n-1-k} \\\\ &= np[p + (1-p)]^{n-1} \\quad \\text{by Binomial Theorem}\\\\ &= np(1)^{n-1} \\\\ &= np \\end{align*}',
+      mean:     `\\begin{align*} \\mathbb{E}[X] &= \\sum_{k = 0}^n k \\binom{n}{k}p^k (1-p)^{n-k} \\\\ &= \\sum_{k=1}^n k \\left[\\frac{n!}{(n-k)!k!}\\right] p^k (1-p)^{n-k} \\\\ &= 0 + \\sum_{k=1}^n \\left[\\frac{\\frac{n!n}{n}}{(n-k+1-1)!(\\frac{k!}{k})}\\right] p^{k -1}p(1-p)^{n-k+1-1} \\\\ &= \\sum{k=1}^n np\\left[\\frac{(n-1)!}{(n-1 - (k-1))!(k-1)!}\\right]p^{k-1}(1-p)^{n-1-(k-1)} \\\\ &= np \\sum_{k=0}^n\\left[\\frac{(n-1)!}{(n-1-k)!k!}\\right]p^k(1-p)^{n-1-k} \\\\ &= np[p + (1-p)]^{n-1} \\quad \\text{by Binomial Theorem}\\\\ &= np(1)^{n-1} \\\\ &= np \\end{align*}`,
       variance: '',
       mgf:      '',
     },
