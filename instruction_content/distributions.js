@@ -72,8 +72,8 @@ var DISTRIBUTIONS = [
     derivations: {
       pmfPdf:   '',
       cdf:      '',
-      mean:     '',
-      variance: '',
+      mean:     '\\begin{align*} \\mathbb{E}[X] &= \\sum_{k=a}^b k \\left(\\frac{1}{b-a+1}\\right) \\\\ &= \\left(\\frac{1}{b-a+1}\\right) \\sum_{k=a}^b k \\\\ &= \\left(\\frac{1}{b-a+1}\\right) \\left( \\sum_{k=1}^b - \\sum_{k=1}^{a-1} \\right) \\\\ &= \\left(\\frac{1}{b-a+1}\\right)\\left( \\frac{b(b+1)}{2} - \\frac{(a-1)(a)}{2} \\right) \\\\ &= \\left(\\frac{1}{b-a+1}\\right) \\frac{b^2 + b - a^2 + a}{2} \\\\ &= \\frac{b^2 - a^2 + ab - ab + a + b}{2(b-a+1)} \\\\ &= \\frac{(a+b)(b-a+1)}{2(b-a+1)} \\\\ &= \\frac{a+b}{2}           \\end{align*}',
+      variance: 'Note that the random variable \\( X \\sim \\text{Uniform}(a, b) \\) is equal to \\(Y = X - (a-1)\\) for random variable \\(Y \\sim \\text{Uniform}(1,b-a+1)\\). <br> Since the variance of a distribution is shift-invariant, i.e. Var(X) = Var(X+c), we can instead find the equivalent variance of the random variable Y. <br> For simplified derivation, we substitute \\(n = b-a+1\\) for th width of the Uniform distribution.\\begin{align*} Var[X] &= \\mathbb{E}[Y^2] - \\mathbb{E}^2[Y] \\\\ &= \\sum_{k=1}^n k^2 \\left(\\frac{1}{n}\\right)- \\left[ \\sum_{k=1}^n k\\left( \\frac{1}{n} \\right) \\right] \\\\ &= \\frac{1}{n}\\left( \\frac{n(n+1)(2n+1)}{6} \\right) - \\left[\\frac{1}{n}\\left( \\frac{n(n+1)}{2} \\right)\\right]^2 \\\\ &= \\frac{2(n+1)(2n+1)}{12} - \\frac{3(n+1)^2}{12} \\\\ &= \\frac{n^2-1}{12} \\\\ &= \\frac{(b-a+1)^2-1}{12} \\end{align*} ',
       mgf:      '',
     },
   },
@@ -89,8 +89,8 @@ var DISTRIBUTIONS = [
       ],
     },
     support:   'a \\leq k \\leq b, \\quad k \\in \\mathbb{R}',
-    pmfPdf:    ' f(k) = \\frac{1}{b-a} ',
-    cdf:       ' F(k) = \\frac{k-a}{b-a} \\quad ',
+    pmfPdf:    ' f(x) = \\frac{1}{b-a} ',
+    cdf:       ' F(x) = \\frac{k-a}{b-a} \\quad ',
     mean:      ' \\frac{a+b}{2}',
     variance:  ' \\frac{(b-a)^2-1}{12}',
     mgf:       ' \\frac{e^{at}-e^{(b+1)t}}{(b-a)(1-e^{t})} \\quad \\text{for } t \\neq 0',
@@ -132,7 +132,7 @@ var DISTRIBUTIONS = [
   &= p
 \\end{align*}\\]`,
       variance: '\\begin{align*} \\text{Var}[X] & = \\mathbb{E}[X^2] - \\mathbb{E}^2[X] \\\\ &= [\\sum_{k=0}^1 k^2P(X=k)] - (\\mathbb{E}[x])^2 \\\\ &= [0^2(1-p) + 1^2(p)] - p^2 \\\\ &= p-p^2  \\\\ &= p(1-p) \\end{align*}',
-      mgf:      '\\begin{align*} M_X(t) &= \\mathbb{E}[e^{tX}] \\\\ &= \\sum_{k=0}^1 e^{tk} P(X=k) \\\\ &= e^{t(0)}P(X=0) + e^{t(1)}P(X=1) \\\\ &= (1-p) + pe^t \\end{align*} \\begin{align*} & \\implies M_X\'(t) = pe^t, \\hspace{1em} M_X\`\`(t) = pe^t \\\\ & \\implies M_X\`(0) = p, \\hspace{1em} M_X\`\`(0) = p \\end{align*}',
+      mgf:      '\\begin{align*} M_X(t) &= \\mathbb{E}[e^{tX}] \\\\ &= \\sum_{k=0}^1 e^{tk} P(X=k) \\\\ &= e^{t(0)}P(X=0) + e^{t(1)}P(X=1) \\\\ &= (1-p) + pe^t \\end{align*} \\begin{align*} & \\implies M_X\'(t) = pe^t, \\hspace{1em} M_X\'\'(t) = pe^t \\\\ & \\implies M_X\'(0) = p, \\hspace{1em} M_X\'\'(0) = p \\end{align*}',
     },
   },
   {
@@ -183,9 +183,9 @@ var DISTRIBUTIONS = [
     derivations: {
       pmfPdf:   '',
       cdf:      '',
-      mean:     '',
-      variance: '',
-      mgf:      '',
+      mean:     '\\begin{align*} \\mathbb{E}[X] & = \\int_0^\\infty \\lambda x e^{ -\\lambda x } \\text{d}x \\\\  &= uv \\Big|_0^\\infty - \\int_0^\\infty v du, \\hspace{8em} \\text{Where } u = x, \\quad dv = \\lambda e^{-\\lambda x }dx \\implies du = dx, \\quad v = -e^{ -\\lambda x } \\\\ &= -xe^{-\\lambda x}\\Big|_0^\\infty + \\int_0^\\infty e^{-\\lambda x} dx \\\\ &= [ (\\underset{x \\rightarrow \\infty}{\\lim} -xe^{- \\lambda x }) + 0e^{-\\lambda(0)}] - \\frac{1}{\\lambda}e^{ -\\lambda x }\\Big|_0^\\infty \\\\ &= 0 + \\left[\\left(\\underset{x \\rightarrow \\infty}{\\lim} \\frac{1}{\\lambda}e^{-\\lambda x}\\right) + \\frac{1}{\\lambda} e^{-\\lambda(0)}\\right] \\\\ &= 0 + \\frac{1}{\\lambda}(1) \\\\ &= \\frac{1}{\\lambda}  \\end{align*}',
+      variance: '\\begin{align*} Var[X] &= \\mathbb{E}[X^2] - \\mathbb{E}^2[X] \\\\ &= \\left( \\int_0^\\infty \\lambda x^2 e^{-\\lambda x} dx \\right) - \\left(\\frac{1}{\\lambda}\\right)^2 \\\\ &= [uv\\Big|_0^\\infty - \\int_0^\\infty vdu - \\frac{1}{\\lambda^2}, \\hspace{8em} \\text{Where } u = x^2, \\quad dv = \\lambda e^{ - \\lambda x }dx \\implies du = 2xdx, \\quad v = -e^{-\\lambda x}  \\\\ &= [x^2(-e^{-\\lambda x}) \\Big|_0^\\infty + \\int_0^\\infty e^{ - \\lambda x } 2xdx - \\frac{1}{\\lambda^2} \\\\ &= [(\\underset{x \\rightarrow \\infty}{\\lim}-x^2e^{-\\lambda x}) + (0)^2e^{-\\lambda(0)}] + \\int_0^\\infty 2\\left(\\frac{\\lambda}{\\lambda}\\right)xe^{ - \\lambda x }dx - \\frac{1}{\\lambda^2} \\\\ &= 0 + 2\\left(\\frac{1}{\\lambda}\\right) \\int_0^\\infty \\lambda x e^{ -\\lambda x } \\text{d}x - \\frac{1}{\\lambda^2} \\\\ &= \\frac{2}{\\lambda}\\mathbb{E}[X] - \\frac{1}{\\lambda^2}, \\hspace{8em} \\text{Recall that: } \\mathbb{E}[X] = \\int_0^\\infty \\lambda x e^{ -\\lambda x } \\text{d}x \\\\ &= \\frac{2}{\\lambda^2} - \\frac{1}{\\lambda^2} \\\\ &= \\frac{1}{\\lambda^2} \\end{align*}',
+      mgf:      '\\begin{align*} M_X(t) &= \\mathbb{E}[e^{tX}] \\\\ &= \\int_0^\\infty e^{tx}(\\lambda e^{-\\lambda x}) dx \\\\ &= \\int_0^\\infty \\lambda e^{ (t-\\lambda) x} dx \\\\ &= \\left(\\frac{\\lambda}{t-\\lambda}\\right)e^{(t-\\lambda)x}\\Big|_0^\\infty \\\\ &= \\frac{\\lambda}{t-\\lambda}\\left[ (\\underset{x \\rightarrow \\infty}{\\lim} e^{(t-\\lambda)x }) - e^{(t-\\lambda)(0)} \\right] \\\\ &= \\begin{cases} \\frac{\\lambda}{\\lambda-t}, & t< \\lambda \\\\ \\infty, & t \\geq \\lambda \\end{cases} \\\\ & \\implies M_X\'(t) = -\\frac{\\lambda}{(t-\\lambda)^2}, \\quad M_X\'\'(t) = -\\frac{2\\lambda}{(t-\\lambda)^3} \\\\ & \\implies M_X\'(0) = \\frac{1}{\\lambda}, \\quad M_X\'\'(0) = \\frac{2}{\\lambda^2} \\end{align*}',
     },
   },
   {
@@ -236,8 +236,8 @@ var DISTRIBUTIONS = [
     derivations: {
       pmfPdf:   '',
       cdf:      '',
-      mean:     '',
-      variance: '',
+      mean:     '\\begin{align*} \\mathbb{E}[X] &= \\sum_{k=0}^\\infty k\\left( \\frac{\\lambda^k e^{-\\lambda}}{k!} \\right) \\\\ &= 0 + \\sum_{k=1}^\\infty k\\left( \\frac{\\lambda^k e^{-\\lambda}}{k!} \\right) \\\\ &= \\sum_{k=1}^\\infty  \\frac{\\lambda^{k-1}(\\lambda) e^{-\\lambda}}{k!(\\frac{1}{k})} \\\\ &= \\lambda e^{-\\lambda} \\sum_{k=1}^\\infty \\frac{\\lambda^{k-1}}{(k-1)!} \\\\ &=\\lambda e^{-\\lambda} \\sum_{k\'=0}^\\infty \\frac{\\lambda^{k\'}}{k\'!}, \\hspace{8em} \\text{Where } k\' = k-1 \\\\ &= \\lambda e^{-\\lambda}(e^\\lambda), \\hspace{8em} \\text{By definition of } e^x = \\sum_{k=0}^\\infty \\frac{x^k}{k!}\\text{ for } x = \\lambda \\\\ &= \\lambda e^0 \\\\ &= \\lambda \\end{align*}',
+      variance: '\\( Var[X] = \\mathbb{E}[X^2] - \\mathbb{E}^2[X] \\) \\begin{align*} \\hspace{4em} \\text{First solving for } \\mathbb{E}[X^2]&: \\\\ \\mathbb{E}[X^2] &= \\sum_{k=0}^\\infty (k^2)\\frac{\\lambda^k e^{-\\lambda}}{k!} \\\\ &= e^{-\\lambda} \\sum_{k=1}^\\infty k(\\frac{ \\lambda^{k-1}(\\lambda) }{ k!\\left( \\frac{1}{k} \\right) }) \\\\ &= \\lambda e^{-\\lambda} \\left( 0 + \\sum_{k=1}^\\infty (k-1 + 1)\\frac{ \\lambda^{k-1} }{ (k-1)! } \\right) & \\text{"Extract 0th term from series"} \\\\ &= \\lambda e^{-\\lambda} \\left( \\sum_{k\'=0}^\\infty (k\' + 1) \\frac{ \\lambda^{k\'} }{(k\')!} \\right), & \\text{Where, } k\' = k-1 \\\\ &= \\lambda e^{-\\lambda} \\left[ 1\\left( \\frac{\\lambda^0}{1} \\right) + \\sum_{k\' = 1}^\\infty (k\'+1)\\frac{ \\lambda^{k\'} }{ (k\')! }  \\right] & \\text{"Extract 0th term from series"} \\\\ &= \\lambda e^{-\\lambda} \\left[ 1 + \\left( \\sum_{k\'=1}^\\infty (k\') \\frac{\\lambda^{k\'}}{(k\')!}\\right) + \\left( \\sum_{k\' = 1}^\\infty \\frac{\\lambda^{k\'}}{(k\')!} \\right) \\right] \\\\ &= \\lambda e^{-\\lambda} \\left[ 1 + \\lambda \\left( \\sum_{k\' =1}^\\infty \\frac{\\lambda^{k\'-1}}{(k\'-1)!} \\right) + (e^{\\lambda} - 1) \\right] \\\\ &= \\lambda e^{-\\lambda} \\left[ \\lambda \\left(\\sum_{k\'\' = 0}^\\infty \\frac{\\lambda^{k\'\'}}{(k\'\')!} \\right)  + e^{\\lambda}\\right], & \\text{Where } k\'\' = k\'-1 \\\\ &= \\lambda e^{-\\lambda} [\\lambda e^\\lambda + e^\\lambda] \\\\ &= \\lambda^2 e^0 + \\lambda e^0 \\\\ &= \\lambda^2 + \\lambda \\end{align*} \\begin{align*} \\implies \\mathbb{E}[X^2] - \\mathbb{E}^2[X] &= (\\lambda^2 + \\lambda) - (\\lambda)^2 \\\\ &= \\lambda \\end{align*}',
       mgf:      '',
     },
   },
